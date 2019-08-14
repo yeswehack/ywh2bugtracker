@@ -1,0 +1,24 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[packages]
+requests = "*"
+python-gitlab = "*"
+pyyaml = "*"
+pygithub = "*"
+jira = "*"
+html2text = "*"
+colorama = "*"
+pytotp = "*"
+pyotp = "*"
+
+[requires]
+python_version = "3.7"
+
+[dev-packages]
+neovim = "*"
+black = "*"
+bpython = "*"
+ipython = "*"

@@ -18,8 +18,6 @@ from yeswehack.exceptions import (
 )
 from ywh2bt.trackers.bugtracker import BugTracker
 from ywh2bt import config
-from ywh2bt.trackers import ywhgitlab, ywhgithub, ywhjira, ywhtfs, ywhazuredevops
-
 
 def check_bug(comments, comment):
     return any(

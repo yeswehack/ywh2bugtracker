@@ -4,13 +4,17 @@ import sys
 import copy
 import yaml
 import pyotp
-import getpass
 import logging
 from pathlib import Path
 from colorama import Fore, Style
 from yeswehack.api import YesWeHack
-from yeswehack.exceptions import BadCredentials, ObjectNotFound, InvalidResponse, TOTPLoginEnabled
-
+from yeswehack.exceptions import (
+    BadCredentials,
+    ObjectNotFound,
+    InvalidResponse,
+    TOTPLoginEnabled,
+)
+from ywh2bt.utils import read_input
 logger = logging.getLogger(__name__)
 
 
@@ -27,7 +31,7 @@ class GlobalConfig:
         if os.name == "posix":
             config_dir = Path(os.environ.get("HOME") + "/")
         else:
-            config_dir = Path(os.environ.get("APPDATA") + "ywh2bt/")
+            config_dir = Path(os.environ.get("APPDATA") + "/ywh2bt/")
         if not config_dir.exists():
             config_dir.mkdir(parents=True)
         config_file = Path(str(config_dir) + "/.ywh2bt.cfg")
@@ -61,8 +65,10 @@ class GlobalConfig:
                 + ")"
             )
             count += 1
-        read_config_to_keep = input(
-            Fore.BLUE + "which ones to keep (eg 1 2 3, empty to keep all programs, None to keep any): " + Style.RESET_ALL
+        read_config_to_keep = read_input(
+            Fore.BLUE
+            + "which ones to keep (eg 1 2 3, empty to keep all programs, None to keep any): "
+            + Style.RESET_ALL
         )
 
         config_to_keep = []
@@ -70,7 +76,7 @@ class GlobalConfig:
             config_to_keep = [config for config in range(1, count)]
         elif read_config_to_keep.lower() == "none":
             self.configuration = {"yeswehack": {}, "bugtracker": {}}
-            return 
+            return
         else:
             read_config_to_keep = read_config_to_keep.split(" ")
         invalid_response = False
@@ -93,12 +99,12 @@ class GlobalConfig:
         counter = 1
         for ywh_cfg in self.configuration["yeswehack"]:
             if count in config_to_keep:
-                new_configuration["yeswehack"]["yeswehack_" + str(counter)] = self.configuration[
-                    "yeswehack"
-                ][ywh_cfg]
-                new_configuration["yeswehack"]["yeswehack_" + str(counter)]["bt"] = "bugtracker_" + str(
-                    counter
-                )
+                new_configuration["yeswehack"][
+                    "yeswehack_" + str(counter)
+                ] = self.configuration["yeswehack"][ywh_cfg]
+                new_configuration["yeswehack"]["yeswehack_" + str(counter)][
+                    "bt"
+                ] = "bugtracker_" + str(counter)
                 counter += 1
             count += 1
 
@@ -106,23 +112,37 @@ class GlobalConfig:
         counter = 1
         for bt_cfg in self.configuration["bugtracker"]:
             if count in config_to_keep:
-                new_configuration["bugtracker"]["bugtracker_" + str(counter)] = self.configuration[
-                    "bugtracker"
-                ][bt_cfg]
+                new_configuration["bugtracker"][
+                    "bugtracker_" + str(counter)
+                ] = self.configuration["bugtracker"][bt_cfg]
                 counter += 1
             count += 1
         self.configuration = new_configuration
 
     def configure(self):
-        print(Fore.BLUE + "Welcome in ywh2bt configuration tools")
-        print(Style.RESET_ALL)
+        print(
+            Fore.BLUE
+            + "Welcome in ywh2bt configuration tools"
+            + Style.RESET_ALL
+        )
+
+        if self.no_interactive:
+            print(
+                Fore.BLUE
+                + "["
+                + Fore.YELLOW
+                + "WARNING"
+                + Fore.BLUE
+                + "] You have choose non interactive mode ! All information you will write will be stored clearly visible."
+                + Style.RESET_ALL
+            )
         yeswehack = []
         bugtracker = []
         exit_config = False
         if self.configuration is not None:
             self._update_configuration()
             # exif config if we only want to delete a pgm
-            exit_configuration = input("Configure an other PGM [y/N] ")
+            exit_configuration = read_input("Configure an other PGM [y/N] ")
             if exit_configuration not in ["y", "Y"]:
                 exit_config = True
         else:
@@ -133,21 +153,25 @@ class GlobalConfig:
             config.configure()
             yeswehack.append(copy.copy(config.yeswehack))
             bugtracker.append(copy.copy(config.bugtracker))
-            exit_configuration = input("Configure an other PGM [y/N] ")
+            exit_configuration = read_input("Configure an other PGM [y/N] ")
             if exit_configuration not in ["y", "Y"]:
                 break
             # del config
         counter = len(self.configuration["yeswehack"]) + 1
 
         for bt_cfg in bugtracker:
-            self.configuration["bugtracker"]["bugtracker_" + str(counter)] = bt_cfg
+            self.configuration["bugtracker"][
+                "bugtracker_" + str(counter)
+            ] = bt_cfg
             counter += 1
         counter = len(self.configuration["yeswehack"]) + 1
         for ywh_cfg in yeswehack:
-            self.configuration["yeswehack"]["yeswehack_" + str(counter)] = ywh_cfg
-            self.configuration["yeswehack"]["yeswehack_" + str(counter)]["bt"] = "bugtracker_" + str(
-                counter
-            )
+            self.configuration["yeswehack"][
+                "yeswehack_" + str(counter)
+            ] = ywh_cfg
+            self.configuration["yeswehack"]["yeswehack_" + str(counter)][
+                "bt"
+            ] = "bugtracker_" + str(counter)
             counter += 1
         self.write()
 
@@ -167,7 +191,13 @@ class Config:
 
     defaults = {
         "ywh_url_api": "http://api.ywh.docker.local",
-        "supported_bugtracker": ["gitlab", "jira", "github"],
+        "supported_bugtracker": [
+            "gitlab",
+            "jira",
+            "github",
+            "tfs",
+            "azuredevops",
+        ],
     }
 
     def __init__(self, no_interactive=False, yeswehack=None, bugtracker=None):
@@ -186,9 +216,12 @@ class Config:
         return totp_code
 
     def get_bt_class(self):
-        module_name = "lib.ywh" + self.bugtracker["type"]
+        module_name = "ywh2bt.trackers.ywh" + self.bugtracker["type"]
         try:
-            class_ = getattr(sys.modules[module_name], "YWH" + self.bugtracker["type"].title())
+            class_ = getattr(
+                sys.modules[module_name],
+                "YWH" + self.bugtracker["type"].title(),
+            )
         except Exception as e:
             raise e
         return class_
@@ -210,7 +243,6 @@ class Config:
             + Style.RESET_ALL
         )
         self.ywh_config_secret()
-        print(self.bugtracker)
         class_ = self.get_bt_class()
         self.bugtracker_config_secret(class_)
 
@@ -227,32 +259,31 @@ class Config:
         self.bugtracker_test_project()
 
     def ywh_config_user(self):
-        self.yeswehack["login"] = input(Fore.BLUE + "YesWeHack login: " + Style.RESET_ALL)
-        self.yeswehack["api_url"] = input("API url [{0}]: ".format(self.defaults["ywh_url_api"]))
-        self.yeswehack["api_url"] = self.yeswehack["api_url"] or self.defaults["ywh_url_api"]
-        self.yeswehack["totp"] = input(Fore.BLUE + "Is TOTP Enabled : [y/N] " + Style.RESET_ALL)
+        self.yeswehack["login"] = read_input(
+            Fore.BLUE + " YesWeHack login: " + Fore.RESET
+        )
+        self.yeswehack["api_url"] = (
+            read_input("API url [{0}]: ".format(self.defaults["ywh_url_api"]))
+            or self.defaults["ywh_url_api"]
+        )
+
+        self.yeswehack["totp"] = read_input(
+            Fore.BLUE + "Is TOTP Enabled : [y/N] " + Style.RESET_ALL
+        )
         if self.yeswehack["totp"] in ["y", "Y"]:
             self.yeswehack["totp"] = True
         else:
             self.yeswehack["totp"] = False
         if self.no_interactive:
             self.ywh_config_secret()
-            # self.yeswehack["password"] = getpass.getpass(
-            #    prompt=Fore.BLUE + "Password: " + Style.RESET_ALL
-            # )
-            # if "totp" in self.yeswehack and self.yeswehack["totp"]:
-            #    self.yeswehack["totp_secret"] = getpass.getpass(
-            #        prompt=Fore.BLUE + "Totp secret: " + Style.RESET_ALL
-            #    )
-
-            # self.ywh_test_login_config()
-        # return self.yeswehack
 
     def ywh_config_secret(self):
-        self.yeswehack["password"] = getpass.getpass(prompt=Fore.BLUE + "Password: " + Style.RESET_ALL)
+        self.yeswehack["password"] = read_input(
+            Fore.BLUE + "Password: " + Style.RESET_ALL, secret=True
+        )
         if "totp" in self.yeswehack and self.yeswehack["totp"]:
-            self.yeswehack["totp_secret"] = getpass.getpass(
-                prompt=Fore.BLUE + "Totp secret: " + Style.RESET_ALL
+            self.yeswehack["totp_secret"] = read_input(
+                Fore.BLUE + "Totp secret: " + Style.RESET_ALL, secret=True
             )
 
         self.ywh_test_login_config()
@@ -262,7 +293,9 @@ class Config:
             print("Testing login: ", end="", flush=True)
         try:
             ywh = YesWeHack(
-                self.yeswehack["login"], self.yeswehack["password"], self.yeswehack["api_url"]
+                username=self.yeswehack["login"],
+                password=self.yeswehack["password"],
+                api_url=self.yeswehack["api_url"],
             )
             totp_code = self.get_totp_code()
             ywh.login(totp_code=totp_code)
@@ -272,49 +305,56 @@ class Config:
             else:
                 logging.info(
                     "Login ok with {login} on {url}".format(
-                        login=self.yeswehack["login"], url=self.yeswehack["api_url"]
+                        login=self.yeswehack["login"],
+                        url=self.yeswehack["api_url"],
                     )
                 )
         except TOTPLoginEnabled:
             if self.no_interactive:
-                print(Fore.RED + "KO (TOTP)")
+                print(Fore.RED + "KO (TOTP)" + Style.RESET_ALL)
                 print(Style.RESET_ALL)
                 self.yeswehack["totp"] = True
                 self.ywh_config_user()
         except BadCredentials:
             if self.no_interactive:
-                print(Fore.RED + "KO")
-                print(Style.RESET_ALL)
+                print(Fore.RED + "KO" + Style.RESET_ALL)
                 self.ywh_config_user()
             else:
                 logging.error(
                     "Login fail with {login} on {url} (BadCredentials)".format(
-                        login=self.yeswehack["login"], url=self.yeswehack["api_url"]
+                        login=self.yeswehack["login"],
+                        url=self.yeswehack["api_url"],
                     )
                 )
                 sys.exit(100)
         except InvalidResponse:
             if self.no_interactive:
-                print(Fore.RED + "KO")
-                print(Style.RESET_ALL)
+                print(Fore.RED + "KO" + Style.RESET_ALL)
                 self.ywh_config_user()
             else:
                 logging.error(
                     "Login fail with {login} on {url} (InvalidResponse)".format(
-                        login=self.yeswehack["login"], url=self.yeswehack["api_url"]
+                        login=self.yeswehack["login"],
+                        url=self.yeswehack["api_url"],
                     )
                 )
                 sys.exit(100)
         # return self.yeswehack
 
     def ywh_config_program_info(self):
-        self.yeswehack["program"] = input(Fore.BLUE + "Program: " + Style.RESET_ALL).lower()
+        self.yeswehack["program"] = read_input(
+            Fore.BLUE + "Program: " + Style.RESET_ALL
+        ).lower()
         if self.no_interactive:
             self.ywh_test_program_config()
         # return self.yeswehack
 
     def ywh_test_program_config(self):
-        ywh = YesWeHack(self.yeswehack["login"], self.yeswehack["password"], self.yeswehack["api_url"])
+        ywh = YesWeHack(
+            username=self.yeswehack["login"],
+            password=self.yeswehack["password"],
+            api_url=self.yeswehack["api_url"],
+        )
         totp_code = self.get_totp_code()
         ywh.login(totp_code=totp_code)
         if self.no_interactive:
@@ -355,8 +395,13 @@ class Config:
             print(bt_type.title() + ", ", end="")
         print(Style.RESET_ALL)
         while True:
-            self.bugtracker["type"] = input(Fore.BLUE + "Type: " + Style.RESET_ALL).lower()
-            if not self.bugtracker["type"] in self.defaults["supported_bugtracker"]:
+            self.bugtracker["type"] = read_input(
+                Fore.BLUE + "Type: " + Style.RESET_ALL
+            ).lower()
+            if (
+                not self.bugtracker["type"]
+                in self.defaults["supported_bugtracker"]
+            ):
                 print(Fore.RED + "Unsuported type")
             else:
                 break
@@ -384,35 +429,41 @@ class Config:
             )
         try:
             bt = class_(self.bugtracker)
+            print(bt)
             if self.no_interactive:
                 print(Fore.GREEN + "OK")
                 print(Style.RESET_ALL)
             else:
                 logging.info(
                     "Login ok on {type} ({url})".format(
-                        type=self.bugtracker["type"], url=self.bugtracker["url"]
+                        type=self.bugtracker["type"],
+                        url=self.bugtracker["url"],
                     )
                 )
-        except:
+        except Exception as e:
             if self.no_interactive:
                 print(Fore.RED + "KO")
                 print(Style.RESET_ALL)
             else:
                 logging.info(
-                    "Login fail on {type} ({url})".format(
-                        type=self.bugtracker["type"], url=self.bugtracker["url"]
+                    "Login fail on {type} ({url}) with error {error}".format(
+                        type=self.bugtracker["type"],
+                        url=self.bugtracker["url"],
+                        error=str(e),
                     )
                 )
+                raise e
                 sys.exit(-200)
 
             self.bugtracker_config_user()
         # return self.bugtracker
 
     def bugtracker_config_project(self):
-        self.bugtracker["project_id"] = input(Fore.BLUE + "Project id: " + Style.RESET_ALL)
+        self.bugtracker["project_id"] = read_input(
+            Fore.BLUE + "Project id/name: " + Style.RESET_ALL
+        )
         if self.no_interactive:
             self.bugtracker_test_project()
-        # return self.bugtracker
 
     def bugtracker_test_project(self):
         class_ = self.get_bt_class()
@@ -422,23 +473,23 @@ class Config:
         try:
             bt.get_project()
             if self.no_interactive:
-                print(Fore.GREEN + "OK")
-                print(Style.RESET_ALL)
+                print(Fore.GREEN + "OK" + Style.RESET_ALL)
             else:
                 logging.info(
                     "{project} ok on {url}".format(
-                        project=self.bugtracker["project_id"], url=self.bugtracker["url"]
+                        project=self.bugtracker["project_id"],
+                        url=self.bugtracker["url"],
                     )
                 )
         except:
             if self.no_interactive:
-                print(Fore.RED + "KO")
-                print(Style.RESET_ALL)
+                print(Fore.RED + "KO" + Style.RESET_ALL)
                 self.bugtracker_config_project()
             else:
                 logging.error(
                     "{project} ko on {url}".format(
-                        project=self.bugtracker["project_id"], url=self.bugtracker["url"]
+                        project=self.bugtracker["project_id"],
+                        url=self.bugtracker["url"],
                     )
                 )
                 sys.exit(-210)

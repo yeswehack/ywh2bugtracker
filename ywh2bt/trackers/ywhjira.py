@@ -2,10 +2,9 @@
 
 import jira
 import html2text
-import getpass
 from colorama import Fore, Style
-from lib.bugtracker import BugTracker
-
+from .bugtracker import BugTracker
+from ywh2bt.utils import read_input
 
 class YWHJira(BugTracker):
 
@@ -22,34 +21,51 @@ class YWHJira(BugTracker):
     """
 
     def __init__(self, config):
-        self.jira = jira.JIRA(config["url"], auth=(config["login"], config["password"]))
+        self.jira = jira.JIRA(
+            config["url"], auth=(config["login"], config["password"])
+        )
         try:
-            self.jira = jira.JIRA(config["url"], auth=(config["login"], config["password"]))
+            self.jira = jira.JIRA(
+                config["url"], auth=(config["login"], config["password"])
+            )
         except jira.exceptions.JIRAError:
             raise
+
+        self.issuetype = config.get("issuetype", "Task")
+
         if "project_id" in config.keys():
             self.project = config["project_id"]
 
     @staticmethod
     def configure(bugtracker):
-        bugtracker["url"] = input(Fore.BLUE + bugtracker["type"].title() + " url: " + Style.RESET_ALL)
-        bugtracker["login"] = input(Fore.BLUE + "Login: " + Style.RESET_ALL)
+        bugtracker["url"] = read_input(
+            Fore.BLUE + bugtracker["type"].title() + " url: " + Style.RESET_ALL
+        )
+        bugtracker["login"] = read_input(Fore.BLUE + "Login: " + Style.RESET_ALL)
+        bugtracker["issuetype"] = (
+            read_input(
+                Fore.BLUE + "Issue Type (default:  Task): " + Style.RESET_ALL
+            )
+            or "Task"
+        )
 
     @staticmethod
     def get_interactive_info(bt_cfg):
-        password = getpass.getpass(prompt=Fore.BLUE
-                + "Password for " 
-                + Fore.GREEN
-                + bt_cfg["login"]
-                + Fore.BLUE
-                + " on "
-                + Fore.GREEN
-                + bt_cfg["url"]
-                + Fore.BLUE
-                + ": "
-                + Style.RESET_ALL)
-        return {"password" : password}
-
+        password = read_input(
+            Fore.BLUE
+            + "Password for "
+            + Fore.GREEN
+            + bt_cfg["login"]
+            + Fore.BLUE
+            + " on "
+            + Fore.GREEN
+            + bt_cfg["url"]
+            + Fore.BLUE
+            + ": "
+            + Style.RESET_ALL,
+            secret=True
+        )
+        return {"password": password}
 
     def get_project(self):
         try:
@@ -75,13 +91,15 @@ class YWHJira(BugTracker):
                 remediation_link=report.bug_type.link,
                 description=html.handle(report.description_html),
             ),
-            "issuetype": {"name": "Tâche"},
+            "issuetype": {"name": self.issuetype},
         }
-        issue = self.jira.create_issue(issue_data)
+        issue = self.jira.create_issue(**issue_data)
         for attachment in report.attachments:
             attachment.get_data()
             self.jira.add_attachment(
-                issue=issue, filename=attachment.original_name, attachment=attachment.data
+                issue=issue,
+                filename=attachment.original_name,
+                attachment=attachment.data,
             )
         return issue
 

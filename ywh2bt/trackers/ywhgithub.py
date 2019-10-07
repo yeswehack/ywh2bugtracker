@@ -1,9 +1,9 @@
 # -*- encoding: utf-8 -*-
 
 import github
-import getpass
 from colorama import Fore, Style
-from lib.bugtracker import BugTracker
+from .bugtracker import BugTracker
+from ywh2bt.utils import read_input
 
 
 class YWHGithub(BugTracker):
@@ -24,14 +24,18 @@ class YWHGithub(BugTracker):
 
     @staticmethod
     def configure(bugtracker):
-        bugtracker["url"] = input(
-            Fore.BLUE
-            + bugtracker["type"].title()
-            + " url [{0}]:".format(YWHGithub.URL)
-            + Style.RESET_ALL
+        bugtracker["url"] = (
+            read_input(
+                Fore.BLUE
+                + bugtracker["type"].title()
+                + " url (default : '{}'):".format(YWHGithub.URL)
+                + Style.RESET_ALL
+            )
+            or YWHGithub.URL
         )
-        bugtracker["url"] = bugtracker["url"] or YWHGithub.URL
-        bugtracker["token"] = getpass.getpass(prompt=Fore.BLUE + "Token: " + Style.RESET_ALL)
+        bugtracker["token"] = read_input(
+            Fore.BLUE + "Token: " + Style.RESET_ALL, secret=True
+        )
         return bugtracker
 
     def get_project(self):

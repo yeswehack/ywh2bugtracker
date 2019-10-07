@@ -1,11 +1,11 @@
 # -*- encoding: utf-8 -*-
 
 import gitlab
-import getpass
 
 from colorama import Fore, Style
 
-from lib.bugtracker import BugTracker
+from .bugtracker import BugTracker
+from ywh2bt.utils import read_input
 
 
 class YWHGitlab(BugTracker):
@@ -28,7 +28,7 @@ class YWHGitlab(BugTracker):
 
     @staticmethod
     def configure(bugtracker):
-        bugtracker["url"] = input(
+        bugtracker["url"] = read_input(
             Fore.BLUE
             + bugtracker["type"].title()
             + " url [{0}]: ".format(YWHGitlab.URL)
@@ -38,18 +38,15 @@ class YWHGitlab(BugTracker):
 
     @staticmethod
     def get_interactive_info(bt_cfg):
-        token = getpass.getpass(
-            prompt=Fore.BLUE
+        token = read_input(
+            Fore.BLUE
             + "Token for "
-            #+ Fore.GREEN
-            #+ bt_cfg["login"]
-            #+ Fore.BLUE
-            #+ " on "
             + Fore.GREEN
             + bt_cfg["url"]
             + Fore.BLUE
             + ": "
-            + Style.RESET_ALL
+            + Style.RESET_ALL,
+            secret=True
         )
         return {"token": token}
 

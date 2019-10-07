@@ -8,8 +8,6 @@ if __name__ == "__main__":
             "gitlab",
             "jira",
             "github",
-            "tfs",
-            "azuredevops",
         ],
     }
     main()

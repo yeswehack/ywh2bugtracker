@@ -195,8 +195,6 @@ class Config:
             "gitlab",
             "jira",
             "github",
-            "tfs",
-            "azuredevops",
         ],
     }
 

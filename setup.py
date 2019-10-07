@@ -14,7 +14,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://yeswehack.com",
     packages=setuptools.find_packages(),
-    install_requires=["requests == 2.22.0", "python-gitlab", "pygithub", "jira", "colorama", "vsts-client", "pyotp", "pyyaml", "html2text"],
+    install_requires=["requests", "python-gitlab", "pygithub", "jira", "colorama", "pyotp", "pyyaml", "html2text"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

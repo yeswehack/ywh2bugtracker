@@ -11,14 +11,7 @@ pygithub = "*"
 jira = "*"
 html2text = "*"
 colorama = "*"
-pytotp = "*"
 pyotp = "*"
 
 [requires]
 python_version = "3.7"
-
-[dev-packages]
-neovim = "*"
-black = "*"
-bpython = "*"
-ipython = "*"

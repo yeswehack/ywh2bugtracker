@@ -7,6 +7,7 @@ from .bugtracker import BugTracker
 from ywh2bt.utils import read_input
 from ywh2bt.config import BugTrackerConfig
 
+
 class YWHJira(BugTracker):
 
     jira = None
@@ -29,12 +30,9 @@ class YWHJira(BugTracker):
         self.project = project
         self.issuetype = issuetype
         try:
-            self.jira = jira.JIRA(
-                self.url, auth=(self.login, self.password)
-            )
+            self.jira = jira.JIRA(self.url, auth=(self.login, self.password))
         except jira.exceptions.JIRAError:
             raise
-
 
     def get_project(self):
         try:
@@ -78,24 +76,39 @@ class YWHJira(BugTracker):
     def get_id(self, issue):
         return issue.key
 
+
 class YWHJiraConfig(BugTrackerConfig):
     bugtracker_type = "jira"
     client = YWHJira
-    def __init__(self, name, no_interactive=False, configure_mode=False, **config):
+
+    def __init__(
+        self, name, no_interactive=False, configure_mode=False, **config
+    ):
         self._bugtracker = None
         keys = []
         if config or not configure_mode:
-            keys += ['url', 'login', 'project']
+            keys += ["url", "login", "project"]
             if no_interactive:
-                keys.append('password')
-            super().__init__(name, keys, no_interactive=no_interactive, configure_mode=configure_mode, **config)
+                keys.append("password")
+            super().__init__(
+                name,
+                keys,
+                no_interactive=no_interactive,
+                configure_mode=configure_mode,
+                **config
+            )
             self._url = config["url"]
-            self._login = config['login']
-            self._password = config['password'] if no_interactive else ""
-            self._project = config['project'] # project_id
+            self._login = config["login"]
+            self._password = config["password"] if no_interactive else ""
+            self._project = config["project"]  # project_id
             self._issuetype = config.get("issuetype", "Task")
         else:
-            super().__init__(name, keys, no_interactive=no_interactive, configure_mode=configure_mode)
+            super().__init__(
+                name,
+                keys,
+                no_interactive=no_interactive,
+                configure_mode=configure_mode,
+            )
 
         if configure_mode:
             self.configure()
@@ -143,11 +156,17 @@ class YWHJiraConfig(BugTrackerConfig):
             + Fore.BLUE
             + ": "
             + Style.RESET_ALL,
-            secret=True
+            secret=True,
         )
 
     def _set_bugtracker(self):
-        self._get_bugtracker(self._url, self._login, self._password, self._project, issuetype=self._issuetype)
+        self._get_bugtracker(
+            self._url,
+            self._login,
+            self._password,
+            self._project,
+            issuetype=self._issuetype,
+        )
 
     def to_dict(self):
         component = {
@@ -155,10 +174,8 @@ class YWHJiraConfig(BugTrackerConfig):
             "login": self.login,
             "project": self.project,
             "type": self.type,
-            "issuetype": self.issuetype
+            "issuetype": self.issuetype,
         }
         if self.no_interactive:
             component["password"] = self.password
-        return {
-            self.name : component
-        }
+        return {self.name: component}

@@ -12,7 +12,7 @@ class YWHGithub(BugTracker):
     token = None
     bt = None
     project = None
-    URL ="https://github/api/v3"
+    URL = "https://github/api/v3"
 
     def __init__(self, project, token):
         # self.configuration = YWHGithubConfig(name, **config)
@@ -56,23 +56,31 @@ class YWHGithub(BugTracker):
         return issue.number
 
 
-
 class YWHGithubConfig(BugTrackerConfig):
     bugtracker_type = "github"
     client = YWHGithub
 
-    def __init__(self, name, no_interactive=False, configure_mode=False, **config):
+    def __init__(
+        self, name, no_interactive=False, configure_mode=False, **config
+    ):
         keys = []
         if config or not configure_mode:
-            keys += ['project']
+            keys += ["project"]
             if no_interactive:
-                keys.append('token')
-            super().__init__(name, keys, no_interactive=no_interactive, **config)
-            self._url = config.get('url', "https://github/api/v3")
-            self._token = config['token'] if no_interactive else ""
-            self._project = config['project']
+                keys.append("token")
+            super().__init__(
+                name, keys, no_interactive=no_interactive, **config
+            )
+            self._url = config.get("url", "https://github/api/v3")
+            self._token = config["token"] if no_interactive else ""
+            self._project = config["project"]
         else:
-            super().__init__(name, keys, no_interactive=no_interactive, configure_mode=configure_mode)
+            super().__init__(
+                name,
+                keys,
+                no_interactive=no_interactive,
+                configure_mode=configure_mode,
+            )
         if configure_mode:
             self.configure()
 
@@ -81,7 +89,6 @@ class YWHGithubConfig(BugTrackerConfig):
 
         if not self._bugtracker:
             self._set_bugtracker()
-
 
     @property
     def token(self):
@@ -110,21 +117,18 @@ class YWHGithubConfig(BugTrackerConfig):
             + Fore.BLUE
             + ": "
             + Style.RESET_ALL,
-            secret=True
+            secret=True,
         )
-
 
     def to_dict(self):
         component = {
             "url": self.url,
             "project": self.project,
-            "type": self.type
+            "type": self.type,
         }
         if self.no_interactive:
             component["token"] = self.token
-        return {
-            self.name : component
-        }
+        return {self.name: component}
 
     def _set_bugtracker(self):
         self._get_bugtracker(self._project, self._token)

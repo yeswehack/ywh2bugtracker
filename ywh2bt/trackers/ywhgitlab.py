@@ -8,6 +8,7 @@ from .bugtracker import BugTracker
 from ywh2bt.utils import read_input
 from ywh2bt.config import BugTrackerConfig
 
+
 class YWHGitlab(BugTracker):
 
     token = None
@@ -69,19 +70,32 @@ class YWHGitlabConfig(BugTrackerConfig):
     bugtracker_type = "gitlab"
     client = YWHGitlab
 
-    def __init__(self, name, no_interactive=False, configure_mode=False, **config):
+    def __init__(
+        self, name, no_interactive=False, configure_mode=False, **config
+    ):
         self._bugtracker = None
         keys = []
         if config or not configure_mode:
-            keys += ['url', 'project']
+            keys += ["url", "project"]
             if no_interactive:
                 keys.append("token")
-            super().__init__(name, keys, no_interactive=no_interactive, configure_mode=configure_mode, **config)
-            self._url = config['url']
-            self._token = config['token'] if no_interactive else ""
-            self._project = config['project']
+            super().__init__(
+                name,
+                keys,
+                no_interactive=no_interactive,
+                configure_mode=configure_mode,
+                **config
+            )
+            self._url = config["url"]
+            self._token = config["token"] if no_interactive else ""
+            self._project = config["project"]
         else:
-            super().__init__(name, keys, no_interactive=no_interactive, configure_mode=configure_mode)
+            super().__init__(
+                name,
+                keys,
+                no_interactive=no_interactive,
+                configure_mode=configure_mode,
+            )
         if configure_mode:
             self.configure()
         if not no_interactive:
@@ -94,13 +108,15 @@ class YWHGitlabConfig(BugTrackerConfig):
         return self._token
 
     def config_url(self):
-        self._url = read_input(
-            Fore.BLUE
-            + self.type.title()
-            + " url [{0}]: ".format(YWHGitlab.URL)
-            + Style.RESET_ALL
-        ) or YWHGitlab.URL
-
+        self._url = (
+            read_input(
+                Fore.BLUE
+                + self.type.title()
+                + " url [{0}]: ".format(YWHGitlab.URL)
+                + Style.RESET_ALL
+            )
+            or YWHGitlab.URL
+        )
 
     def config_params(self):
         pass
@@ -114,7 +130,7 @@ class YWHGitlabConfig(BugTrackerConfig):
             + Fore.BLUE
             + ": "
             + Style.RESET_ALL,
-            secret=True
+            secret=True,
         )
 
     def _set_bugtracker(self):
@@ -124,10 +140,8 @@ class YWHGitlabConfig(BugTrackerConfig):
         component = {
             "url": self.url,
             "project": self.project,
-            "type": self.type
+            "type": self.type,
         }
         if self.no_interactive:
             component["token"] = self.token
-        return {
-            self.name : component
-        }
+        return {self.name: component}

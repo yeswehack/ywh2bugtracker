@@ -19,6 +19,7 @@ from ywh2bt.trackers.bugtracker import BugTracker
 from ywh2bt import config
 from ywh2bt.logging import logger
 
+
 def check_bug(comments, comment):
     return any(
         report_comment.message_html is not None
@@ -36,14 +37,10 @@ def main():
         action="store_true",
         dest="configure",
         help="Create config file",
-        default=False
+        default=False,
     )
     parser.add_option(
-        "-f",
-        "--filename",
-        action="store",
-        dest="filename",
-        default=""
+        "-f", "--filename", action="store", dest="filename", default=""
     )
 
     parser.add_option(
@@ -55,12 +52,15 @@ def main():
         help="non interactive mode but store credencials on disk. You need to activate it on configure to store credencials",
     )
     (options, args) = parser.parse_args()
-    ywh_cfg = config.GlobalConfig(no_interactive=options.no_interactive, filename=options.filename, configure_mode=options.configure)
+    ywh_cfg = config.GlobalConfig(
+        no_interactive=options.no_interactive,
+        filename=options.filename,
+        configure_mode=options.configure,
+    )
 
     if not options.configure:
         run(ywh_cfg, options)
     deinit()
-
 
 
 def run(cfg, options):
@@ -72,7 +72,7 @@ def run(cfg, options):
 
             reports = cfg_ywh.ywh.get_reports(
                 cfg_pgm.name,
-                filters={"status": "accepted"}, # tracking_status
+                filters={"status": "accepted"},  #  tracking_status
             )
 
             for report in reports:
@@ -83,17 +83,21 @@ def run(cfg, options):
                 for cfg_bt in cfg_pgm.bugtrackers:
 
                     marker = BugTracker.ywh_comment_marker.format(
-                        url=cfg_bt.url,
-                        project_id=cfg_bt.project,
+                        url=cfg_bt.url, project_id=cfg_bt.project
                     )
 
                     if not check_bug(comments, marker):
 
                         # Post issue and comment
-                        logger.info(report.title + " Marker not found, posting issue")
+                        logger.info(
+                            report.title + " Marker not found, posting issue"
+                        )
 
                         issue = cfg_bt.bugtracker.post_issue(report)
-                        issue_meta = {"url": cfg_bt.bugtracker.get_url(issue), "id": cfg_bt.bugtracker.get_id(issue)}
+                        issue_meta = {
+                            "url": cfg_bt.bugtracker.get_url(issue),
+                            "id": cfg_bt.bugtracker.get_id(issue),
+                        }
 
                         comment = (
                             marker
@@ -110,5 +114,6 @@ def run(cfg, options):
                         report.post_comment(comment, True)
                     else:
                         logger.info(
-                            report.title + ": marker found, report already imported"
+                            report.title
+                            + ": marker found, report already imported"
                         )

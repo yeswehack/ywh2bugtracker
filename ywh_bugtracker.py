@@ -4,10 +4,6 @@ if __name__ == "__main__":
 
     defaults = {
         "ywh_url_api": "http://api.ywh.docker.local",
-        "supported_bugtracker": [
-            "gitlab",
-            "jira",
-            "github",
-        ],
+        "supported_bugtracker": ["gitlab", "jira", "github"],
     }
     main()

@@ -5,6 +5,7 @@ import imghdr
 import mimetypes
 from abc import abstractmethod
 
+
 class BugTracker:
 
     issue_name_template = "{report_local_id} : {report_title}"

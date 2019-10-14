@@ -5,6 +5,7 @@ import html2text
 from colorama import Fore, Style
 from .bugtracker import BugTracker
 from ywh2bt.utils import read_input
+from ywh2bt.config import BugTrackerConfig
 
 class YWHJira(BugTracker):
 
@@ -20,52 +21,20 @@ class YWHJira(BugTracker):
 {description}
     """
 
-    def __init__(self, config):
-        self.jira = jira.JIRA(
-            config["url"], auth=(config["login"], config["password"])
-        )
+    def __init__(self, url, login, password, project, issuetype="Task"):
+        # self.configuration = YWHJiraConfig(name, **config)
+        self.url = url
+        self.login = login
+        self.password = password
+        self.project = project
+        self.issuetype = issuetype
         try:
             self.jira = jira.JIRA(
-                config["url"], auth=(config["login"], config["password"])
+                self.url, auth=(self.login, self.password)
             )
         except jira.exceptions.JIRAError:
             raise
 
-        self.issuetype = config.get("issuetype", "Task")
-
-        if "project_id" in config.keys():
-            self.project = config["project_id"]
-
-    @staticmethod
-    def configure(bugtracker):
-        bugtracker["url"] = read_input(
-            Fore.BLUE + bugtracker["type"].title() + " url: " + Style.RESET_ALL
-        )
-        bugtracker["login"] = read_input(Fore.BLUE + "Login: " + Style.RESET_ALL)
-        bugtracker["issuetype"] = (
-            read_input(
-                Fore.BLUE + "Issue Type (default:  Task): " + Style.RESET_ALL
-            )
-            or "Task"
-        )
-
-    @staticmethod
-    def get_interactive_info(bt_cfg):
-        password = read_input(
-            Fore.BLUE
-            + "Password for "
-            + Fore.GREEN
-            + bt_cfg["login"]
-            + Fore.BLUE
-            + " on "
-            + Fore.GREEN
-            + bt_cfg["url"]
-            + Fore.BLUE
-            + ": "
-            + Style.RESET_ALL,
-            secret=True
-        )
-        return {"password": password}
 
     def get_project(self):
         try:
@@ -108,3 +77,88 @@ class YWHJira(BugTracker):
 
     def get_id(self, issue):
         return issue.key
+
+class YWHJiraConfig(BugTrackerConfig):
+    bugtracker_type = "jira"
+    client = YWHJira
+    def __init__(self, name, no_interactive=False, configure_mode=False, **config):
+        self._bugtracker = None
+        keys = []
+        if config or not configure_mode:
+            keys += ['url', 'login', 'project']
+            if no_interactive:
+                keys.append('password')
+            super().__init__(name, keys, no_interactive=no_interactive, configure_mode=configure_mode, **config)
+            self._url = config["url"]
+            self._login = config['login']
+            self._password = config['password'] if no_interactive else ""
+            self._project = config['project'] # project_id
+            self._issuetype = config.get("issuetype", "Task")
+        else:
+            super().__init__(name, keys, no_interactive=no_interactive, configure_mode=configure_mode)
+
+        if configure_mode:
+            self.configure()
+        if not no_interactive:
+            self.get_interactive_info()
+        if not self._bugtracker:
+            self._set_bugtracker()
+
+    @property
+    def login(self):
+        return self._login
+
+    @property
+    def password(self):
+        return self._password
+
+    @property
+    def issuetype(self):
+        return self._issuetype
+
+    def config_url(self):
+        self._url = read_input(
+            Fore.BLUE + self.type.title() + " url: " + Style.RESET_ALL
+        )
+
+    def config_params(self):
+        self._login = read_input(Fore.BLUE + "Login: " + Style.RESET_ALL)
+        self._issuetype = (
+            read_input(
+                Fore.BLUE + "Issue Type (default:  Task): " + Style.RESET_ALL
+            )
+            or "Task"
+        )
+
+    def config_secret(self):
+        self._password = read_input(
+            Fore.BLUE
+            + "Password for "
+            + Fore.GREEN
+            + self.login
+            + Fore.BLUE
+            + " on "
+            + Fore.GREEN
+            + self.url
+            + Fore.BLUE
+            + ": "
+            + Style.RESET_ALL,
+            secret=True
+        )
+
+    def _set_bugtracker(self):
+        self._get_bugtracker(self._url, self._login, self._password, self._project, issuetype=self._issuetype)
+
+    def to_dict(self):
+        component = {
+            "url": self.url,
+            "login": self.login,
+            "project": self.project,
+            "type": self.type,
+            "issuetype": self.issuetype
+        }
+        if self.no_interactive:
+            component["password"] = self.password
+        return {
+            self.name : component
+        }

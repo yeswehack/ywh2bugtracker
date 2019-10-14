@@ -6,49 +6,24 @@ from colorama import Fore, Style
 
 from .bugtracker import BugTracker
 from ywh2bt.utils import read_input
-
+from ywh2bt.config import BugTrackerConfig
 
 class YWHGitlab(BugTracker):
 
     token = None
     bt = None
     project = None
-    URL = "http://git.ywh.docker.local"
-    # URL = "https://gitlab.com"
+    URL = "http://gitlab.com"
 
-    def __init__(self, config):
-        self.URL = config["url"]
-        self.bt = gitlab.Gitlab(self.URL, private_token=config["token"])
+    def __init__(self, url, project, token):
+        self.url = url
+        self.project = project
+        self.token = token
+        self.bt = gitlab.Gitlab(self.url, private_token=self.token)
         try:
             self.bt.auth()
         except gitlab.exceptions.GitlabAuthenticationError:
             raise
-        if "project_id" in config.keys():
-            self.project = config["project_id"]
-
-    @staticmethod
-    def configure(bugtracker):
-        bugtracker["url"] = read_input(
-            Fore.BLUE
-            + bugtracker["type"].title()
-            + " url [{0}]: ".format(YWHGitlab.URL)
-            + Style.RESET_ALL
-        )
-        bugtracker["url"] = bugtracker["url"] or YWHGitlab.URL
-
-    @staticmethod
-    def get_interactive_info(bt_cfg):
-        token = read_input(
-            Fore.BLUE
-            + "Token for "
-            + Fore.GREEN
-            + bt_cfg["url"]
-            + Fore.BLUE
-            + ": "
-            + Style.RESET_ALL,
-            secret=True
-        )
-        return {"token": token}
 
     def get_project(self):
         try:
@@ -88,3 +63,71 @@ class YWHGitlab(BugTracker):
 
     def get_id(self, issue):
         return issue.id
+
+
+class YWHGitlabConfig(BugTrackerConfig):
+    bugtracker_type = "gitlab"
+    client = YWHGitlab
+
+    def __init__(self, name, no_interactive=False, configure_mode=False, **config):
+        self._bugtracker = None
+        keys = []
+        if config or not configure_mode:
+            keys += ['url', 'project']
+            if no_interactive:
+                keys.append("token")
+            super().__init__(name, keys, no_interactive=no_interactive, configure_mode=configure_mode, **config)
+            self._url = config['url']
+            self._token = config['token'] if no_interactive else ""
+            self._project = config['project']
+        else:
+            super().__init__(name, keys, no_interactive=no_interactive, configure_mode=configure_mode)
+        if configure_mode:
+            self.configure()
+        if not no_interactive:
+            self.get_interactive_info()
+        if not self._bugtracker:
+            self._set_bugtracker()
+
+    @property
+    def token(self):
+        return self._token
+
+    def config_url(self):
+        self._url = read_input(
+            Fore.BLUE
+            + self.type.title()
+            + " url [{0}]: ".format(YWHGitlab.URL)
+            + Style.RESET_ALL
+        ) or YWHGitlab.URL
+
+
+    def config_params(self):
+        pass
+
+    def config_secret(self):
+        self._token = read_input(
+            Fore.BLUE
+            + "Token for "
+            + Fore.GREEN
+            + self.url
+            + Fore.BLUE
+            + ": "
+            + Style.RESET_ALL,
+            secret=True
+        )
+
+    def _set_bugtracker(self):
+        self._get_bugtracker(self._url, self._project, self._token)
+
+    def to_dict(self):
+        component = {
+            "url": self.url,
+            "project": self.project,
+            "type": self.type
+        }
+        if self.no_interactive:
+            component["token"] = self.token
+        return {
+            self.name : component
+        }

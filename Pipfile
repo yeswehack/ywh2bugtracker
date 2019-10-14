@@ -12,6 +12,7 @@ jira = "*"
 html2text = "*"
 colorama = "*"
 pyotp = "*"
+coloredLogs = "*"
 
 [requires]
 python_version = "3.7"

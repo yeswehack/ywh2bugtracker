@@ -4,7 +4,6 @@
 import sys
 import os
 import yaml
-import logging
 import getpass
 from pathlib import Path
 from colorama import Fore, Style, init, deinit
@@ -18,6 +17,7 @@ from yeswehack.exceptions import (
 )
 from ywh2bt.trackers.bugtracker import BugTracker
 from ywh2bt import config
+from ywh2bt.logging import logger
 
 def check_bug(comments, comment):
     return any(
@@ -36,7 +36,16 @@ def main():
         action="store_true",
         dest="configure",
         help="Create config file",
+        default=False
     )
+    parser.add_option(
+        "-f",
+        "--filename",
+        action="store",
+        dest="filename",
+        default=""
+    )
+
     parser.add_option(
         "-n",
         "--no-interactive",
@@ -46,105 +55,60 @@ def main():
         help="non interactive mode but store credencials on disk. You need to activate it on configure to store credencials",
     )
     (options, args) = parser.parse_args()
-    ywh_cfg = config.GlobalConfig(options.no_interactive)
+    ywh_cfg = config.GlobalConfig(no_interactive=options.no_interactive, filename=options.filename, configure_mode=options.configure)
 
-    if options.configure:
-        ywh_cfg.configure()
-        deinit()
-    else:
-        cfg = ywh_cfg.load()
-        logging.basicConfig(
-            format="%(asctime)s %(message)s",
-            level=logging.INFO,
-            datefmt="%m/%d/%Y %H:%M:%S",
-        )
-        if cfg:
-            # if options.no_interactive:
-            run(cfg, options)
-            deinit()
-        else:
-            deinit()
-            sys.exit('No configuration detected or "-c" option missing')
+    if not options.configure:
+        run(ywh_cfg, options)
+    deinit()
+
 
 
 def run(cfg, options):
 
-    for cfg_program in cfg["yeswehack"]:
+    for cfg_ywh in cfg.yeswehack:
         # Iterate on every referenced program
-        logging.info("Get info for " + cfg_program)
-        cfg_bt_name = cfg["yeswehack"][cfg_program]["bt"]
-        pgm_export_config = config.Config(
-            yeswehack=cfg["yeswehack"][cfg_program],
-            bugtracker=cfg["bugtracker"][cfg_bt_name],
-        )
-        if not options.no_interactive:
-            pgm_export_config.get_interactive_info()
-        totp_code = pgm_export_config.get_totp_code()
-        try:
-            class_ = pgm_export_config.get_bt_class()
-        except Exception as e:
-            print("Can't load BugTracker class : " + str(e))
-            deinit()
-            sys.exit(220)
-        try:
-            bt = class_(cfg["bugtracker"][cfg_bt_name])
-        except Exception as e:
-            print("Configuration error on " + cfg_bt_name + " : " + str(e))
-            deinit()
-            sys.exit(220)
+        logger.info("Get info for " + cfg_ywh.name)
+        for cfg_pgm in cfg_ywh.programs:
 
-        try:
-            ywh = YesWeHack(
-                username=cfg["yeswehack"][cfg_program]["login"],
-                password=cfg["yeswehack"][cfg_program]["password"],
-                api_url=cfg["yeswehack"][cfg_program]["api_url"],
-                lazy=False,
-                totp_code=totp_code,
-            )
-        except Exception as e:
-            deinit()
-            sys.exit(
-                "Failed to login on YesWeHack for {program} : {error}".format(
-                    program=cfg_program, error=str(e)
-                )
+            reports = cfg_ywh.ywh.get_reports(
+                cfg_pgm.name,
+                filters={"status": "accepted"}, # tracking_status
             )
 
-        reports = ywh.get_reports(
-            cfg["yeswehack"][cfg_program]["program"],
-            filters={"status": "accepted"},
-        )
-        for report in reports:
-            report.get_comments()
-            logging.info("Cheking " + report.title)
+            for report in reports:
+                report.get_comments()
+                logger.info("Cheking " + report.title)
 
-            comments = report.get_comments()
-            marker = BugTracker.ywh_comment_marker.format(
-                url=cfg["bugtracker"][cfg_bt_name]["url"],
-                project_id=cfg["bugtracker"][cfg_bt_name]["project_id"],
-            )
+                comments = report.get_comments()
+                for cfg_bt in cfg_pgm.bugtrackers:
 
-            if not check_bug(comments, marker):
-
-                # Post issue and comment
-                logging.info(report.title + " Marker not found, posting issue")
-
-                issue = bt.post_issue(report)
-                issue_meta = {"url": bt.get_url(issue), "id": bt.get_id(issue)}
-
-                comment = (
-                    marker
-                    + "\n"
-                    + BugTracker.ywh_comment_template.format(
-                        type=cfg["bugtracker"][cfg_bt_name]["type"],
-                        issue_id=issue_meta["id"],
-                        bug_url=issue_meta["url"],
+                    marker = BugTracker.ywh_comment_marker.format(
+                        url=cfg_bt.url,
+                        project_id=cfg_bt.project,
                     )
-                )
 
-                logging.info(report.title + ": posting marker")
+                    if not check_bug(comments, marker):
 
-                report.post_comment(comment, True)
-            else:
-                logging.debug(
-                    report.title + ": marker found, report already imported"
-                )
+                        # Post issue and comment
+                        logger.info(report.title + " Marker not found, posting issue")
+
+                        issue = cfg_bt.bugtracker.post_issue(report)
+                        issue_meta = {"url": cfg_bt.bugtracker.get_url(issue), "id": cfg_bt.bugtracker.get_id(issue)}
+
+                        comment = (
+                            marker
+                            + "\n"
+                            + BugTracker.ywh_comment_template.format(
+                                type=cfg_bt.type,
+                                issue_id=issue_meta["id"],
+                                bug_url=issue_meta["url"],
+                            )
+                        )
+
+                        logger.info(report.title + ": posting marker")
+
+                        report.post_comment(comment, True)
+                    else:
+                        logger.info(
+                            report.title + ": marker found, report already imported"
+                        )

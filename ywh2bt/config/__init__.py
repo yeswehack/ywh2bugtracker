@@ -336,10 +336,15 @@ class YesWeHackConfig(ConfigObject):
     def config_user(self):
         self._api_url = (
             read_input(
-                Fore.BLUE + ("API url [{0}]: ".format(self.default_url_api))
-                or self.default_url_api
+                "{}API url [{}{}{}]: {}".format(
+                    Fore.BLUE,
+                    Fore.GREEN,
+                    self.default_url_api,
+                    Fore.BLUE,
+                    Style.RESET_ALL,
+                )
             )
-            + Style.RESET_ALL
+            or self.default_url_api
         )
         self._login = read_input(Fore.BLUE + "YesWeHack login: " + Fore.RESET)
         totp = read_input(
@@ -415,15 +420,14 @@ class YesWeHackConfig(ConfigObject):
 
     def get_interactive_info(self):
         logger.info(
-            Fore.BLUE
-            + "Getting account info for "
+            "Getting account info for "
             + Fore.GREEN
             + ", ".join([pgm.name for pgm in self.programs])
-            + Fore.BLUE
+            + Style.RESET_ALL
             + " on "
             + Fore.GREEN
             + self.api_url
-            + Fore.BLUE
+            + Style.RESET_ALL
             + " via "
             + Fore.GREEN
             + self.login
@@ -441,7 +445,7 @@ class YesWeHackConfig(ConfigObject):
                 pgm = self.ywh.get_program(program)
                 if self.no_interactive:
                     logger.info(
-                        "{} status".format(self._project)
+                        "{} status: ".format(self._project)
                         + Fore.GREEN
                         + "OK"
                         + Style.RESET_ALL
@@ -449,18 +453,23 @@ class YesWeHackConfig(ConfigObject):
                 else:
                     logger.info(
                         "Program {program} ok with {login} on  {url}".format(
-                            program=self.program,
+                            program=pgm.name,
                             login=self.login,
                             url=self.api_url,
                         )
                     )
             except ObjectNotFound:
                 if self.no_interactive:
-                    logger.info(Fore.RED + "KO" + Style.RESET_ALL)
+                    logger.info(
+                        "{} status: ".format(self._project)
+                        + Fore.RED
+                        + "KO"
+                        + Style.RESET_ALL
+                    )
                 else:
                     logger.error(
                         "Program {program} fail with {login} on  {url}".format(
-                            program=self.program,
+                            program=pgm.name,
                             login=self.login,
                             url=self.api_url,
                         )
@@ -657,17 +666,11 @@ class GlobalConfig(ConfigObject):
         return configuration
 
     def configure(self):
-        logger.info(
-            Fore.BLUE
-            + "Welcome in ywh2bt configuration tools"
-            + Style.RESET_ALL
-        )
+        logger.info("Welcome in ywh2bt configuration tools")
 
         if self.no_interactive:
             logger.warning(
-                Fore.YELLOW
-                + "You have choose non interactive mode ! All information you will write will be stored clearly visible."
-                + Style.RESET_ALL
+                "You have choose non interactive mode ! All information you will write will be stored clearly visible."
             )
         exit_config = False
         if self.yeswehack or self.bugtrackers:
@@ -741,8 +744,7 @@ class GlobalConfig(ConfigObject):
                 exit_config = True
             elif exit_configuration in ["y", "Y"]:
                 logger.info(
-                    Fore.BLUE
-                    + "Supported engine are: "
+                    "Supported engine are: "
                     + Fore.YELLOW
                     + ", ".join(
                         [
@@ -757,9 +759,7 @@ class GlobalConfig(ConfigObject):
                         Fore.BLUE + "Type: " + Style.RESET_ALL
                     ).lower()
                     if not tracker_type in self.default_supported_bugtrackers:
-                        logger.error(
-                            Fore.RED + "Unsuported type" + Style.RESET_ALL
-                        )
+                        logger.error("Unsuported type")
                     else:
                         break
                 self.bugtrackers.append(
@@ -820,12 +820,48 @@ class GlobalConfig(ConfigObject):
                             config_to_keep.append(int(config))
                     except:
                         invalid_response = True
+
                 if invalid_response:
                     self._update_configuration()
                 # Replace current config with the item we keep
+                if len(config_to_keep) < len(cfg_program.bugtrackers):
+                    delete_bugtrackers = []
+
+                    while True:
+                        user_input = read_input(
+                            Fore.BLUE
+                            + "You Want to delete other bugtrackers ? "
+                            + Fore.YELLOW
+                            + "(if not, they are just unset for this program, otherwise, this operation could break you're configuration file)"
+                            + Fore.BLUE
+                            + " [y/N] :"
+                            + Style.RESET_ALL
+                        )
+                        if user_input in ["n", "N", ""]:
+                            break
+                        elif user_input in ["y", "Y"]:
+                            delete_bugtrackers = [
+                                cfg_program.bugtrackers[i - 1]
+                                for i in range(
+                                    1, len(cfg_program.bugtrackers) + 1
+                                )
+                                if i not in config_to_keep
+                            ]
+                            break
+                    for del_bg in delete_bugtrackers:
+                        try:
+                            self.bugtrackers.remove(del_bg)
+                        except:
+                            logger.warning(
+                                "You can't delete unexisting BugTracker ({})".format(
+                                    del_bg.name
+                                )
+                            )
                 cfg_program.bugtrackers = [
                     cfg_program.bugtrackers[i - 1] for i in config_to_keep
                 ]
+                for i in config_to_keep:
+                    Fore.BLUE + "Which ones to add for this program ('1,2,3') -  empty to pass: " + Style.RESET_ALL
                 exit_config = False
                 bts = [
                     bt
@@ -836,7 +872,9 @@ class GlobalConfig(ConfigObject):
                     for count, bt in enumerate(bts):
                         logger.info("{}/ {}".format(count + 1, bt.name))
                     bt_idx = read_input(
-                        "Which ones to add for this program ('1,2,3') -  empty to pass: "
+                        Fore.BLUE
+                        + "Which ones to add for this program ('1,2,3') -  empty to pass: "
+                        + Style.RESET_ALL
                     )
                     if bt_idx:
                         try:

@@ -72,14 +72,14 @@ def run(cfg, options):
 
             reports = cfg_ywh.ywh.get_reports(
                 cfg_pgm.name,
-                filters={"status": "accepted"},  #  tracking_status
+                filters={"filter[status][]": "accepted"},  #  tracking_status
+                lazy=True,
             )
 
             for report in reports:
-                report.get_comments()
-                logger.info("Cheking " + report.title)
+                logger.info("Checking " + report.title)
+                comments = report.get_comments(lazy=True)
 
-                comments = report.get_comments()
                 for cfg_bt in cfg_pgm.bugtrackers:
 
                     marker = BugTracker.ywh_comment_marker.format(
@@ -87,7 +87,6 @@ def run(cfg, options):
                     )
 
                     if not check_bug(comments, marker):
-
                         # Post issue and comment
                         logger.info(
                             report.title + " Marker not found, posting issue"

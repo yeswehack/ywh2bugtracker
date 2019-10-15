@@ -23,7 +23,6 @@ class YWHJira(BugTracker):
     """
 
     def __init__(self, url, login, password, project, issuetype="Task"):
-        # self.configuration = YWHJiraConfig(name, **config)
         self.url = url
         self.login = login
         self.password = password

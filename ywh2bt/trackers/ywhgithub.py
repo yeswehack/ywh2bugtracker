@@ -15,7 +15,7 @@ class YWHGithub(BugTracker):
     URL = "https://github/api/v3"
 
     def __init__(self, project, token):
-        # self.configuration = YWHGithubConfig(name, **config)
+
         self.project = project
         self.token = token
         self.bt = github.Github(self.token)
@@ -64,6 +64,8 @@ class YWHGithubConfig(BugTrackerConfig):
         self, name, no_interactive=False, configure_mode=False, **config
     ):
         keys = []
+        self._bugtracker = None
+
         if config or not configure_mode:
             keys += ["project"]
             if no_interactive:
@@ -99,7 +101,7 @@ class YWHGithubConfig(BugTrackerConfig):
             read_input(
                 Fore.BLUE
                 + self.type.title()
-                + " url (default : '{}'):".format(YWHGithub.URL)
+                + " url (default : '{}'): ".format(YWHGithub.URL)
                 + Style.RESET_ALL
             )
             or YWHGithub.URL

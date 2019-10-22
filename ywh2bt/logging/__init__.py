@@ -2,7 +2,6 @@ import logging
 import coloredlogs
 import os
 
-
 def _setup_logger(level="INFO"):
     logger = logging.getLogger(__name__)
     fmt = "[%(levelname)s] %(asctime)s %(message)s"

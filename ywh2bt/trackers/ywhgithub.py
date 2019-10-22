@@ -7,6 +7,9 @@ from ywh2bt.utils import read_input
 from ywh2bt.config import BugTrackerConfig
 
 
+__all__ = ["YWHGithub", "YWHGithubConfig"]
+
+
 class YWHGithub(BugTracker):
 
     token = None

@@ -20,6 +20,15 @@ from ywh2bt.utils import get_all_subclasses
 from ywh2bt.exceptions import BugTrackerNotFound, MultipleBugTrackerMacth
 
 
+__all__ = [
+    "ConfigObject",
+    "BugTrackerConfig",
+    "YesWeHackConfig",
+    "ProgramConfig",
+    "GlobalConfig"
+]
+
+
 class ConfigObject(object):
     def __init__(self, keys, type_name, **config):
         self.validate(keys, type_name, config)

@@ -6,6 +6,9 @@ import mimetypes
 from abc import abstractmethod
 
 
+__all__ = ["BugTracker"]
+
+
 class BugTracker:
 
     issue_name_template = "{report_local_id} : {report_title}"

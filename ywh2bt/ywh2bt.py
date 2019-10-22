@@ -19,6 +19,7 @@ from ywh2bt.trackers.bugtracker import BugTracker
 from ywh2bt import config
 from ywh2bt.logging import logger
 
+__all__ = ["main"]
 
 def check_bug(comments, comment):
     return any(

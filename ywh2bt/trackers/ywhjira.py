@@ -8,6 +8,9 @@ from ywh2bt.utils import read_input
 from ywh2bt.config import BugTrackerConfig
 
 
+__all__ = ["YWHJira", "YWHJiraConfig"]
+
+
 class YWHJira(BugTracker):
 
     jira = None

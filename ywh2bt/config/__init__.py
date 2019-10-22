@@ -133,14 +133,15 @@ class BugTrackerConfig(ConfigObject):
     def bugtracker(self):
         return self._bugtracker
 
-    def configure(self):
+    def configure(self, test=True):
         self.config_url()
         self.config_project()
         self.config_params()
         if self.no_interactive:
             self.config_secret()
             self._set_bugtracker()
-            self.test_project()
+            if test:
+                self.test_project()
 
     def verify(self):
         self.test_project()
@@ -194,7 +195,7 @@ class BugTrackerConfig(ConfigObject):
                         self.project, Fore.RED, Style.RESET_ALL
                     )
                 )
-                self.configure()
+                self.configure(test=False)
             else:
                 logger.error(
                     "{project} ko on {url}".format(
@@ -575,7 +576,7 @@ class ProgramConfig(ConfigObject):
                     + "Select a bugtracker :{} \n\t{}\n".format(
                         Style.RESET_ALL,
                         "\n\t".join(
-
+                            bg_list
                         ),
                     )
                 )
@@ -607,7 +608,6 @@ class GlobalConfig(ConfigObject):
         self.default_supported_bugtrackers = [
             tr.bugtracker_type for tr in get_all_subclasses(BugTrackerConfig)
         ] or []
-        print(self.default_supported_bugtrackers)
         self.no_interactive = no_interactive
         self.configure_mode = configure_mode
         self.filename = (

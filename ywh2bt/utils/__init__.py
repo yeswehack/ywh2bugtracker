@@ -1,6 +1,6 @@
 import getpass
 
-__all__ = ["read_input", "get_all_subclasses"]
+__all__ = ["read_input", "get_all_subclasses"]
 
 def read_input(text, secret=False):
     print(text, flush=True, end="")

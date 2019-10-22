@@ -560,18 +560,22 @@ class ProgramConfig(ConfigObject):
         self._name = read_input(Fore.BLUE + "Program name: " + Style.RESET_ALL)
         exit_config = False
         while not exit_config:
+            bg_list = [
+                "{}/ {}".format(i + 1, j)
+                for i, j in enumerate(all_bt_names)
+                if not j
+                in [bt.name for bt in self.bugtrackers]
+            ]
+            if not bg_list:
+                exit_config = True
+                continue
             try:
                 bt_idx = read_input(
                     Fore.BLUE
                     + "Select a bugtracker :{} \n\t{}\n".format(
                         Style.RESET_ALL,
                         "\n\t".join(
-                            [
-                                "{}/ {}".format(i + 1, j)
-                                for i, j in enumerate(all_bt_names)
-                                if not j
-                                in [bt.name for bt in self.bugtrackers]
-                            ]
+
                         ),
                     )
                 )
@@ -603,6 +607,7 @@ class GlobalConfig(ConfigObject):
         self.default_supported_bugtrackers = [
             tr.bugtracker_type for tr in get_all_subclasses(BugTrackerConfig)
         ] or []
+        print(self.default_supported_bugtrackers)
         self.no_interactive = no_interactive
         self.configure_mode = configure_mode
         self.filename = (

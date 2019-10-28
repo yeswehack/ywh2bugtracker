@@ -55,10 +55,6 @@ class BugTracker:
     def get_project(self):
         pass
 
-    # @abstractmethod
-    # def get_issue(self, report):
-    #     pass
-
     @abstractmethod
     def post_issue(self, report):
         pass

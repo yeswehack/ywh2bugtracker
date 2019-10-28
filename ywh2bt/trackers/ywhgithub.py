@@ -1,9 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 import github
-from colorama import Fore, Style
 from .bugtracker import BugTracker
-from ywh2bt.utils import read_input
 from ywh2bt.config import BugTrackerConfig
 
 
@@ -11,12 +9,6 @@ __all__ = ["YWHGithub", "YWHGithubConfig"]
 
 
 class YWHGithub(BugTracker):
-
-    token = None
-    bt = None
-    project = None
-    URL = "https://github/api/v3"
-
     def __init__(self, project, token):
 
         self.project = project
@@ -63,77 +55,9 @@ class YWHGithubConfig(BugTrackerConfig):
     bugtracker_type = "github"
     client = YWHGithub
 
-    def __init__(
-        self, name, no_interactive=False, configure_mode=False, **config
-    ):
-        keys = []
-        self._bugtracker = None
-
-        if config or not configure_mode:
-            keys += ["project"]
-            if no_interactive:
-                keys.append("token")
-            super().__init__(
-                name, keys, no_interactive=no_interactive, **config
-            )
-            self._url = config.get("url", "https://github/api/v3")
-            self._token = config["token"] if no_interactive else ""
-            self._project = config["project"]
-        else:
-            super().__init__(
-                name,
-                keys,
-                no_interactive=no_interactive,
-                configure_mode=configure_mode,
-            )
-        if configure_mode:
-            self.configure()
-
-        if not no_interactive and not configure_mode:
-            self.get_interactive_info()
-
-        if not self._bugtracker:
-            self._set_bugtracker()
-
-    @property
-    def token(self):
-        return self._token
-
-    def config_url(self):
-        self._url = (
-            read_input(
-                Fore.BLUE
-                + self.type.title()
-                + " url (default : '{}'): ".format(YWHGithub.URL)
-                + Style.RESET_ALL
-            )
-            or YWHGithub.URL
-        )
-
-    def config_params(self):
-        pass
-
-    def config_secret(self):
-        self._token = read_input(
-            Fore.BLUE
-            + "Token for "
-            + Fore.GREEN
-            + self.url
-            + Fore.BLUE
-            + ": "
-            + Style.RESET_ALL,
-            secret=True,
-        )
-
-    def to_dict(self):
-        component = {
-            "url": self.url,
-            "project": self.project,
-            "type": self.type,
-        }
-        if self.no_interactive:
-            component["token"] = self.token
-        return {self.name: component}
+    mandatory_keys = ["project"]
+    secret_keys = ["token"]
+    optional_keys = dict(url="https://github/api/v3")
 
     def _set_bugtracker(self):
         self._get_bugtracker(self._project, self._token)

@@ -21,6 +21,7 @@ from ywh2bt.logging import logger
 
 __all__ = ["main"]
 
+
 def check_bug(comments, comment):
     return any(
         report_comment.message_html is not None
@@ -50,9 +51,11 @@ def main():
         action="store_true",
         dest="no_interactive",
         default=False,
-        help="non interactive mode but store credencials on disk. You need to activate it on configure to store credencials",
+        help="non interactive mode. Store credencials on disk. You need to activate it on configure to store credencials",
     )
+
     (options, args) = parser.parse_args()
+
     ywh_cfg = config.GlobalConfig(
         no_interactive=options.no_interactive,
         filename=options.filename,

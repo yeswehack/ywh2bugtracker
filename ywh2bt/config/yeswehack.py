@@ -17,7 +17,9 @@ __all__ = ["YesWeHackConfig", "ProgramConfig"]
 
 class YesWeHackConfig(ConfigObject):
 
-    default_url_api = "https://api.yeswehack.com"
+    default_url_api = "https://apps.yeswehack.com"
+    known_headers = ["X-YesWeHack-Apps"]
+
 
     def __init__(
         self,
@@ -67,7 +69,6 @@ class YesWeHackConfig(ConfigObject):
                 self._password = (
                     config["password"] if self.no_interactive else ""
                 )
-            print(self.to_dict())
 
             self._ywh = YesWeHack(
                 username=self._login,
@@ -80,8 +81,6 @@ class YesWeHackConfig(ConfigObject):
             )
         if configure_mode:
             self.configure(bugtrackers)
-
-
 
     def _config_programs(self, bugtrackers, config, configure_mode=False):
         pgms = []
@@ -167,8 +166,6 @@ class YesWeHackConfig(ConfigObject):
             ) in ["n", "N", ""]:
                 exit_config = True
 
-        # ProgramConfig while
-
     def verify(self):
         self.test_login_config()
         self.test_program_config()
@@ -199,10 +196,8 @@ class YesWeHackConfig(ConfigObject):
                 self.config_oauth()
                 break
             elif inpt in ['', 'n', 'N']:
-                self.oauth_mode = False
+                self._oauth_mode = False
                 break
-
-
 
         if self.no_interactive:
             self.config_secret()
@@ -210,6 +205,26 @@ class YesWeHackConfig(ConfigObject):
     def config_oauth(self):
         self._oauth_args['client_id'] = read_input(Fore.BLUE + "Client id: " + Style.RESET_ALL)
         self._oauth_args['redirect_uri'] = read_input(Fore.BLUE + "Redirect URI: " + Style.RESET_ALL)
+
+    def _config_header(self):
+        logger.info('Yeswehack Apps Headers configuration')
+        for know_header in self.known_headers:
+            header = read_input(Fore.BLUE + "Value for {}: ".format(Fore.GREEN + know_header + Fore.BLUE) + Fore.RESET, secret=True)
+            if header:
+                self.apps_headers[know_header] = header
+        inpt = ''
+        exit_config = False
+        while not exit_config:
+            while True:
+                inpt = read_input(Fore.BLUE + "Append an other Application Header ? [y/N]: " + Fore.RESET)
+                if inpt in ['y', 'Y']:
+                    apps_header_name = read_input(Fore.BLUE + 'Header Name: '+ Fore.RESET)
+                    apps_header_value = read_input(Fore.BLUE + 'Header Value: '+ Fore.RESET)
+                    self.apps_headers[apps_header_name] = apps_header_value
+                    break
+                if inpt in ['', 'n', 'N']:
+                    exit_config = True
+                    break
 
     def config_secret(self):
         self._password = read_input(
@@ -221,28 +236,21 @@ class YesWeHackConfig(ConfigObject):
             + Style.RESET_ALL,
             secret=True,
         )
-        inpt = ''
-        exit_config = False
-        while not exit_config:
-            while True:
-                inpt = read_input(Fore.BLUE + "Append Application Header ? [y/N]: " + Fore.RESET)
-                if inpt in ['y', 'Y']:
-                    apps_header_name = read_input(Fore.BLUE + 'Header Name: '+ Fore.RESET)
-                    apps_header_value = read_input(Fore.BLUE + 'Header Value: '+ Fore.RESET)
-                    self.apps_headers[apps_header_name] = apps_header_value
-                    break
-                if inpt in ['', 'n', 'N']:
-                    exit_config = True
-                    break
-
         if self.oauth_mode:
             self._oauth_args['client_secret'] = read_input(Fore.BLUE + "Client Secret: " + Style.RESET_ALL, secret=True)
         if self.totp:
             self._totp_secret = read_input(
                 Fore.BLUE + "Totp secret: " + Style.RESET_ALL, secret=True
             )
+        self._config_header()
+
         self._ywh = YesWeHack(
-            username=self.login, password=self.password, api_url=self.api_url, oauth_mode=self.oauth_mode, oauth_args=self.oauth_args, apps_headers=self.apps_headers
+            username=self._login,
+            password=self._password,
+            api_url=self._api_url,
+            oauth_mode=self._oauth_mode,
+            oauth_args=self._oauth_args,
+            apps_headers=self.apps_headers,
         )
         self.test_login_config()
 

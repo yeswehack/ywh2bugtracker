@@ -123,9 +123,12 @@ class GlobalConfig(ConfigObject):
                 Fore.BLUE + "Configure new element ? [y/N]: " + Style.RESET_ALL
             )
             if configure_new_elem in ["y", "Y"]:
-                self.configure_new_packages()
-                self.configure_new_bugtrackers()
-                self.configure_new_yeswehack()
+                try:
+                    self.configure_new_packages()
+                    self.configure_new_bugtrackers()
+                    self.configure_new_yeswehack()
+                except Exception as e:
+                    logger.error(str(e))
             elif configure_new_elem in ["n", "N", ""]:
                 exit_config = True
         self._update_configuration()

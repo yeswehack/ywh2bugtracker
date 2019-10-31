@@ -64,7 +64,7 @@ class BugTrackerConfig(ConfigObject):
         if configure_mode:
             self.configure()
 
-        if not no_interactive and not configure_mode:
+        if not no_interactive:
             self.get_interactive_info()
 
         if not self._bugtracker:
@@ -181,17 +181,17 @@ class BugTrackerConfig(ConfigObject):
 
     def read_mandatory(self):
         for key in self.mandatory_keys:
-            setattr(self, '_' + key, read_input(Fore.BLUE + "{} : ".format(key.title()) + Style.RESET_ALL))
+            setattr(self, '_' + key, read_input(Fore.BLUE + "{}: ".format(key.title()) + Style.RESET_ALL))
 
     def read_optional(self):
         for key, default in self.optional_keys.items():
-            setattr(self, '_' + key, read_input(Fore.GREEN + self.type.title() + Fore.BLUE + " {} [default='{}']: ".format(key.title(), default) + Style.RESET_ALL))
+            setattr(self, '_' + key, read_input(Fore.GREEN + self.type.title() + Fore.BLUE + " {} [default='{}']: ".format(key.title(), default) + Style.RESET_ALL) or default)
 
     def read_secret(self):
         for key in self.secret_keys:
-            setattr(self, '_' + key, read_input(Fore.BLUE + "{}:".format("{}".format(key.title()) +
+            setattr(self, '_' + key, read_input(Fore.BLUE + "{}: ".format("{}".format(key.title()) +
             (" for {}".format(Fore.GREEN + self.login + Fore.BLUE) if hasattr(self, 'login') else "") +
-            (" on {}".format(Fore. GREEN + self.url + Fore.BLUE) if hasattr(self, 'url') else "" )) + Style.RESET_ALL), secret=True)
+            (" on {}".format(Fore. GREEN + self.url + Fore.BLUE) if hasattr(self, 'url') else "" )) + Style.RESET_ALL, secret=True))
 
     def test_project(self):
         if self.no_interactive:

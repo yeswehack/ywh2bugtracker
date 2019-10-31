@@ -76,47 +76,34 @@ def run(cfg, options):
 
             reports = cfg_ywh.ywh.get_reports(
                 cfg_pgm.name,
-                filters={"filter[status][]": "accepted"},  #  tracking_status
+                filters={"filter[trackingStatus][]": "AFI"},
                 lazy=True,
             )
-
             for report in reports:
                 logger.info("Checking " + report.title)
                 comments = report.get_comments(lazy=True)
 
                 for cfg_bt in cfg_pgm.bugtrackers:
+                    issue = cfg_bt.bugtracker.post_issue(report)
+                    issue_meta = {
+                        "url": cfg_bt.bugtracker.get_url(issue),
+                        "id": cfg_bt.bugtracker.get_id(issue),
+                    }
 
                     marker = BugTracker.ywh_comment_marker.format(
                         url=cfg_bt.url, project_id=cfg_bt.project
                     )
 
-                    if not check_bug(comments, marker):
-                        # Post issue and comment
-                        logger.info(
-                            report.title + " Marker not found, posting issue"
+                    comment = (
+                        marker
+                        + "\n"
+                        + BugTracker.ywh_comment_template.format(
+                            type=cfg_bt.type,
+                            issue_id=issue_meta["id"],
+                            bug_url=issue_meta["url"],
                         )
-
-                        issue = cfg_bt.bugtracker.post_issue(report)
-                        issue_meta = {
-                            "url": cfg_bt.bugtracker.get_url(issue),
-                            "id": cfg_bt.bugtracker.get_id(issue),
-                        }
-
-                        comment = (
-                            marker
-                            + "\n"
-                            + BugTracker.ywh_comment_template.format(
-                                type=cfg_bt.type,
-                                issue_id=issue_meta["id"],
-                                bug_url=issue_meta["url"],
-                            )
-                        )
-
-                        logger.info(report.title + ": posting marker")
-
-                        report.post_comment(comment, True)
-                    else:
-                        logger.info(
-                            report.title
-                            + ": marker found, report already imported"
-                        )
+                    )
+                    resp = report.put_tracking_status("T", cfg_bt.name, issue_meta['url'], tracker_id=issue_meta["id"], message=comment)
+                    logger.info(
+                            report.title + " posted to " + cfg_bt.name + " and status updated"
+                    )

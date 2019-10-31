@@ -32,6 +32,9 @@ class YesWeHackConfig(ConfigObject):
         self.configure_mode = configure_mode
         self.no_interactive = no_interactive
         self._programs = []
+        self._oauth_args = {}
+        self._apps_headers = {}
+        # self._header = {}
         self._password = ""
         self._totp_secret = ""
         if config or not configure_mode:
@@ -42,6 +45,7 @@ class YesWeHackConfig(ConfigObject):
                 if self._totp:
                     keys.append("totp_secret")
             super().__init__(keys, "YesWeHack", **config)
+            # self._header = config.get('header', {})
             self._login = config["login"]
             self._api_url = config.get("api_url", self.default_url_api)
             self._totp_secret = (
@@ -49,7 +53,9 @@ class YesWeHackConfig(ConfigObject):
                 if self.no_interactive and self._totp
                 else ""
             )
-
+            self._oauth_mode = "oauth_args" in config
+            self._oauth_args = config.get('oauth_args', {})
+            self._apps_headers = config.get('apps_headers', {})
             self._totp = config.get("totp", False)
             self._programs = self._config_programs(
                 bugtrackers, config["programs"]
@@ -61,15 +67,21 @@ class YesWeHackConfig(ConfigObject):
                 self._password = (
                     config["password"] if self.no_interactive else ""
                 )
+            print(self.to_dict())
 
             self._ywh = YesWeHack(
                 username=self._login,
                 password=self._password,
                 api_url=self._api_url,
+                oauth_mode=self._oauth_mode,
+                oauth_args=self._oauth_args,
+                apps_headers=self.apps_headers,
                 lazy=False,
             )
         if configure_mode:
             self.configure(bugtrackers)
+
+
 
     def _config_programs(self, bugtrackers, config, configure_mode=False):
         pgms = []
@@ -83,6 +95,18 @@ class YesWeHackConfig(ConfigObject):
                 )
             )
         return pgms
+
+    @property
+    def apps_headers(self):
+        return self._apps_headers
+
+    @property
+    def oauth_args(self):
+        return self._oauth_args
+
+    @property
+    def oauth_mode(self):
+        return self._oauth_mode
 
     @property
     def name(self):
@@ -168,8 +192,24 @@ class YesWeHackConfig(ConfigObject):
         )
         self._totp = True if totp in ["y", "Y"] else False
 
+        while True:
+            inpt = read_input(Fore.BLUE + "OAuth2 Authentication ? [y/N]: " + Fore.RESET)
+            if inpt in ['y', 'Y']:
+                self._oauth_mode = True
+                self.config_oauth()
+                break
+            elif inpt in ['', 'n', 'N']:
+                self.oauth_mode = False
+                break
+
+
+
         if self.no_interactive:
             self.config_secret()
+
+    def config_oauth(self):
+        self._oauth_args['client_id'] = read_input(Fore.BLUE + "Client id: " + Style.RESET_ALL)
+        self._oauth_args['redirect_uri'] = read_input(Fore.BLUE + "Redirect URI: " + Style.RESET_ALL)
 
     def config_secret(self):
         self._password = read_input(
@@ -181,12 +221,28 @@ class YesWeHackConfig(ConfigObject):
             + Style.RESET_ALL,
             secret=True,
         )
+        inpt = ''
+        exit_config = False
+        while not exit_config:
+            while True:
+                inpt = read_input(Fore.BLUE + "Append Application Header ? [y/N]: " + Fore.RESET)
+                if inpt in ['y', 'Y']:
+                    apps_header_name = read_input(Fore.BLUE + 'Header Name: '+ Fore.RESET)
+                    apps_header_value = read_input(Fore.BLUE + 'Header Value: '+ Fore.RESET)
+                    self.apps_headers[apps_header_name] = apps_header_value
+                    break
+                if inpt in ['', 'n', 'N']:
+                    exit_config = True
+                    break
+
+        if self.oauth_mode:
+            self._oauth_args['client_secret'] = read_input(Fore.BLUE + "Client Secret: " + Style.RESET_ALL, secret=True)
         if self.totp:
             self._totp_secret = read_input(
                 Fore.BLUE + "Totp secret: " + Style.RESET_ALL, secret=True
             )
         self._ywh = YesWeHack(
-            username=self.login, password=self.password, api_url=self.api_url
+            username=self.login, password=self.password, api_url=self.api_url, oauth_mode=self.oauth_mode, oauth_args=self.oauth_args, apps_headers=self.apps_headers
         )
         self.test_login_config()
 
@@ -295,14 +351,18 @@ class YesWeHackConfig(ConfigObject):
 
     def to_dict(self):
         pgms = [pgm.to_dict() for pgm in self.programs]
-        # for pgm in self.programs:
-        #     pgms = {**pgms, **pgm.to_dict()}
+
         component = {
             "api_url": self.api_url,
             "login": self.login,
             "totp": self.totp,
             "programs": pgms,
         }
+
+        if self.oauth_mode:
+            component['oauth_args'] = self.oauth_args
+        if self.apps_headers:
+            component["apps_headers"] = self.apps_headers
         if self.no_interactive:
             component["password"] = self.password
             if self.totp:

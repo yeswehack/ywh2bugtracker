@@ -189,7 +189,7 @@ class BugTrackerConfig(ConfigObject):
 
     def read_secret(self):
         for key in self.secret_keys:
-            setattr(self, '_' + key, read_input(Fore.BLUE + "{}:".format("{}" +
+            setattr(self, '_' + key, read_input(Fore.BLUE + "{}:".format("{}".format(key.title()) +
             (" for {}".format(Fore.GREEN + self.login + Fore.BLUE) if hasattr(self, 'login') else "") +
             (" on {}".format(Fore. GREEN + self.url + Fore.BLUE) if hasattr(self, 'url') else "" )) + Style.RESET_ALL), secret=True)
 

@@ -39,6 +39,9 @@ class YesWeHackConfig(ConfigObject):
         # self._header = {}
         self._password = ""
         self._totp_secret = ""
+
+        self.check_secret_keys(no_interactive,  ["totp_secret", "password"], config)
+
         if config or not configure_mode:
             self._totp = config.get("totp", False)
             keys = ["login", "programs"]
@@ -318,6 +321,12 @@ class YesWeHackConfig(ConfigObject):
     def test_program_config(self):
         totp_code = self.get_totp_code()
         self.ywh.login(totp_code=totp_code)
+        managed_programs = set(self.ywh.managed_programs())
+        pgms_names = [pgm.name for pgm in self.programs]
+        diffs =set(pgms_names).difference(managed_programs)
+        if diffs:
+            logger.error("Program-s {} are not manageable for {} yeswehack user".format("".join(diffs), self.login))
+            sys.exit(110)
         if self.no_interactive:
             logger.info("Testing program")
         for program in self.programs:
@@ -386,8 +395,8 @@ class ProgramConfig(ConfigObject):
     ):  # name, bugtrackers={}):
         self.bugtrackers = []
         if config or not configure_mode:
-            super().__init__(["name", "bugtrackers_name"], "Program", **config)
-            self._name = config["name"]
+            super().__init__(["slug", "bugtrackers_name"], "Program", **config)
+            self._slug = config["slug"]
             self._validate_and_set_bugtrackers(
                 config["bugtrackers_name"], bugtrackers
             )
@@ -406,7 +415,7 @@ class ProgramConfig(ConfigObject):
         if not self.bugtrackers:
             logger.critical(
                 "Bugtrackers type set in progams config part for {} does'nt exist in bugtrackers global configuration part".format(
-                    self.name
+                    self.slug
                 )
             )
             sys.exit(120)
@@ -418,12 +427,12 @@ class ProgramConfig(ConfigObject):
             )
 
     @property
-    def name(self):
-        return self._name
+    def slug(self):
+        return self._slug
 
     def configure(self, bugtrackers):
         all_bt_names = [bt.name for bt in bugtrackers]
-        self._name = read_input(Fore.BLUE + "Program name: " + Style.RESET_ALL)
+        self._slug = read_input(Fore.BLUE + "Program slug: " + Style.RESET_ALL)
         exit_config = False
         while not exit_config:
             bg_list = [
@@ -453,7 +462,7 @@ class ProgramConfig(ConfigObject):
 
     def to_dict(self):
         return {
-            "name": self.name,
+            "slug": self.slug,
             "bugtrackers_name": [
                 bgtracker.name for bgtracker in self.bugtrackers
             ],

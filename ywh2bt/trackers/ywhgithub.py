@@ -58,6 +58,7 @@ class YWHGithubConfig(BugTrackerConfig):
     mandatory_keys = ["project"]
     secret_keys = ["token"]
     optional_keys = dict(url="https://github/api/v3")
+    _description = dict(project="path/to/project")
 
     def _set_bugtracker(self):
         self._get_bugtracker(self._project, self._token)

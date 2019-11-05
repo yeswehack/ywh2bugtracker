@@ -67,6 +67,12 @@ yeswehack:
       - bugtracker_3
       name: myproject
     totp: false
+    apps_headers:
+      X-YesWeHack-Apps: ywh_app_header
+    oauth_args:
+      client_id: apps_client_id
+      client_secret: apps_client_secrect
+      redirect_uri: apps_redirect_uri
 packages:
 - modules:
   - ywhmyissuelogger
@@ -117,7 +123,7 @@ Jira:
 - mandatory keys:
     * url: url to your jira installation
     * login: user login to set the issue, the user must have sufficient right to push the issue on jira project.
-    * project: project name which have the issue on it.
+    * project: project slug which have the issue on it.
 - optional keys:
     * issuetype (default 'Task'): type of the issue, by default we consider 'Task', but it could have an other name (depend of jira language installation).
 - secret keys:
@@ -159,6 +165,12 @@ yeswehack:
     api_url: https://api.yeswehack.com
     login: myotherlogintoyeswehack@yeswehack.com
     password: otherpassword_login
+    apps_headers:
+      X-YesWeHack-Apps: ywh_app_header
+    oauth_args:
+      client_id: apps_client_id
+      client_secret: apps_client_secrect
+      redirect_uri: apps_redirect_uri
     programs:
     - bugtrackers_name:
       - bugtracker_1
@@ -173,15 +185,22 @@ yeswehack:
 
 YesWeHack Object:
 - mandatory keys
+  * apps_headers: headers to update reports in YesWeHack program.
   * api_url: url to YesWeHack api
   * login: my user Login
   * totp: if totp is enable on for my user.
   * totp_secret: needed in configuration file only if totp is True and in no interactive mode.
   * programs (list of item):
     * bugtrackers_name: bugtrackers name define in ["Setup bugtracker System" section](#Setup-bugtracker-System).
-    * name: program name
+    * name: program name    
+  * oauth_args: (object)
+    * client_id: client_id for the app
+    * client_secret: client_id for the app (in no interactive mode)
+    * redirect_uri : redirect_uri for the app
+
 - secret keys:
   * password: my user password
+
 
 ### Append Extra BugTracker class
 
@@ -304,6 +323,7 @@ class MyOwnConfig(BugTrackerConfig):
     mandatory_keys = ["url", "project", "assigned_to"]
     secret_keys = ["token"]
     optional_keys = dict(issuetype="Task")
+    _description = dict(issuetype="valid issue name in MyOwnConfig system")
 
     def _set_bugtracker(self):
         self._get_bugtracker(
@@ -323,16 +343,23 @@ A BugTracker client class need to implement 4 methods:
 - ```def get_id(self, issue):```: return issue id
 
 
-A BugTrackerConfig class need to have 5 class attributes:
+A BugTrackerConfig class nedd to have 2 class attributes:
 - ```bugtracker_type```: name of the bugtracker for selection in configuration mode
 - ```client```: client class
+
+and optionnaly have 4 other:
 - ```mandatory_keys```: List of str needed in configuration file
 - ```secret_keys```: List of str, corresponding of all keys must be secret, but are clearly store in configure file in no interactive mode
 - ```optional_keys```: dictionary wich each pairs of (key, value) correspond to (optional_key, default_value).
+- ```_description```: dictionary which associate a description of an existing keys define un one of :
+    - ```mandatory_keys```
+    - ```secret_keys```
+    - ```optional_keys```
 
-And one method :
-- ```def _set_bugtracker(self)```: call to _get_bugtracker method of BugTrackerConfig with your client class __init__ input.
+And need one method :
+- ```def _set_bugtracker(self)```: call to ```_get_bugtracker``` method of BugTrackerConfig with your client class ```__init__``` input.
 
+NB: a ```project``` key must be present in ```mandatory_keys```, ```optional_keys``` or ```secret_keys```!
 
 Each key in mandatory, optional or secret key is convert as protected attribute with get property access.
 

@@ -30,14 +30,28 @@ class ConfigObject(object):
             )
             sys.exit(120)
 
-
+    @classmethod
+    def check_secret_keys(cls, no_interactive, secret_keys, config):
+        secrect_in_config = []
+        for s in secret_keys:
+            if s in config:
+                secrect_in_config.append(s)
+        if secrect_in_config and not no_interactive:
+            logger.warning("{} secrets key-s in configuration but non interactive is not actif ".format(", ".join(secrect_in_config)))
 class BugTrackerConfig(ConfigObject):
 
     bugtracker_type = "abstract"
+    _description = dict()
+    mandatory_keys = []
+    secret_keys = []
+    optional_keys = dict()
+
 
     def __new__(
         cls, name, no_interactive=False, configure_mode=False, **config
     ):
+        secrect_in_config = []
+        cls.check_secret_keys(no_interactive, cls.secret_keys, config)
         cls._set_properties()
         inst = super().__new__(cls)
         return inst
@@ -52,6 +66,9 @@ class BugTrackerConfig(ConfigObject):
             if no_interactive:
                 keys += self.secret_keys
         type_ = config.get("type", self.bugtracker_type)
+        if not 'project' in [*self.mandatory_keys, *self.secret_keys, *self.optional_keys_list()]:
+            logger.critical("'project' key not present in mandatory_keys, secret_keys or optional_keys for {} class".format(self.__class__))
+            sys.exit(210)
         super().__init__(keys, "{} BugTracker".format(type_.title()), **config)
         self._name = name
         self._type = type_
@@ -181,17 +198,26 @@ class BugTrackerConfig(ConfigObject):
 
     def read_mandatory(self):
         for key in self.mandatory_keys:
-            setattr(self, '_' + key, read_input(Fore.BLUE + "{}: ".format(key.title()) + Style.RESET_ALL))
+            desc = ""
+            if key in self._description:
+                desc += Fore.GREEN + f" - ({self._desc[key]})" + Fore.RESET
+            setattr(self, '_' + key, read_input(Fore.BLUE + "{}{}: ".format(key.title(), desc) + Style.RESET_ALL))
 
     def read_optional(self):
         for key, default in self.optional_keys.items():
-            setattr(self, '_' + key, read_input(Fore.GREEN + self.type.title() + Fore.BLUE + " {} [default='{}']: ".format(key.title(), default) + Style.RESET_ALL) or default)
+            desc = ""
+            if key in self._description:
+                desc += Fore.GREEN + f" - ({self._desc[key]})" + Fore.RESET
+            setattr(self, '_' + key, read_input(Fore.GREEN + self.type.title() + Fore.BLUE + " {} [default='{}']{}: ".format(key.title(), default, desc) + Style.RESET_ALL) or default)
 
     def read_secret(self):
         for key in self.secret_keys:
-            setattr(self, '_' + key, read_input(Fore.BLUE + "{}: ".format("{}".format(key.title()) +
+            desc = ""
+            if key in self._description:
+                desc += Fore.GREEN + f" - ({self._desc[key]})" + Fore.RESET
+            setattr(self, '_' + key, read_input(Fore.BLUE + "{}{}: ".format("{}".format(key.title()) +
             (" for {}".format(Fore.GREEN + self.login + Fore.BLUE) if hasattr(self, 'login') else "") +
-            (" on {}".format(Fore. GREEN + self.url + Fore.BLUE) if hasattr(self, 'url') else "" )) + Style.RESET_ALL, secret=True))
+            (" on {}".format(Fore. GREEN + self.url + Fore.BLUE) if hasattr(self, 'url') else "" ), desc) + Style.RESET_ALL, secret=True))
 
     def test_project(self):
         if self.no_interactive:

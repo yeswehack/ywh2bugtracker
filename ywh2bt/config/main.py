@@ -273,7 +273,7 @@ class GlobalConfig(ConfigObject):
                         str(count + 1)
                         + "/ "
                         + Fore.GREEN
-                        + cfg_program.name
+                        + cfg_program.slug
                         + Style.RESET_ALL
                         + " tracked on "
                         + Fore.GREEN

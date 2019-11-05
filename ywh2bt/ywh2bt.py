@@ -75,7 +75,7 @@ def run(cfg, options):
         for cfg_pgm in cfg_ywh.programs:
 
             reports = cfg_ywh.ywh.get_reports(
-                cfg_pgm.name,
+                cfg_pgm.slug,
                 filters={"filter[trackingStatus][]": "AFI"},
                 lazy=True,
             )
@@ -89,6 +89,10 @@ def run(cfg, options):
                         "url": cfg_bt.bugtracker.get_url(issue),
                         "id": cfg_bt.bugtracker.get_id(issue),
                     }
+
+                    logger.info(
+                            report.title + " posted to " + cfg_bt.name
+                    )
 
                     marker = BugTracker.ywh_comment_marker.format(
                         url=cfg_bt.url, project_id=cfg_bt.project
@@ -104,6 +108,13 @@ def run(cfg, options):
                         )
                     )
                     resp = report.put_tracking_status("T", cfg_bt.name, issue_meta['url'], tracker_id=issue_meta["id"], message=comment)
-                    logger.info(
-                            report.title + " posted to " + cfg_bt.name + " and status updated"
-                    )
+
+                    try:
+                        resp_json = resp.json()
+                    except:
+                        logger.error("Response from YesWeHack not JSON")
+                    else:
+                        if 'error' in resp_json:
+                            logger.error("Status Update Error : {}".format(resp_json.get('error_description', resp.text)))
+                        else:
+                            logger.info("Status updated.")

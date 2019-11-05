@@ -1,7 +1,7 @@
 import setuptools
 import ywh2bt
 
-with open("ywh2bt/README.md", "r") as fh:
+with open("README.md", "r") as fh:
     long_description = fh.read()
 print(setuptools.find_packages())
 #

@@ -38,6 +38,7 @@ class ConfigObject(object):
                 secrect_in_config.append(s)
         if secrect_in_config and not no_interactive:
             logger.warning("{} secrets key-s in configuration but non interactive is not actif ".format(", ".join(secrect_in_config)))
+
 class BugTrackerConfig(ConfigObject):
 
     bugtracker_type = "abstract"
@@ -184,6 +185,8 @@ class BugTrackerConfig(ConfigObject):
         self.read_optional()
         if self.no_interactive:
             self.read_secret()
+        self.user_config()
+        if self.no_interactive:
             self._set_bugtracker()
             if test:
                 self.test_project()
@@ -194,6 +197,9 @@ class BugTrackerConfig(ConfigObject):
 
     @abstractmethod
     def _set_bugtracker(self):
+        pass
+
+    def user_config(self):
         pass
 
     def read_mandatory(self):

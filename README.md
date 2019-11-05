@@ -1,4 +1,9 @@
-# Installation
+# What is that ?
+
+ywh2bugtracker allows you to integrate your bug tracking system(s) with yeswehak platform. It automatically creates issues in your bug tracking system for all your program's report with tracking status "Ask for integration", and add to the concerned reports the link to the issue in your bugtracker . Currently github, jira and gitlab are supported, and you can add your own bug tracker by following instructions below.
+
+
+# Installation
 
 installation is available from pip for windows, linux, mac OS.
 
@@ -36,19 +41,24 @@ Example of typical configuration file:
 
 ```yaml
 bugtrackers:
-  bugtracker_1:
+  jira:
     issuetype: Task
     login: user
     password: password_user
     project: myprojectonjira
     type: jira
     url: http://myjira.com
-  bugtracker_2:
+  github:
     project: path/to/myprojectongithub
     token: myaccesstoken
     type: github
     url: https://github/api/v3
-  bugtracker_3:
+  gitlab:
+    project: path/to/myproject
+    token: mygitlabtoken
+    type: gitlab
+    url: gitlab_valid_url
+  myissuelogger:
     project: myprojectonmyissuelogger
     assigned_to: user_name_to_assign_issue
     login: user_login
@@ -62,10 +72,11 @@ yeswehack:
     password: password_login
     programs:
     - bugtrackers_name:
-      - bugtracker_1
-      - bugtracker_2
-      - bugtracker_3
-      name: myproject
+      - gitlab
+      - github
+      - jira
+      - myissuelogger
+      slug: myproject
     totp: false
     apps_headers:
       X-YesWeHack-Apps: ywh_app_header
@@ -94,19 +105,19 @@ each attribute can be mandatory, optional (github url for example), or secret (a
 
 ```yaml
 bugtrackers:
-  bugtracker_1:
+  jira:
     issuetype: Task
     login: user
     password: password_user
     project: projectname
     type: jira
     url: http://myjira.com
-  bugtracker_2:
+  github:
     project: path/to/my/project/on/github
     token: myaccesstoken
     type: github
     url: https://github/api/v3
-  bugtracker_3:
+  gitlab:
     project: path/to/my/project/on/mygitlab
     token: myaccesstoken
     type: gitlab
@@ -160,7 +171,7 @@ yeswehack:
     programs:
     - bugtrackers_name:
       - bugtracker_3
-      name: myproject
+      slug: myproject
   yeswehack_2:
     api_url: https://api.yeswehack.com
     login: myotherlogintoyeswehack@yeswehack.com
@@ -175,10 +186,10 @@ yeswehack:
     - bugtrackers_name:
       - bugtracker_1
       - bugtracker_3
-      name: myproject_api
+      slug: myproject_api
     - bugtrackers_name:
       - bugtracker_2
-      name: anotherproject
+      slug: anotherproject
     totp: True
     totp_secret: mytopt
 ```
@@ -192,7 +203,7 @@ YesWeHack Object:
   * totp_secret: needed in configuration file only if totp is True and in no interactive mode.
   * programs (list of item):
     * bugtrackers_name: bugtrackers name define in ["Setup bugtracker System" section](#Setup-bugtracker-System).
-    * name: program name    
+    * slug: program slug
   * oauth_args: (object)
     * client_id: client_id for the app
     * client_secret: client_id for the app (in no interactive mode)

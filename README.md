@@ -1,6 +1,6 @@
 # What is that ?
 
-ywh2bugtracker allows you to integrate your bug tracking system(s) with yeswehak platform. It automatically creates issues in your bug tracking system for all your program's report with tracking status "Ask for integration", and add to the concerned reports the link to the issue in your bugtracker . Currently github, jira and gitlab are supported, and you can add your own bug tracker by following instructions below.
+ywh2bugtracker allows you to integrate your bug tracking system(s) with yeswehack platform. It automatically creates issues in your bug tracking system for all your program's report with tracking status "Ask for integration", and add to the concerned reports the link to the issue in your bugtracker . Currently github, jira and gitlab are supported, and you can add your own bug tracker by following instructions [below](#Create-Your-Config-Manager-Object).
 
 
 # Installation
@@ -33,9 +33,10 @@ Options:
 
 A ywh2bt configuration file is a yaml describing each element and interaction between them.
 
-This file have 2 interests :
+This file have 3 goals :
 - Setup bugtracker system (Bugtracker-s issue-s client-s and YesWeHack-s Client-s).
-- Append Extra bugtrackers class to this system.
+- Define configuration for the necessary interactions with Yeswehack APIs 
+- Append Extra bugtrackers class to this system if needed
 
 Example of typical configuration file:
 
@@ -92,13 +93,13 @@ packages:
 ```
 
 On this configuration file, we define three bugtrackers :
-- Two first ('jira' and 'github'), are proposed and maintained by YesWeHack.
-- Last one ('myissuelogger'), is a third system, develop as third party, and not managed by ywh2bt. In `packages` part one python module is include and supervise the configuration of this bugtrackers. You can see more information about create your own config object and include it in [this section](#Create-Your-Config-Manager-Object).
+- The first three items ('jira', 'gitlab' and 'github'), are proposed and maintained by YesWeHack.
+- The last one ('myissuelogger'), is an example of use of a third party development handling another bug tracking system, not supported by ywh2bt. The  `packages` section defines python module to include for management of abug trackers and the parameters of this module. You can see more information about create your own config object and include it in [this section](#Create-Your-Config-Manager-Object).
 
 
-### Setup bugtracker System
+### Setup bugtracker System
 
-In this section we explain the "bugtrackers" part, and how to configure each type of bugtrackers maintained by YesWeHack.
+In this section we explain the "bugtrackers" part, and how to configure each type of bugtrackers supported by YesWeHack.
 
 As you can see on the example below, we proposed three type of bugtrackers by default. Each of them have some attribute,
 each attribute can be mandatory, optional (github url for example), or secret (an access token).
@@ -124,7 +125,7 @@ bugtrackers:
     url: http://local.gitlab.com/
 ```
 
-#### Bugtrackers Object
+#### Bugtrackers Object
 
 Each of the bugtrackers have a silent mandatory attribute named type and corresping to the bugtracker type (i.e. type=jira for jira bugtracker), and an identifiant name, set automatically in configuration mode (bugtracker_number).
 
@@ -157,7 +158,7 @@ Github:
     * token: user token to push the issue on github. the user and the token need to have sufficient rights to push the issue on the project.
 
 
-#### YesWeHack Object
+#### YesWeHack Object
 
 YesWeHack configuration part define one or more yeswehack object:
 
@@ -198,12 +199,12 @@ YesWeHack Object:
 - mandatory keys
   * apps_headers: headers to update reports in YesWeHack program.
   * api_url: url to YesWeHack api
-  * login: my user Login
+  * login: my user Login . **NB : This user must have program consumer role on the program** 
   * totp: if totp is enable on for my user.
   * totp_secret: needed in configuration file only if totp is True and in no interactive mode.
   * programs (list of item):
-    * bugtrackers_name: bugtrackers name define in ["Setup bugtracker System" section](#Setup-bugtracker-System).
-    * slug: program slug
+    * bugtrackers_name: bugtrackers names defined in ["Setup bugtracker System" section](#Setup-bugtracker-System).
+    * slug: program slug (found in th url of your program)
   * oauth_args: (object)
     * client_id: client_id for the app
     * client_secret: client_id for the app (in no interactive mode)
@@ -213,9 +214,9 @@ YesWeHack Object:
   * password: my user password
 
 
-### Append Extra BugTracker class
+## Append Extra BugTracker class
 
-To Allow you to add your own bugtracker with an easy way, we have define a packages part in the configuration file.
+To Allow you to add your own bugtracker an easy way, we have defined a packages section in the configuration file.
 You just have to create a python package-s/module-s with your bugtracker python class define in it/them.
 
 ```yaml
@@ -237,7 +238,7 @@ A package is an item defining 3 elements:
 - package: name of the package, it can be empty if you just have python module-s.
 - path: path to python package/module.
 
-#### Create Your Config Manager in Python
+## Create Your Config Manager in Python
 
 Our System detect all subclasses of ywh2bt.config.BugTrackerConfig abstract class, and append each of them as supported element in our global configuration manager.
 

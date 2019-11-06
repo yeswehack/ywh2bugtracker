@@ -13,6 +13,6 @@ html2text = "*"
 colorama = "*"
 pyotp = "*"
 coloredLogs = "*"
-
+yeswehack = "*"
 [requires]
 python_version = "3.7"

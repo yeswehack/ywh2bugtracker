@@ -3,7 +3,6 @@ import ywh2bt
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
-print(setuptools.find_packages())
 #
 setuptools.setup(
     name="ywh2bt",
@@ -25,6 +24,7 @@ setuptools.setup(
         "pyyaml",
         "html2text",
         "coloredLogs",
+        "yeswehack"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

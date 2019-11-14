@@ -15,7 +15,7 @@ class YWHJira(BugTracker):
     """
 
     description_template = """
-    || {local_id} : {title} || ||
+    || Title || {local_id} : {title} ||
     | Bug Type | [{bug_type__name}]({bug_type__link}) &#8594; [Remediation]({bug_type__remediation_link}) |
     | Scope | {scope} |
     | Severity | {cvss__criticity}, score {cvss__score:.1f}, vector {cvss__vector}|

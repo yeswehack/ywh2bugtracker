@@ -4,7 +4,7 @@ import base64
 import imghdr
 import mimetypes
 from abc import abstractmethod
-
+import html2text
 
 __all__ = ["BugTracker"]
 
@@ -28,17 +28,21 @@ class BugTracker:
         "Imported to the bugtracker : {url} on project : {project_id}."
     )
     ywh_comment_template = "Tracked to [{type} #{issue_id}]({bug_url})"
-    description_template = """
-|  bug type  |    Description   |       Remediation         |
-| ---------- | ---------------- | ------------------------- |
-| {bug_type__category__name} | {bug_type__description}| [link]({bug_type__link})|
 
-|    scope    |  vulnerable part  |  CVSS |
-| ----------- | ----------------- | ----- |
-| {scope} | {vulnerable_part} | {cvss__score} |
+
+    description_template = """
+| {local_id} : {title} ||
+| Bug Type | [{bug_type__name}]({bug_type__link}) &#8594; [Remediation]({bug_type__remediation_link}) |
+| Scope | {scope} |
+| Severity | {cvss__criticity}, score: {cvss__score:.1f}, vector: {cvss__vector}|
+| Endpoint |{end_point}|
+| Vulnerable part | {vulnerable_part} |
+| Part Name | {part_name} |
+| Payload | {payload_sample} |
+| Technical Environment | {technical_information}|
 
 {description_html}
-"""
+    """
 
     ############################################################
     #################### Instance methods ######################
@@ -98,11 +102,21 @@ class BugTracker:
         keys = [
             "scope",
             "cvss__score",
+            "cvss__criticity",
+            "cvss__vector",
             "vulnerable_part",
-            "bug_type__category__name",
-            "bug_type__description",
+            "bug_type__name",
+            # "bug_type__description",
             "bug_type__link",
-            "description_html"
+            "bug_type__remediation_link",
+            "description_html",
+            "end_point",
+            "vulnerable_part",
+            "part_name",
+            "payload_sample",
+            "technical_information",
+            "local_id",
+            "title"
         ]
         return self.format_template(report, template=template, keys=[*additional_keys,*keys])
 
@@ -120,11 +134,13 @@ class BugTracker:
 
         to used subjobject, use '__' separator : cvss__score -> cvss.score
         """
-        
+
         for key in keys:
             obj = report
             for i in key.split('__'):
                 obj = obj.__getattribute__(i)
+            if 'html' in key:
+                obj = html2text.html2text(obj)
             fmt_keys[key] = obj
         return template.format(**fmt_keys)
 

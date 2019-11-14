@@ -52,6 +52,13 @@ class YWHGithub(BugTracker):
         repo = self.bt.get_repo(self.project)
         title = self.report_as_title(report)
         body = self.report_as_descripton(report)
+        for attachment in report.attachments:
+            attachment.get_data()
+            # self.jira.add_attachment(
+            #     issue=issue,
+            #     filename=attachment.original_name,
+            #     attachment=attachment.data,
+            # )
         issue = repo.create_issue(title=title, body=body)
         return issue
 

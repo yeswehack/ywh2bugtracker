@@ -15,14 +15,18 @@ class YWHJira(BugTracker):
     """
 
     description_template = """
-||  bug type  ||    Description   ||       Remediation         ||
-| {bug_type__category__name} | {bug_type__description}| {bug_type__link}        |
+    || {local_id} : {title} || ||
+    | Bug Type | [{bug_type__name}]({bug_type__link}) &#8594; [Remediation]({bug_type__remediation_link}) |
+    | Scope | {scope} |
+    | Severity | {cvss__criticity}, score {cvss__score:.1f}, vector {cvss__vector}|
+    | Endpoint |{end_point}|
+    | Vulnerable part | {vulnerable_part} |
+    | Part Name | {part_name} |
+    | Payload | {payload_sample} |
+    | Technical Environment | {technical_information}|
 
-||    scope    ||  vulnerable part  ||  CVSS ||
-| {scope} | {vulnerable_part} | {cvss__score} |
-
-{description_html}
-    """
+    {description_html}
+        """
 
     ############################################################
     ####################### Constructor ########################

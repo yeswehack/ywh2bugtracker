@@ -8,10 +8,22 @@ from abc import abstractmethod
 
 __all__ = ["BugTracker"]
 
+"""
+Define Abstract client class
+"""
 
 class BugTracker:
 
-    issue_name_template = "{report_local_id} : {report_title}"
+    """
+    Abstract client Wrapper class for all BugTrackers Client.
+
+    :attr str issue_name_template: template for the title part.
+    :attr str ywh_comment_marker: template for comment marker part.
+    :attr str ywh_comment_marker: template for comment part.
+    :attr str description_template: template for description part.
+    """
+
+    issue_name_template = "{local_id} : {title}"
     ywh_comment_marker = (
         "Imported to the bugtracker : {url} on project : {project_id}."
     )
@@ -19,17 +31,25 @@ class BugTracker:
     description_template = """
 |  bug type  |    Description   |       Remediation         |
 | ---------- | ---------------- | ------------------------- |
-| {bug_type} | {bug_description}| [link]({remediation_link})|
+| {bug_type__category__name} | {bug_type__description}| [link]({bug_type__link})|
 
 |    scope    |  vulnerable part  |  CVSS |
 | ----------- | ----------------- | ----- |
-| {end_point} | {vulnerable_part} | {cvss} |
+| {scope} | {vulnerable_part} | {cvss__score} |
 
-{description}
+{description_html}
 """
 
-    def file_to_base64(self, img: bytes, content_type=None) -> str:
-        """Transforme input image to base64 string."""
+    ############################################################
+    #################### Instance methods ######################
+    ############################################################
+    def file_to_base64(self, img, content_type):
+        """
+        Transforme input image to base64 string.
+
+        :param bytes img: img to change to base64?
+        :param content_type: content_type header
+        """
         f = io.BytesIO(img)
         mime = imghdr.what(f)
         if mime is None and (
@@ -47,6 +67,9 @@ class BugTracker:
         )
         return image
 
+    ############################################################
+    ###################### Abstract methods ####################
+    ############################################################
     @abstractmethod
     def configure(bugtracker):
         pass

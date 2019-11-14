@@ -21,16 +21,16 @@ from ywh2bt.logging import logger
 
 __all__ = ["main"]
 
+"""
+Entry point for script and setup
+"""
 
-def check_bug(comments, comment):
-    return any(
-        report_comment.message_html is not None
-        and comment in report_comment.message_html
-        for report_comment in comments
-    )
 
 
 def main():
+    """
+    Parse args from commande line, setup GlobalConfig and run corresponding process.
+    """
     init()
     parser = OptionParser(usage="usage: %prod [option]")
     parser.add_option(
@@ -68,9 +68,12 @@ def main():
 
 
 def run(cfg, options):
-
+    """
+    Process YesWeHack Report Log loading and insert them in bugtrackers systems.
+    """
     for cfg_ywh in cfg.yeswehack:
-        # Iterate on every referenced program
+        # Iterate on every #!/usr/bin/env python3
+# -*- encoding: utf-8 -*-referenced program
         logger.info("Get info for " + cfg_ywh.name)
         for cfg_pgm in cfg_ywh.programs:
 
@@ -80,7 +83,9 @@ def run(cfg, options):
                 lazy=True,
             )
             for report in reports:
+                report = cfg_ywh.ywh.get_report(report.id)
                 logger.info("Checking " + report.title)
+
                 comments = report.get_comments(lazy=True)
 
                 for cfg_bt in cfg_pgm.bugtrackers:

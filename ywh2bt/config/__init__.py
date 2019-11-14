@@ -13,3 +13,7 @@ __all__ = [
     "ProgramConfig",
     "ExtraPackageConfig"
 ]
+
+"""
+Configurations classes definition
+"""

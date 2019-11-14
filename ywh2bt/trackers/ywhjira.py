@@ -10,17 +10,23 @@ __all__ = ["YWHJira", "YWHJiraConfig"]
 
 
 class YWHJira(BugTracker):
+    """
+    Jira Client Wrapper
+    """
 
     description_template = """
 ||  bug type  ||    Description   ||       Remediation         ||
-| {bug_type} | {bug_description}| {remediation_link}        |
+| {bug_type__category__name} | {bug_type__description}| {remediation_link}        |
 
 ||    scope    ||  vulnerable part  ||  CVSS ||
-| {end_point} | {vulnerable_part} | {cvss} |
+| {scope} | {vulnerable_part} | {cvss__score} |
 
-{description}
+{description_html}
     """
 
+    ############################################################
+    ####################### Constructor ########################
+    ############################################################
     def __init__(self, url, login, password, project, issuetype="Task"):
         self.url = url
         self.login = login
@@ -32,6 +38,9 @@ class YWHJira(BugTracker):
         except jira.exceptions.JIRAError:
             raise
 
+    ############################################################
+    #################### Instance methods ######################
+    ############################################################
     def get_project(self):
         try:
             self.jira.project(self.project)
@@ -44,18 +53,8 @@ class YWHJira(BugTracker):
 
         issue_data = {
             "project": {"key": self.project},
-            "summary": self.issue_name_template.format(
-                report_local_id=report.local_id, report_title=report.title
-            ),
-            "description": self.description_template.format(
-                end_point=report.end_point,
-                vulnerable_part=report.vulnerable_part,
-                cvss=report.cvss.score,
-                bug_type=report.bug_type.category.name,
-                bug_description=report.bug_type.description,
-                remediation_link=report.bug_type.link,
-                description=html.handle(report.description_html),
-            ),
+            "summary": self.report_as_title(report),
+            "description": self.report_as_descripton(report),
             "issuetype": {"name": self.issuetype},
         }
         issue = self.jira.create_issue(**issue_data)
@@ -76,6 +75,18 @@ class YWHJira(BugTracker):
 
 
 class YWHJiraConfig(BugTrackerConfig):
+
+    """
+    BugTrackerConfig Class associated to jira.
+
+    :attr str bugtracker_type: bugtracker identifier
+    :attr class client: Client class
+    :attr list mandatory_keys: keys needed in configuration file part
+    :attr list secret_keys: keys need interaction in interactive mode
+    :attr dict optional_keys: keys with default values
+    :attr dict _description: descriptor for each specified key
+    """
+
     bugtracker_type = "jira"
     client = YWHJira
 
@@ -84,6 +95,9 @@ class YWHJiraConfig(BugTrackerConfig):
     optional_keys = dict(issuetype="Task")
     _description = dict(project="Jira slug")
 
+    ############################################################
+    #################### Instance methods ######################
+    ############################################################
     def _set_bugtracker(self):
         self._get_bugtracker(
             self._url,

@@ -1,10 +1,25 @@
 import logging
 import coloredlogs
 import os
+import urllib3
 
+__all__ = ["_setup_logger", "logger"]
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+"""
+Logging Module.
+"""
 
 def _setup_logger(level="INFO"):
+    """
+    Setup a Color Logger.
+
+    :param str level: Logging level.
+    """
+    logging.getLogger().setLevel("ERROR")
+
     logger = logging.getLogger(__name__)
+
     fmt = "[%(levelname)s] %(asctime)s %(message)s"
     datefmt = "%m/%d/%Y %H:%M:%S"
 

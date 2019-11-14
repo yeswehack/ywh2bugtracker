@@ -7,8 +7,19 @@ from ywh2bt.config import BugTrackerConfig
 
 __all__ = ["YWHGithub", "YWHGithubConfig"]
 
+"""
+Github Bugtracker System
+"""
 
 class YWHGithub(BugTracker):
+
+    """
+    Github Client Wrapper
+    """
+
+    ############################################################
+    ####################### Constructor ########################
+    ############################################################
     def __init__(self, project, token):
 
         self.project = project
@@ -19,7 +30,13 @@ class YWHGithub(BugTracker):
         except github.GithubException.BadCredentialsException:
             raise
 
+    ############################################################
+    #################### Instance methods ######################
+    ############################################################
     def get_project(self):
+        """
+        return github project object
+        """
         try:
             repo = self.bt.get_repo(self.project)
         except github.GithubException.UnknownObjectException:
@@ -27,31 +44,42 @@ class YWHGithub(BugTracker):
         return repo
 
     def post_issue(self, report):
+        """
+        post issue to github from report information
+
+        :param yeswehack.api.Report report: Report from yeswehack
+        """
         repo = self.bt.get_repo(self.project)
-        description = self.description_template
-        title = self.issue_name_template.format(
-            report_local_id=report.local_id, report_title=report.title
-        )
-        body = description.format(
-            end_point=report.end_point,
-            vulnerable_part=report.vulnerable_part,
-            cvss=report.cvss.score,
-            bug_type=report.bug_type.category.name,
-            bug_description=report.bug_type.description,
-            remediation_link=report.bug_type.link,
-            description=report.description_html,
-        )
+        title = self.report_as_title(report)
+        body = self.report_as_descripton(report)
         issue = repo.create_issue(title=title, body=body)
         return issue
 
     def get_url(self, issue):
+        """
+        Return issue url
+        """
         return issue.html_url
 
     def get_id(self, issue):
+        """
+        Return issue id
+        """
         return issue.number
 
 
 class YWHGithubConfig(BugTrackerConfig):
+
+    """
+    BugTrackerConfig Class associated to github.
+
+    :attr str bugtracker_type: bugtracker identifier
+    :attr class client: Client class
+    :attr list mandatory_keys: keys needed in configuration file part
+    :attr list secret_keys: keys need interaction in interactive mode
+    :attr dict optional_keys: keys with default values
+    :attr dict _description: descriptor for each specified key
+    """
     bugtracker_type = "github"
     client = YWHGithub
 
@@ -60,5 +88,8 @@ class YWHGithubConfig(BugTrackerConfig):
     optional_keys = dict(url="https://github/api/v3")
     _description = dict(project="path/to/project")
 
+    ############################################################
+    #################### Instance methods ######################
+    ############################################################
     def _set_bugtracker(self):
         self._get_bugtracker(self._project, self._token)

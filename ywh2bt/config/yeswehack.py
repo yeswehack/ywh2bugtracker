@@ -14,13 +14,26 @@ import sys
 
 __all__ = ["YesWeHackConfig", "ProgramConfig"]
 
+"""
+YesWeHack Config module
+"""
+
 
 class YesWeHackConfig(ConfigObject):
+
+    """
+    Build/Configure YesWeHack Configuration.
+
+    :attr str default_url_api: default URL Api for this application.
+    :attr list know_header: headers known to exchange with api.
+    """
 
     default_url_api = "https://apps.yeswehack.com"
     known_headers = ["X-YesWeHack-Apps"]
 
-
+    ############################################################
+    ###################### Constructor #########################
+    ############################################################
     def __init__(
         self,
         name,
@@ -28,7 +41,7 @@ class YesWeHackConfig(ConfigObject):
         no_interactive=False,
         configure_mode=False,
         **config
-    ):  # api_url, login, password, totp=False):
+    ):
         assert bugtrackers is not None
         self._name = name
         self.configure_mode = configure_mode
@@ -36,7 +49,6 @@ class YesWeHackConfig(ConfigObject):
         self._programs = []
         self._oauth_args = {}
         self._apps_headers = {}
-        # self._header = {}
         self._password = ""
         self._totp_secret = ""
 
@@ -50,7 +62,6 @@ class YesWeHackConfig(ConfigObject):
                 if self._totp:
                     keys.append("totp_secret")
             super().__init__(keys, "YesWeHack", **config)
-            # self._header = config.get('header', {})
             self._login = config["login"]
             self._api_url = config.get("api_url", self.default_url_api)
             self._totp_secret = (
@@ -80,77 +91,20 @@ class YesWeHackConfig(ConfigObject):
                 oauth_mode=self._oauth_mode,
                 oauth_args=self._oauth_args,
                 apps_headers=self.apps_headers,
+                headers={"Access-Control-Allow-Originx": "*"},
                 lazy=False,
             )
         if configure_mode:
             self.configure(bugtrackers)
 
-    def _config_programs(self, bugtrackers, config, configure_mode=False):
-        pgms = []
-        for pgm_config in config:
-            pgms.append(
-                ProgramConfig(
-                    bugtrackers,
-                    no_interactive=self.no_interactive,
-                    configure_mode=configure_mode,
-                    **pgm_config
-                )
-            )
-        return pgms
-
-    @property
-    def apps_headers(self):
-        return self._apps_headers
-
-    @property
-    def oauth_args(self):
-        return self._oauth_args
-
-    @property
-    def oauth_mode(self):
-        return self._oauth_mode
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def totp_secret(self):
-        return self._totp_secret
-
-    @property
-    def api_url(self):
-        return self._api_url
-
-    @property
-    def programs(self):
-        return self._programs
-
-    @property
-    def login(self):
-        return self._login
-
-    @property
-    def password(self):
-        return self._password
-
-    @property
-    def totp(self):
-        return self._totp
-
-    @property
-    def ywh(self):
-        return self._ywh
-
-    def get_totp_code(self):
-        def get_totp_code(self):
-            totp_code = None
-            if self._totp_secret:
-                totp = pyotp.TOTP(self.totp_secret)
-                totp_code = totp.now()
-            return totp_code
+    ############################################################
+    ################### Instance Methods #######################
+    ############################################################
 
     def configure(self, bugtrackers):
+        """
+        Configure programs interactively.
+        """
         self.config_user()
         exit_config = False
         while not exit_config:
@@ -169,11 +123,48 @@ class YesWeHackConfig(ConfigObject):
             ) in ["n", "N", ""]:
                 exit_config = True
 
-    def verify(self):
+    def config_oauth(self):
+        """
+        Configure oauth public information interactively.
+        """
+        self._oauth_args['client_id'] = read_input(Fore.BLUE + "Client id: " + Style.RESET_ALL)
+        self._oauth_args['redirect_uri'] = read_input(Fore.BLUE + "Redirect URI: " + Style.RESET_ALL)
+
+    def config_secret(self):
+        """
+        Configure secret information interactively.
+        """
+        self._password = read_input(
+            Fore.BLUE
+            + "Password for {} on {}: ".format(
+                Fore.GREEN + self._login + Fore.BLUE,
+                Fore.GREEN + self._api_url + Fore.BLUE,
+            )
+            + Style.RESET_ALL,
+            secret=True,
+        )
+        if self.oauth_mode:
+            self._oauth_args['client_secret'] = read_input(Fore.BLUE + "Client Secret: " + Style.RESET_ALL, secret=True)
+        if self.totp:
+            self._totp_secret = read_input(
+                Fore.BLUE + "Totp secret: " + Style.RESET_ALL, secret=True
+            )
+        self._config_header()
+
+        self._ywh = YesWeHack(
+            username=self._login,
+            password=self._password,
+            api_url=self._api_url,
+            oauth_mode=self._oauth_mode,
+            oauth_args=self._oauth_args,
+            apps_headers=self.apps_headers,
+        )
         self.test_login_config()
-        self.test_program_config()
 
     def config_user(self):
+        """
+        Configure user login information interactively.
+        """
         self._api_url = (
             read_input(
                 "{}API url [{}{}{}]: {}".format(
@@ -205,59 +196,40 @@ class YesWeHackConfig(ConfigObject):
         if self.no_interactive:
             self.config_secret()
 
-    def config_oauth(self):
-        self._oauth_args['client_id'] = read_input(Fore.BLUE + "Client id: " + Style.RESET_ALL)
-        self._oauth_args['redirect_uri'] = read_input(Fore.BLUE + "Redirect URI: " + Style.RESET_ALL)
-
-    def _config_header(self):
-        logger.info('Yeswehack Apps Headers configuration')
-        for know_header in self.known_headers:
-            header = read_input(Fore.BLUE + "Value for {}: ".format(Fore.GREEN + know_header + Fore.BLUE) + Fore.RESET, secret=True)
-            if header:
-                self.apps_headers[know_header] = header
-        inpt = ''
-        exit_config = False
-        while not exit_config:
-            while True:
-                inpt = read_input(Fore.BLUE + "Append an other Application Header ? [y/N]: " + Fore.RESET)
-                if inpt in ['y', 'Y']:
-                    apps_header_name = read_input(Fore.BLUE + 'Header Name: '+ Fore.RESET)
-                    apps_header_value = read_input(Fore.BLUE + 'Header Value: '+ Fore.RESET)
-                    self.apps_headers[apps_header_name] = apps_header_value
-                    break
-                if inpt in ['', 'n', 'N']:
-                    exit_config = True
-                    break
-
-    def config_secret(self):
-        self._password = read_input(
-            Fore.BLUE
-            + "Password for {} on {}: ".format(
-                Fore.GREEN + self._login + Fore.BLUE,
-                Fore.GREEN + self._api_url + Fore.BLUE,
-            )
-            + Style.RESET_ALL,
-            secret=True,
+    def get_interactive_info(self):
+        """
+        Configure secret information interactively.
+        """
+        logger.info(
+            "Getting account info for "
+            + Fore.GREEN
+            + ", ".join([pgm.name for pgm in self.programs])
+            + Style.RESET_ALL
+            + " on "
+            + Fore.GREEN
+            + self.api_url
+            + Style.RESET_ALL
+            + " via "
+            + Fore.GREEN
+            + self.login
+            + Style.RESET_ALL
         )
-        if self.oauth_mode:
-            self._oauth_args['client_secret'] = read_input(Fore.BLUE + "Client Secret: " + Style.RESET_ALL, secret=True)
-        if self.totp:
-            self._totp_secret = read_input(
-                Fore.BLUE + "Totp secret: " + Style.RESET_ALL, secret=True
-            )
-        self._config_header()
+        self.config_secret()
 
-        self._ywh = YesWeHack(
-            username=self._login,
-            password=self._password,
-            api_url=self._api_url,
-            oauth_mode=self._oauth_mode,
-            oauth_args=self._oauth_args,
-            apps_headers=self.apps_headers,
-        )
-        self.test_login_config()
+    def get_totp_code(self):
+        """
+        Get TOTP code
+        """
+        totp_code = None
+        if self._totp_secret:
+            totp = pyotp.TOTP(self.totp_secret)
+            totp_code = totp.now()
+        return totp_code
 
     def test_login_config(self):
+        """
+        Test login configuration information.
+        """
         if self.no_interactive:
             logger.info("Testing login")
         try:
@@ -301,24 +273,10 @@ class YesWeHackConfig(ConfigObject):
                 )
                 sys.exit(100)
 
-    def get_interactive_info(self):
-        logger.info(
-            "Getting account info for "
-            + Fore.GREEN
-            + ", ".join([pgm.name for pgm in self.programs])
-            + Style.RESET_ALL
-            + " on "
-            + Fore.GREEN
-            + self.api_url
-            + Style.RESET_ALL
-            + " via "
-            + Fore.GREEN
-            + self.login
-            + Style.RESET_ALL
-        )
-        self.config_secret()
-
     def test_program_config(self):
+        """
+        Test programs configuration information.
+        """
         totp_code = self.get_totp_code()
         self.ywh.login(totp_code=totp_code)
         managed_programs = set(self.ywh.managed_programs())
@@ -367,6 +325,9 @@ class YesWeHackConfig(ConfigObject):
                 self.config_program_info()
 
     def to_dict(self):
+        """
+        Map object to dictionary
+        """
         pgms = [pgm.to_dict() for pgm in self.programs]
 
         component = {
@@ -387,9 +348,110 @@ class YesWeHackConfig(ConfigObject):
 
         return {self.name: component}
 
+    def verify(self):
+        """
+        Verify connexion information
+        """
+        self.test_login_config()
+        self.test_program_config()
+
+    def _config_programs(self, bugtrackers, config, configure_mode=False):
+        """
+        Configure existing programs.
+        """
+        pgms = []
+        for pgm_config in config:
+            pgms.append(
+                ProgramConfig(
+                    bugtrackers,
+                    no_interactive=self.no_interactive,
+                    configure_mode=configure_mode,
+                    **pgm_config,
+                )
+            )
+        return pgms
+
+    def _config_header(self):
+        """
+        Config headers interactively
+        """
+        logger.info('Yeswehack Apps Headers configuration')
+        for know_header in self.known_headers:
+            header = read_input(Fore.BLUE + "Value for {}: ".format(Fore.GREEN + know_header + Fore.BLUE) + Fore.RESET, secret=True)
+            if header:
+                self.apps_headers[know_header] = header
+        inpt = ''
+        exit_config = False
+        while not exit_config:
+            while True:
+                inpt = read_input(Fore.BLUE + "Append an other Application Header ? [y/N]: " + Fore.RESET)
+                if inpt in ['y', 'Y']:
+                    apps_header_name = read_input(Fore.BLUE + 'Header Name: '+ Fore.RESET)
+                    apps_header_value = read_input(Fore.BLUE + 'Header Value: '+ Fore.RESET)
+                    self.apps_headers[apps_header_name] = apps_header_value
+                    break
+                if inpt in ['', 'n', 'N']:
+                    exit_config = True
+                    break
+    ############################################################
+    ####################### Properties #########################
+    ############################################################
+
+    @property
+    def apps_headers(self):
+        return self._apps_headers
+
+    @property
+    def oauth_args(self):
+        return self._oauth_args
+
+    @property
+    def oauth_mode(self):
+        return self._oauth_mode
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def totp_secret(self):
+        return self._totp_secret
+
+    @property
+    def api_url(self):
+        return self._api_url
+
+    @property
+    def programs(self):
+        return self._programs
+
+    @property
+    def login(self):
+        return self._login
+
+    @property
+    def password(self):
+        return self._password
+
+    @property
+    def totp(self):
+        return self._totp
+
+    @property
+    def ywh(self):
+        return self._ywh
 
 
 class ProgramConfig(ConfigObject):
+
+    """
+    Load or configure Program configuration.
+    """
+
+    ############################################################
+    ###################### Constructor #########################
+    ############################################################
+
     def __init__(
         self, bugtrackers, no_interactive=False, configure_mode=False, **config
     ):  # name, bugtrackers={}):
@@ -404,33 +466,15 @@ class ProgramConfig(ConfigObject):
         if configure_mode:
             self.configure(bugtrackers)
 
-    def _validate_and_set_bugtrackers(self, program_bt_names, bugtrackers):
-        all_bt_names = [bt.name for bt in bugtrackers]
-        warnings = []
-        for bt in program_bt_names:
-            if bt not in all_bt_names:
-                warnings.append(bt)
-            else:
-                self.bugtrackers.append(bugtrackers[all_bt_names.index(bt)])
-        if not self.bugtrackers:
-            logger.critical(
-                "Bugtrackers type set in progams config part for {} does'nt exist in bugtrackers global configuration part".format(
-                    self.slug
-                )
-            )
-            sys.exit(120)
-        if warnings:
-            logger.warning(
-                "{} doesn't exists in bugtrackers global configuration part".format(
-                    ", ".join(warnings)
-                )
-            )
+    ############################################################
+    ################### Instance Methods #######################
+    ############################################################
 
-    @property
-    def slug(self):
-        return self._slug
 
     def configure(self, bugtrackers):
+        """
+        Configure and link to bugtrackers interactively.
+        """
         all_bt_names = [bt.name for bt in bugtrackers]
         self._slug = read_input(Fore.BLUE + "Program slug: " + Style.RESET_ALL)
         exit_config = False
@@ -461,9 +505,44 @@ class ProgramConfig(ConfigObject):
                 logger.error("Invalide response")
 
     def to_dict(self):
+        """
+        Map object to dictionary.
+        """
         return {
             "slug": self.slug,
             "bugtrackers_name": [
                 bgtracker.name for bgtracker in self.bugtrackers
             ],
         }
+
+    def _validate_and_set_bugtrackers(self, program_bt_names, bugtrackers):
+        """
+        Configure and link to bugtrackers from configuration file.
+        """
+        all_bt_names = [bt.name for bt in bugtrackers]
+        warnings = []
+        for bt in program_bt_names:
+            if bt not in all_bt_names:
+                warnings.append(bt)
+            else:
+                self.bugtrackers.append(bugtrackers[all_bt_names.index(bt)])
+        if not self.bugtrackers:
+            logger.critical(
+                "Bugtrackers type set in progams config part for {} does'nt exist in bugtrackers global configuration part".format(
+                    self.slug
+                )
+            )
+            sys.exit(120)
+        if warnings:
+            logger.warning(
+                "{} doesn't exists in bugtrackers global configuration part".format(
+                    ", ".join(warnings)
+                )
+            )
+
+    ############################################################
+    ####################### Properties #########################
+    ############################################################
+    @property
+    def slug(self):
+        return self._slug

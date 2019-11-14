@@ -8,7 +8,17 @@ from colorama import Fore, Style
 
 __all__ = ["ExtraPackageConfig"]
 
+"""
+Module to load and configure External BugTracker packages to append.
+"""
+
 class ExtraPackageConfig(ConfigObject):
+    """
+    Load / Configure External packages to append.
+    """
+    ############################################################
+    ###################### Constructor #########################
+    ############################################################
     def __init__(self, configure_mode=False, **config):
         self._configure_mode = configure_mode
         self._package_name = ""
@@ -27,10 +37,34 @@ class ExtraPackageConfig(ConfigObject):
             self.configure()
         self.bugtracker_class_appender()
 
-    def format_path(self):
-        return os.path.realpath(os.path.expanduser(self._path))
+    ############################################################
+    #################### Instance Methods ######################
+    ############################################################
+    def bugtracker_class_appender(self):
+        """
+        Verify if package exist and append it to sys.path.
+        Import BugTrackerConfig module definition
+        """
+        if not os.path.isdir(self.format_path()):
+            raise FileNotFoundError(
+                "package path does'nt exist: {}".format(
+                    os.path.abspath(self.path)
+                )
+            )
+
+        sys.path.append(self.path)
+
+        for bugtracker_module in self.modules:
+            module_path = ""
+            if self.package_name:
+                module_path += self.package_name + "."
+            module_path += bugtracker_module
+            importlib.import_module(module_path)
 
     def configure(self):
+        """
+        Configure packages interactively.
+        """
         exit_config = False
         self._package_name = read_input(
             Fore.BLUE
@@ -65,7 +99,16 @@ class ExtraPackageConfig(ConfigObject):
                     break
         self.info()
 
+    def format_path(self):
+        """
+        Normalize given path.
+        """
+        return os.path.realpath(os.path.expanduser(self._path))
+
     def info(self):
+        """
+        Log information for the package.
+        """
         logger.info("package name : {}".format(self.package_name))
         logger.info("path : {}".format(self.path))
 
@@ -80,30 +123,19 @@ class ExtraPackageConfig(ConfigObject):
             )
         )
 
-    def bugtracker_class_appender(self):
-        if not os.path.isdir(self.format_path()):
-            raise FileNotFoundError(
-                "package path does'nt exist: {}".format(
-                    os.path.abspath(self.path)
-                )
-            )
-
-        sys.path.append(self.path)
-
-        for bugtracker_module in self.modules:
-            module_path = ""
-            if self.package_name:
-                module_path += self.package_name + "."
-            module_path += bugtracker_module
-            importlib.import_module(module_path)
-
     def to_dict(self):
+        """
+        Map object to dictionary.
+        """
         return {
             "package": self.package_name,
             "path": self.path,
             "modules": self.modules,
         }
 
+    ############################################################
+    ####################### Properties #########################
+    ############################################################
     @property
     def package_name(self):
         return self._package_name

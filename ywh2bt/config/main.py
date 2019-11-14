@@ -13,10 +13,25 @@ from colorama import Fore, Style
 
 __all__ = ["GlobalConfig"]
 
+"""
+Module to load configuration file globaly
+"""
+
 class GlobalConfig(ConfigObject):
+
+    """
+    Configuration file representation
+
+    :attr list mandatory_keys: keys needed in config_file
+    :attr str name: ConfigObject identifier
+    """
+
     mandatory_keys = ["yeswehack", "bugtrackers"]
     name = "global"
 
+    ############################################################
+    ####################### Constructor ########################
+    ############################################################
     def __init__(
         self, configure_mode=False, no_interactive=False, filename=None
     ):
@@ -35,78 +50,14 @@ class GlobalConfig(ConfigObject):
         if configure_mode:
             self.configure()
 
-    def _build(self, config):
-        super().__init__(self.mandatory_keys, self.name, **config)
-        self.bugtrackers = self._config_bugtrackers(
-            config["bugtrackers"], configure_mode=False
-        )
-        self.yeswehack = self._config_ywh(config["yeswehack"])
-        if "packages" in config:
-            self.packages = self._config_packages(config["packages"])
-        self.default_supported_bugtrackers = [tr.bugtracker_type for tr in get_all_subclasses(BugTrackerConfig)
-            ] or []
-
-    def _config_packages(self, packages):
-        pkgs = []
-        for params in packages:
-            pkgs.append(ExtraPackageConfig(configure_mode=False, **params))
-        return pkgs
-
-    def _config_bugtrackers(self, bgtrackers, configure_mode=False):
-        bts = []
-        for bt_name, bt_config in bgtrackers.items():
-            if "type" in bt_config:
-                class_ = self.get_bugtracker_class(bt_config["type"])
-                bts.append(
-                    class_(
-                        bt_name,
-                        configure_mode=configure_mode,
-                        no_interactive=self.no_interactive,
-                        **bt_config
-                    )
-                )
-            else:
-                logger.critical(
-                    "type not set in {} configuration part".format(bt_name)
-                )
-                sys.exit(120)
-        return bts
-
-    def _config_ywh(self, ywh, configure_mode=False):
-        bts = []
-        for ywh_name, ywh_config in ywh.items():
-            bts.append(
-                YesWeHackConfig(
-                    ywh_name,
-                    self.bugtrackers,
-                    configure_mode=configure_mode,
-                    no_interactive=self.no_interactive,
-                    **ywh_config
-                )
-            )
-        return bts
-
-    def get_default_config_file(self):
-        if os.name == "posix":
-            config_dir = Path(os.environ.get("HOME") + "/")
-        else:
-            config_dir = Path(os.environ.get("APPDATA") + "/ywh2bt/")
-        if not config_dir.exists():
-            config_dir.mkdir(parents=True)
-        config_file = Path(str(config_dir) + "/.ywh2bt.cfg")
-        return config_file
-
-    def _load(self, filename):
-        if not filename.exists() and not self.configure_mode:
-            logger.critical("File {} not exist".format(filename))
-            sys.exit(130)
-        configuration = {}
-        if filename.exists():
-            with open(filename, "r") as ymlfile:
-                configuration = yaml.safe_load(ymlfile)
-        return configuration
+    ############################################################
+    ################### Instance methods #######################
+    ############################################################
 
     def configure(self):
+        """
+        Load or setup configuration, depends of attribute and existence configuration keys.
+        """
         logger.info("Welcome in ywh2bt configuration tools")
 
         if self.no_interactive:
@@ -134,65 +85,10 @@ class GlobalConfig(ConfigObject):
         self._update_configuration()
         self.write()
 
-    @staticmethod
-    def get_bugtracker_class(tracker_type):
-        tracker_config = get_all_subclasses(
-            BugTrackerConfig, cls_attr_filter={"bugtracker_type": tracker_type}
-        )
-        if len(tracker_config) != 1:
-            if len(tracker_config) == 0:
-                raise BugTrackerNotFound(
-                    "Bug tracker not found from type `{}`".format(tracker_type)
-                )
-            else:
-                raise MultipleBugTrackerMacth(
-                    "Multiple Bug tracker have the same `bugtracker_type` class attribute (bugtracker_type : {}, classes : {}). Please change refered BugTracker in config file.".format(
-                        tracker_type,
-                        ", ".join(
-                            [tr.bugtracker_type for tr in tracker_config]
-                        ),
-                        tracker_config,
-                    )
-                )
-        return tracker_config[0]
-
-    def configure_new_packages(self):
-        exit_config = False
-        while not exit_config:
-            exit_configuration = read_input(
-                Fore.BLUE
-                + "Add Package configuration element ? [y/N]: "
-                + Style.RESET_ALL
-            )
-            if exit_configuration in ["n", "N", ""]:
-                exit_config = True
-            elif exit_configuration in ["y", "Y"]:
-                self.packages.append(ExtraPackageConfig(configure_mode=True))
-        self.default_supported_bugtrackers = [tr.bugtracker_type for tr in get_all_subclasses(BugTrackerConfig)
-            ] or []
-
-    def configure_new_yeswehack(self):
-        exit_config = False
-        count = len(self.yeswehack) + 1
-        while not exit_config:
-            exit_configuration = read_input(
-                Fore.BLUE
-                + "Add YesWeHack configuration element ? [y/N]: "
-                + Style.RESET_ALL
-            )
-            if exit_configuration in ["n", "N", ""]:
-                exit_config = True
-            elif exit_configuration in ["y", "Y"]:
-                self.yeswehack.append(
-                    YesWeHackConfig(
-                        "yeswehack_{}".format(count),
-                        self.bugtrackers,
-                        no_interactive=self.no_interactive,
-                        configure_mode=True,
-                    )
-                )
-
     def configure_new_bugtrackers(self):
+        """
+        Add new bugtrackers with user interaction
+        """
         counter = len(self.bugtrackers) + 1
         exit_config = False
         while not exit_config:
@@ -230,7 +126,177 @@ class GlobalConfig(ConfigObject):
                 )
                 counter += 1
 
+    def configure_new_packages(self):
+        """
+        Add new packages with user interaction
+        """
+        exit_config = False
+        while not exit_config:
+            exit_configuration = read_input(
+                Fore.BLUE
+                + "Add Package configuration element ? [y/N]: "
+                + Style.RESET_ALL
+            )
+            if exit_configuration in ["n", "N", ""]:
+                exit_config = True
+            elif exit_configuration in ["y", "Y"]:
+                self.packages.append(ExtraPackageConfig(configure_mode=True))
+        self.default_supported_bugtrackers = [tr.bugtracker_type for tr in get_all_subclasses(BugTrackerConfig)
+            ] or []
+
+    def configure_new_yeswehack(self):
+        """
+        Add new YesWeHack with user interaction
+        """
+        exit_config = False
+        count = len(self.yeswehack) + 1
+        while not exit_config:
+            exit_configuration = read_input(
+                Fore.BLUE
+                + "Add YesWeHack configuration element ? [y/N]: "
+                + Style.RESET_ALL
+            )
+            if exit_configuration in ["n", "N", ""]:
+                exit_config = True
+            elif exit_configuration in ["y", "Y"]:
+                self.yeswehack.append(
+                    YesWeHackConfig(
+                        "yeswehack_{}".format(count),
+                        self.bugtrackers,
+                        no_interactive=self.no_interactive,
+                        configure_mode=True,
+                    )
+                )
+
+    def get_default_config_file(self):
+        """
+        Return default configuration file.
+        """
+        if os.name == "posix":
+            config_dir = Path(os.environ.get("HOME") + "/")
+        else:
+            config_dir = Path(os.environ.get("APPDATA") + "/ywh2bt/")
+        if not config_dir.exists():
+            config_dir.mkdir(parents=True)
+        config_file = Path(str(config_dir) + "/.ywh2bt.cfg")
+        return config_file
+
+    def to_dict(self):
+        """
+        Map object to dictionary
+        """
+        bts = {}
+        for bugtracker in self.bugtrackers:
+            bts = {**bts, **bugtracker.to_dict()}
+        ywhs = {}
+        for ywh in self.yeswehack:
+            ywhs = {**ywhs, **ywh.to_dict()}
+        component = {"yeswehack": ywhs, "bugtrackers": bts}
+        if self.packages:
+            pkgs = [pkg.to_dict() for pkg in self.packages]
+            component["packages"] = pkgs
+        return component
+
+    def write(self):
+        """
+        Write GlobalConfig to configuration file.
+        """
+        yaml_configuration = yaml.dump(self.to_dict())
+        with open(self.filename, "w") as f:
+            f.write(yaml_configuration)
+
+    def _build(self, config):
+        """
+        Build object from config dictionary information.
+
+        :param dict config: configuration.
+        """
+        super().__init__(self.mandatory_keys, self.name, **config)
+        self.bugtrackers = self._config_bugtrackers(
+            config["bugtrackers"], configure_mode=False
+        )
+        self.yeswehack = self._config_ywh(config["yeswehack"])
+        if "packages" in config:
+            self.packages = self._config_packages(config["packages"])
+        self.default_supported_bugtrackers = [tr.bugtracker_type for tr in get_all_subclasses(BugTrackerConfig)
+            ] or []
+
+    def _config_bugtrackers(self, bgtrackers, configure_mode=False):
+        """
+        Build BugTrackerConfig-s Object from config information.
+
+        :param dict bgtrackers: Bugtrackers definitions.
+        :param bool configure_mode: True if configuration mode is actif.
+        """
+        bts = []
+        for bt_name, bt_config in bgtrackers.items():
+            if "type" in bt_config:
+                class_ = self.get_bugtracker_class(bt_config["type"])
+                bts.append(
+                    class_(
+                        bt_name,
+                        configure_mode=configure_mode,
+                        no_interactive=self.no_interactive,
+                        **bt_config
+                    )
+                )
+            else:
+                logger.critical(
+                    "type not set in {} configuration part".format(bt_name)
+                )
+                sys.exit(120)
+        return bts
+
+    def _config_packages(self, packages):
+        """
+        Build ExtraPackageConfig-s Object from config information.
+
+        :param list packages: packages definitions.
+        """
+        pkgs = []
+        for params in packages:
+            pkgs.append(ExtraPackageConfig(configure_mode=False, **params))
+        return pkgs
+
+
+    def _config_ywh(self, ywh, configure_mode=False):
+        """
+        Build YesWeHackConfig-s Object from config information.
+
+        :param dict ywh: yeswehack definitions.
+        """
+        bts = []
+        for ywh_name, ywh_config in ywh.items():
+            bts.append(
+                YesWeHackConfig(
+                    ywh_name,
+                    self.bugtrackers,
+                    configure_mode=configure_mode,
+                    no_interactive=self.no_interactive,
+                    **ywh_config
+                )
+            )
+        return bts
+
+    def _load(self, filename):
+        """
+        Load yaml file with name  `filename`.
+
+        :param str filename: name of file to load.
+        """
+        if not filename.exists() and not self.configure_mode:
+            logger.critical("File {} not exist".format(filename))
+            sys.exit(130)
+        configuration = {}
+        if filename.exists():
+            with open(filename, "r") as ymlfile:
+                configuration = yaml.safe_load(ymlfile)
+        return configuration
+
     def _update_configuration(self):
+        """
+        In configure mode only, used to change configured object.
+        """
         for package in self.packages:
             exit_config = False
             package.info()
@@ -380,20 +446,32 @@ class GlobalConfig(ConfigObject):
                             continue
                     exit_config = True
 
-    def to_dict(self):
-        bts = {}
-        for bugtracker in self.bugtrackers:
-            bts = {**bts, **bugtracker.to_dict()}
-        ywhs = {}
-        for ywh in self.yeswehack:
-            ywhs = {**ywhs, **ywh.to_dict()}
-        component = {"yeswehack": ywhs, "bugtrackers": bts}
-        if self.packages:
-            pkgs = [pkg.to_dict() for pkg in self.packages]
-            component["packages"] = pkgs
-        return component
+    ############################################################
+    #################### Static methods ########################
+    ############################################################
+    @staticmethod
+    def get_bugtracker_class(tracker_type):
+        """
+        Return bugtracker class from tracker type.
 
-    def write(self):
-        yaml_configuration = yaml.dump(self.to_dict())
-        with open(self.filename, "w") as f:
-            f.write(yaml_configuration)
+        :param str tracker_type: type identifier of the BugTrackerConfig subclass.
+        """
+        tracker_config = get_all_subclasses(
+            BugTrackerConfig, cls_attr_filter={"bugtracker_type": tracker_type}
+        )
+        if len(tracker_config) != 1:
+            if len(tracker_config) == 0:
+                raise BugTrackerNotFound(
+                    "Bug tracker not found from type `{}`".format(tracker_type)
+                )
+            else:
+                raise MultipleBugTrackerMacth(
+                    "Multiple Bug tracker have the same `bugtracker_type` class attribute (bugtracker_type : {}, classes : {}). Please change refered BugTracker in config file.".format(
+                        tracker_type,
+                        ", ".join(
+                            [tr.bugtracker_type for tr in tracker_config]
+                        ),
+                        tracker_config,
+                    )
+                )
+        return tracker_config[0]

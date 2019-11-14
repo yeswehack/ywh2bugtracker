@@ -193,43 +193,6 @@ class BugTrackerConfig(ConfigObject):
             (" for {}".format(Fore.GREEN + self.login + Fore.BLUE) if hasattr(self, 'login') else "") +
             (" on {}".format(Fore. GREEN + self.url + Fore.BLUE) if hasattr(self, 'url') else "" ), desc) + Style.RESET_ALL, secret=True))
 
-    def report_as_title(self, report, template=None, additional_keys=[]):
-        """
-        Format template title with given information.
-
-        :param yeswehack.api.Report report: Report representation
-        :param str template: if not None, overwride default template.
-        :param list additional_keys: keys corresponding to attribute of report object.
-
-        to used subjobject, use '__' separator : cvss__score -> cvss.score
-        """
-        if template is None:
-            template = self.bugtracker.issue_name_template
-        return self.format_template(report, template, keys=additional_keys, fmt_keys={"local_id":report.local_id, "title": report.title})
-
-    def report_as_descripton(self, report, template=None, additional_keys=[]):
-        """
-        Format template description with given information
-
-        :param yeswehack.api.Report report: Report representation
-        :param str template: if not None, overwride default template.
-        :param list additional_keys: keys corresponding to attribute of report object.
-
-        to used subjobject, use '__' separator : cvss__score -> cvss.score
-        """
-        if template is None:
-            template = self.bugtracker.description_template
-        keys = [
-            "scope",
-            "cvss__score",
-            "vulnerable_part",
-            "bug_type__category__name",
-            "bug_type__description",
-            "bug_type__link",
-            "description_html"
-        ]
-        return self.format_template(report, template=template, keys=[*additional_keys,*keys])
-
     def test_project(self):
         """
         Test connexion to the project on the client
@@ -375,27 +338,6 @@ class BugTrackerConfig(ConfigObject):
             *cls.optional_keys_list(),
         ]:
             set_item(cls, attr)
-
-    ############################################################
-    ####################### Static methods #####################
-    ############################################################
-    @staticmethod
-    def format_template(report, template, keys=[], fmt_keys={}):
-        """
-        Format given template with report information
-
-        :param yeswehack.api.Report report: Report representation
-        :param str template: template to use.
-        :param list additional_keys: keys corresponding to attribute of report object.
-
-        to used subjobject, use '__' separator : cvss__score -> cvss.score
-        """
-        for key in keys:
-            obj = report
-            for i in key.split('__'):
-                obj = obj.__getattribute__(i)
-            fmt_keys[key] = obj
-        return template.format(**fmt_keys)
 
     ############################################################
     ##################### Abstract methods #####################

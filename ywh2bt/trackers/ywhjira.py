@@ -16,7 +16,7 @@ class YWHJira(BugTracker):
 
     description_template = """
 ||  bug type  ||    Description   ||       Remediation         ||
-| {bug_type__category__name} | {bug_type__description}| {remediation_link}        |
+| {bug_type__category__name} | {bug_type__description}| {bug_type__link}        |
 
 ||    scope    ||  vulnerable part  ||  CVSS ||
 | {scope} | {vulnerable_part} | {cvss__score} |

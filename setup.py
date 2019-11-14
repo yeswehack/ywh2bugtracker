@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 #
 setuptools.setup(
     name="ywh2bt",
-    version="0.1a1",
+    version="0.2a1",
     author="Jean Lou Hau",
     author_email="jl.hau@yeswehack.com",
     description="YesWeHack BugTracker",

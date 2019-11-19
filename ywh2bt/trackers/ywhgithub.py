@@ -3,7 +3,7 @@
 import github
 from .bugtracker import BugTracker
 from ywh2bt.config import BugTrackerConfig
-
+from bs4 import BeautifulSoup
 
 __all__ = ["YWHGithub", "YWHGithubConfig"]
 
@@ -51,14 +51,9 @@ class YWHGithub(BugTracker):
         """
         repo = self.bt.get_repo(self.project)
         title = self.report_as_title(report)
-        body = self.report_as_descripton(report)
+        body = self.report_as_description(report)
         for attachment in report.attachments:
             attachment.get_data()
-            # self.jira.add_attachment(
-            #     issue=issue,
-            #     filename=attachment.original_name,
-            #     attachment=attachment.data,
-            # )
         issue = repo.create_issue(title=title, body=body)
         return issue
 
@@ -74,6 +69,25 @@ class YWHGithub(BugTracker):
         """
         return issue.number
 
+    def report_as_description(self, report, template=None, additional_keys=[]):
+        """
+        Overwrite report_as_description BugTrackerConfig method.
+        """
+        report.description_html = self._img_to_a_balisis(report.description_html)
+        return super().report_as_description(report, template=template, additional_keys=additional_keys)
+
+    def _img_to_a_balisis(self, html):
+        """
+        Replace "img" balisis in html to "a" balisis.
+        """
+        soup = BeautifulSoup(html, features="lxml")
+        n_html = str(soup)
+        for img in soup.findAll("img"):
+            alt = img.attrs.get('alt', '')
+            src = img.attrs.get('src', '')
+            a = f'<a href="{src}">{alt}</a>'
+            n_html = n_html.replace(str(img), a)
+        return n_html
 
 class YWHGithubConfig(BugTrackerConfig):
 

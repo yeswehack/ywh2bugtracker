@@ -24,7 +24,8 @@ setuptools.setup(
         "pyyaml",
         "html2text",
         "coloredLogs",
-        "yeswehack"
+        "yeswehack",
+        "beautifulsoup4",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

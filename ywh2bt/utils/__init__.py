@@ -1,6 +1,6 @@
 import getpass
-
-__all__ = ["read_input", "get_all_subclasses"]
+from .html2jira import html2jira
+__all__ = ["read_input", "get_all_subclasses", "html2jira"]
 
 
 """

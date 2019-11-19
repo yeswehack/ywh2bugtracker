@@ -45,11 +45,12 @@ class YWHGitlab(BugTracker):
 
     def post_issue(self, report):
         project = self.bt.projects.get(self.project)
-        description = self.report_as_descripton(report)
         for attachment in report.attachments:
             # Add attachment to gitlab issue if there is attachement in the original bug
             f = project.upload(attachment.original_name, attachment.data)
-            description += "\n" + f["markdown"] + "\n"
+            report.description_html = report.description_html.replace(attachment.url, f['url'])
+
+        description = self.report_as_description(report)
         issue_data = {
             "title": self.report_as_title(report),
             "description": description

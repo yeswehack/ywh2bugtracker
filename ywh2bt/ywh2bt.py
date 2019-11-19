@@ -72,8 +72,7 @@ def run(cfg, options):
     Process YesWeHack Report Log loading and insert them in bugtrackers systems.
     """
     for cfg_ywh in cfg.yeswehack:
-        # Iterate on every #!/usr/bin/env python3
-# -*- encoding: utf-8 -*-referenced program
+        # Iterate on every referenced program
         logger.info("Get info for " + cfg_ywh.name)
         for cfg_pgm in cfg_ywh.programs:
 
@@ -87,7 +86,6 @@ def run(cfg, options):
                 logger.info("Checking " + report.title)
 
                 comments = report.get_comments(lazy=True)
-
                 for cfg_bt in cfg_pgm.bugtrackers:
                     issue = cfg_bt.bugtracker.post_issue(report)
                     issue_meta = {

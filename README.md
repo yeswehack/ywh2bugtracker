@@ -54,6 +54,8 @@ bugtrackers:
     token: myaccesstoken
     type: github
     url: https://github/api/v3
+    login: githublogin
+    password:githubpassword
   gitlab:
     project: path/to/myproject
     token: mygitlabtoken
@@ -118,6 +120,8 @@ bugtrackers:
     token: myaccesstoken
     type: github
     url: https://github/api/v3
+    github_cdn_on: true
+    
   gitlab:
     project: path/to/my/project/on/mygitlab
     token: myaccesstoken
@@ -157,12 +161,12 @@ Github:
     * project: github repository path to your project. If my name is 'BugTracker' and my 'project' is example, my repository path is 'BugTracker/project'
 - optional keys:
     * url (default 'https://github/api/v3'): url to github api access, by default, we used the V3 api url.
-    * github_cdn_on (default ```false```): true if attachment can be saved in github cdn, false otherwise
+    * github_cdn_on (default ```false```): set to true to  save attachment in github cdn, false otherwise (attachment such as inline images in report description won't be in the issue createdd in github). 
 - secret keys:
     * token: user token to push the issue on github. the user and the token need to have sufficient rights to push the issue on the project.
-- conditional keys:
-    * login: key managed by ```github_cdn_on``` value (appear only if it's ```true```). This value correspond to the github platform login/username.
-    * password: a conditional secret key, managed by ```github_cdn_on``` value (appear only if it's ```true```). This value correspond to the github platform password.
+- conditional keys (if github_cdn set to true)
+    * login:  This value is to the github platform login/username.
+    * password: This value correspond to the github platform password.
 
 
 #### YesWeHack Object

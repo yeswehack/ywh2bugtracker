@@ -35,7 +35,7 @@ A ywh2bt configuration file is a yaml describing each element and interaction be
 
 This file have 3 goals :
 - Setup bugtracker system (Bugtracker-s issue-s client-s and YesWeHack-s Client-s).
-- Define configuration for the necessary interactions with Yeswehack APIs 
+- Define configuration for the necessary interactions with Yeswehack APIs
 - Append Extra bugtrackers class to this system if needed
 
 Example of typical configuration file:
@@ -102,7 +102,7 @@ On this configuration file, we define three bugtrackers :
 In this section we explain the "bugtrackers" part, and how to configure each type of bugtrackers supported by YesWeHack.
 
 As you can see on the example below, we proposed three type of bugtrackers by default. Each of them have some attribute,
-each attribute can be mandatory, optional (github url for example), or secret (an access token).
+each attribute can be mandatory, optional (github ```url``` for example), secret (an access token) or conditioned by an other attribute (github ```login``` or ```password``` are conditioned by ```github_cdn_on``` value).
 
 ```yaml
 bugtrackers:
@@ -123,11 +123,14 @@ bugtrackers:
     token: myaccesstoken
     type: gitlab
     url: http://local.gitlab.com/
+    github_cdn_on: true
+    login: mylogin
+    password: mypassword
 ```
 
 #### Bugtrackers Object
 
-Each of the bugtrackers have a silent mandatory attribute named type and corresping to the bugtracker type (i.e. type=jira for jira bugtracker), and an identifiant name, set automatically in configuration mode (bugtracker_number).
+Each of the bugtrackers have a silent mandatory attribute named type and corresponding to the bugtracker type (i.e. type=jira for jira bugtracker), and an identifiant name, set automatically in configuration mode (bugtracker_number).
 
 Secret keys are needed in configuration file on no interactive mode, otherwise, it is ask interactively.
 
@@ -154,8 +157,12 @@ Github:
     * project: github repository path to your project. If my name is 'BugTracker' and my 'project' is example, my repository path is 'BugTracker/project'
 - optional keys:
     * url (default 'https://github/api/v3'): url to github api access, by default, we used the V3 api url.
+    * github_cdn_on (default ```false```): true if attachment can be saved in github cdn, false otherwise
 - secret keys:
     * token: user token to push the issue on github. the user and the token need to have sufficient rights to push the issue on the project.
+- conditional keys:
+    * login: key managed by ```github_cdn_on``` value (appear only if it's ```true```). This value correspond to the github platform login/username.
+    * password: a conditional secret key, managed by ```github_cdn_on``` value (appear only if it's ```true```). This value correspond to the github platform password.
 
 
 #### YesWeHack Object
@@ -199,7 +206,7 @@ YesWeHack Object:
 - mandatory keys
   * apps_headers: headers to update reports in YesWeHack program.
   * api_url: url to YesWeHack api
-  * login: my user Login . **NB : This user must have program consumer role on the program** 
+  * login: my user Login . **NB : This user must have program consumer role on the program**
   * totp: if totp is enable on for my user.
   * totp_secret: needed in configuration file only if totp is True and in no interactive mode.
   * programs (list of item):
@@ -355,14 +362,18 @@ A BugTracker client class need to implement 4 methods:
 - ```def get_id(self, issue):```: return issue id
 
 
-A BugTrackerConfig class nedd to have 2 class attributes:
+A BugTrackerConfig class need to have 2 class attributes:
 - ```bugtracker_type```: name of the bugtracker for selection in configuration mode
 - ```client```: client class
 
-and optionnaly have 4 other:
+and optionally have 5 other:
 - ```mandatory_keys```: List of str needed in configuration file
 - ```secret_keys```: List of str, corresponding of all keys must be secret, but are clearly store in configure file in no interactive mode
 - ```optional_keys```: dictionary wich each pairs of (key, value) correspond to (optional_key, default_value).
+- ```conditional_keys```: dictionary wich each key name and info dictionary description. an info dictionary is describe below:
+    - ```condition``` key (mandatory): lambda expression with bugtracker parameter. return a boolean.
+    - ```default``` key (optional): default value if is define.
+    - ```secret``` key (optonial): the key is define as secret or not (default ```False```)
 - ```_description```: dictionary which associate a description of an existing keys define un one of :
     - ```mandatory_keys```
     - ```secret_keys```
@@ -373,7 +384,7 @@ And need one method :
 
 NB: a ```project``` key must be present in ```mandatory_keys```, ```optional_keys``` or ```secret_keys```!
 
-Each key in mandatory, optional or secret key is convert as protected attribute with get property access.
+Each key in mandatory, optional, secret or conditional keys is convert as protected attribute with get property access.
 
 
 

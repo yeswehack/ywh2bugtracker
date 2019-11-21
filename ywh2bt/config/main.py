@@ -224,6 +224,90 @@ class GlobalConfig(ConfigObject):
             tr.bugtracker_type for tr in get_all_subclasses(BugTrackerConfig)
         ] or []
 
+    def _add_bugtrackers_to_pgm(self, cfg_program):
+        """
+        Link an existing bugtracker to the given program
+        """
+        exit_config = False
+
+        bts = [
+            bt
+            for bt in self.bugtrackers
+            if bt not in cfg_program.bugtrackers
+        ]
+        while not exit_config and bts:
+            for count, bt in enumerate(bts):
+                logger.info("{}/ {}".format(count + 1, bt.name))
+            bt_idx = read_input(
+                Fore.BLUE
+                + "Which ones to add for this program ('1,2,3') -  empty to pass: "
+                + Style.RESET_ALL
+            )
+            if bt_idx:
+                try:
+                    bt_idx = [int(i) for i in bt_idx.split(",")]
+                    [
+                        cfg_program.bugtrackers.append(bts[i - 1])
+                        for i in bt_idx
+                    ]
+                except Exception as e:
+                    logger.error("Invalid Response")
+                    continue
+            exit_config = True
+
+    def _config_to_keep(self, cfg_program):
+        """
+        Select bugtrackers to keep in program configuration
+        """
+        cfg_bt = cfg_program.bugtrackers
+        for count, bt in enumerate(cfg_bt):
+            logger.info(
+                str(count + 1)
+                + "/ "
+                + Fore.GREEN
+                + cfg_program.slug
+                + Style.RESET_ALL
+                + " tracked on "
+                + Fore.GREEN
+                + bt.name
+                + Style.RESET_ALL
+                + " (id: "
+                + Fore.GREEN
+                + bt.project
+                + Style.RESET_ALL
+                + ")"
+            )
+        read_config_to_keep = read_input(
+            Fore.BLUE
+            + "which ones to keep (eg 1 2 3, empty to keep all programs, None to keep any): "
+            + Style.RESET_ALL
+        )
+
+        config_to_keep = []
+        if read_config_to_keep == "":
+            config_to_keep = [
+                config for config in range(1, len(cfg_bt) + 1)
+            ]
+        elif read_config_to_keep.lower() == "none":
+            self.yeswehack = []
+            self.bugtrackers = []
+            return
+        else:
+            read_config_to_keep = read_config_to_keep.split(" ")
+        invalid_response = False
+        for config in read_config_to_keep:
+            try:
+                if not 0 < int(config) <= len(cfg_bt):
+                    invalid_response = True
+                    logger.error("Value not in range")
+                else:
+                    config_to_keep.append(int(config))
+            except:
+                invalid_response = True
+        if invalid_response:
+            self._update_configuration()
+        return config_to_keep
+
     def _config_bugtrackers(self, bgtrackers, configure_mode=False):
         """
         Build BugTrackerConfig-s Object from config information.
@@ -295,9 +379,9 @@ class GlobalConfig(ConfigObject):
                 configuration = yaml.safe_load(ymlfile)
         return configuration
 
-    def _update_configuration(self):
+    def _update_package(self):
         """
-        In configure mode only, used to change configured object.
+        In configure mode only, used to change configured package.
         """
         for package in self.packages:
             exit_config = False
@@ -333,120 +417,25 @@ class GlobalConfig(ConfigObject):
             for i in sorted(del_modules, reverse=True):
                 del package.modules[i]
 
+
+
+    def _update_configuration(self):
+        """
+        In configure mode only, used to change configured object.
+        """
+        self._update_package()
+
         for cfg_ywh in self.yeswehack:
             for cfg_program in cfg_ywh.programs:
-                cfg_bt = cfg_program.bugtrackers
-                for count, bt in enumerate(cfg_bt):
-                    logger.info(
-                        str(count + 1)
-                        + "/ "
-                        + Fore.GREEN
-                        + cfg_program.slug
-                        + Style.RESET_ALL
-                        + " tracked on "
-                        + Fore.GREEN
-                        + bt.name
-                        + Style.RESET_ALL
-                        + " (id: "
-                        + Fore.GREEN
-                        + bt.project
-                        + Style.RESET_ALL
-                        + ")"
-                    )
-                read_config_to_keep = read_input(
-                    Fore.BLUE
-                    + "which ones to keep (eg 1 2 3, empty to keep all programs, None to keep any): "
-                    + Style.RESET_ALL
-                )
+                config_to_keep = self._config_to_keep(cfg_program)
 
-                config_to_keep = []
-                if read_config_to_keep == "":
-                    config_to_keep = [
-                        config for config in range(1, len(cfg_bt) + 1)
-                    ]
-                elif read_config_to_keep.lower() == "none":
-                    self.yeswehack = []
-                    self.bugtrackers = []
-                    return
-                else:
-                    read_config_to_keep = read_config_to_keep.split(" ")
-                invalid_response = False
-                for config in read_config_to_keep:
-                    try:
-                        if not 0 < int(config) <= len(cfg_bt):
-                            invalid_response = True
-                            logger.error("Value not in range")
-                        else:
-                            config_to_keep.append(int(config))
-                    except:
-                        invalid_response = True
-
-                if invalid_response:
-                    self._update_configuration()
                 # Replace current config with the item we keep
                 if len(config_to_keep) < len(cfg_program.bugtrackers):
-                    delete_bugtrackers = []
-
-                    while True:
-                        user_input = read_input(
-                            Fore.BLUE
-                            + "You Want to delete other bugtrackers ? "
-                            + Fore.YELLOW
-                            + "(if not, they are just unset for this program, otherwise, this operation could break you're configuration file)"
-                            + Fore.BLUE
-                            + " [y/N] :"
-                            + Style.RESET_ALL
-                        )
-                        if user_input in ["n", "N", ""]:
-                            break
-                        elif user_input in ["y", "Y"]:
-                            delete_bugtrackers = [
-                                cfg_program.bugtrackers[i - 1]
-                                for i in range(
-                                    1, len(cfg_program.bugtrackers) + 1
-                                )
-                                if i not in config_to_keep
-                            ]
-                            break
-                    for del_bg in delete_bugtrackers:
-                        try:
-                            self.bugtrackers.remove(del_bg)
-                        except:
-                            logger.warning(
-                                "You can't delete unexisting BugTracker ({})".format(
-                                    del_bg.name
-                                )
-                            )
+                    cfg_program._delete_bugtrackers(config_to_keep, self.bugtrackers)
                 cfg_program.bugtrackers = [
                     cfg_program.bugtrackers[i - 1] for i in config_to_keep
                 ]
-                for i in config_to_keep:
-                    Fore.BLUE + "Which ones to add for this program ('1,2,3') -  empty to pass: " + Style.RESET_ALL
-                exit_config = False
-                bts = [
-                    bt
-                    for bt in self.bugtrackers
-                    if bt not in cfg_program.bugtrackers
-                ]
-                while not exit_config and bts:
-                    for count, bt in enumerate(bts):
-                        logger.info("{}/ {}".format(count + 1, bt.name))
-                    bt_idx = read_input(
-                        Fore.BLUE
-                        + "Which ones to add for this program ('1,2,3') -  empty to pass: "
-                        + Style.RESET_ALL
-                    )
-                    if bt_idx:
-                        try:
-                            bt_idx = [int(i) for i in bt_idx.split(",")]
-                            [
-                                cfg_program.bugtrackers.append(bts[i - 1])
-                                for i in bt_idx
-                            ]
-                        except Exception as e:
-                            logger.error("Invalid Response")
-                            continue
-                    exit_config = True
+                self._add_bugtrackers_to_pgm(cfg_program)
 
     ############################################################
     #################### Static methods ########################

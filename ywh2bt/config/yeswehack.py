@@ -542,6 +542,42 @@ class ProgramConfig(ConfigObject):
             ],
         }
 
+    def _delete_bugtrackers(self, config_to_keep, bugtrackers):
+        """
+        Delete Linked bugtrackers
+        """
+        delete_bugtrackers = []
+
+        while True:
+            user_input = read_input(
+                Fore.BLUE
+                + "You Want to delete other bugtrackers ? "
+                + Fore.YELLOW
+                + "(if not, they are just unset for this program, otherwise, this operation could break you're configuration file)"
+                + Fore.BLUE
+                + " [y/N] :"
+                + Style.RESET_ALL
+            )
+            if user_input in ["n", "N", ""]:
+                break
+            elif user_input in ["y", "Y"]:
+                delete_bugtrackers = [
+                    bugtrackers[i - 1]
+                    for i in range(
+                        1, len(bugtrackers) + 1
+                    )
+                    if i not in config_to_keep
+                ]
+                break
+        for del_bg in delete_bugtrackers:
+            try:
+                bugtrackers.remove(del_bg)
+            except:
+                logger.warning(
+                    "You can't delete unexisting BugTracker ({})".format(
+                        del_bg.name
+                    )
+                )
     def _validate_and_set_bugtrackers(self, program_bt_names, bugtrackers):
         """
         Configure and link to bugtrackers from configuration file.

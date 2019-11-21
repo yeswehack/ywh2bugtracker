@@ -54,8 +54,9 @@ bugtrackers:
     token: myaccesstoken
     type: github
     url: https://github/api/v3
+    github_cdn_on: true
     login: githublogin
-    password:githubpassword
+    password: githubpassword
   gitlab:
     project: path/to/myproject
     token: mygitlabtoken

@@ -14,6 +14,7 @@ Define Abstract client class
 
 html2text.BODY_WIDTH = 0
 
+
 class BugTracker(object):
 
     """
@@ -30,7 +31,6 @@ class BugTracker(object):
         "Imported to the bugtracker : {url} on project : {project_id}."
     )
     ywh_comment_template = "Tracked to [{type} #{issue_id}]({bug_url})"
-
 
     description_template = """
 | Title | {local_id} : {title}|
@@ -74,8 +74,13 @@ class BugTracker(object):
         )
         return image
 
-
-    def report_as_title(self, report, template=None, additional_keys=[], html_parser=html2text.html2text):
+    def report_as_title(
+        self,
+        report,
+        template=None,
+        additional_keys=[],
+        html_parser=html2text.html2text,
+    ):
         """
         Format template title with given information.
 
@@ -87,10 +92,21 @@ class BugTracker(object):
         """
         if template is None:
             template = self.issue_name_template
-        return self.format_template(report, template, keys=additional_keys, fmt_keys={"local_id":report.local_id, "title": report.title}, html_parser=html_parser)
+        return self.format_template(
+            report,
+            template,
+            keys=additional_keys,
+            fmt_keys={"local_id": report.local_id, "title": report.title},
+            html_parser=html_parser,
+        )
 
-
-    def report_as_description(self, report, template=None, additional_keys=[], html_parser=html2text.html2text):
+    def report_as_description(
+        self,
+        report,
+        template=None,
+        additional_keys=[],
+        html_parser=html2text.html2text,
+    ):
         """
         Format template description with given information
 
@@ -118,15 +134,22 @@ class BugTracker(object):
             "payload_sample",
             "technical_information",
             "local_id",
-            "title"
+            "title",
         ]
-        return self.format_template(report, template=template, keys=[*additional_keys,*keys], html_parser=html_parser)
+        return self.format_template(
+            report,
+            template=template,
+            keys=[*additional_keys, *keys],
+            html_parser=html_parser,
+        )
 
     ############################################################
     ####################### Static methods #####################
     ############################################################
     @staticmethod
-    def format_template(report, template, keys=[], fmt_keys={}, html_parser=html2text.html2text):
+    def format_template(
+        report, template, keys=[], fmt_keys={}, html_parser=html2text.html2text
+    ):
         """
         Format given template with report information
 
@@ -139,9 +162,9 @@ class BugTracker(object):
 
         for key in keys:
             obj = report
-            for i in key.split('__'):
+            for i in key.split("__"):
                 obj = obj.__getattribute__(i)
-            if 'html' in key:
+            if "html" in key:
                 obj = html_parser(obj)
             fmt_keys[key] = obj
         return template.format(**fmt_keys)

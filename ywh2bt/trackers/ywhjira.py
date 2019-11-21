@@ -7,6 +7,7 @@ from ywh2bt.config import BugTrackerConfig
 from ywh2bt.utils import html2jira
 from bs4 import BeautifulSoup
 from pprint import pprint
+
 __all__ = ["YWHJira", "YWHJiraConfig"]
 
 
@@ -63,8 +64,8 @@ class YWHJira(BugTracker):
         }
         try:
             issue = self.jira.create_issue(**issue_data)
-        except: # if jira need direct issuetype name
-            issue_data['issuetype'] = self.issuetype
+        except:  #  if jira need direct issuetype name
+            issue_data["issuetype"] = self.issuetype
             issue = self.jira.create_issue(**issue_data)
 
         for attachment in report.attachments:
@@ -77,10 +78,10 @@ class YWHJira(BugTracker):
             report.description_html = report.description_html.replace(
                 attachment.url,
                 (
-                    "/".join(
-                        attach.content.split('/')[:-1]
-                    ) + "/" + attach.filename.replace(' ', "%20")
-                ).replace('\n', '')
+                    "/".join(attach.content.split("/")[:-1])
+                    + "/"
+                    + attach.filename.replace(" ", "%20")
+                ).replace("\n", ""),
             )
         issue.update(description=self.report_as_description(report))
         return issue
@@ -92,8 +93,15 @@ class YWHJira(BugTracker):
         return issue.key
 
     def report_as_description(self, report, template=None, additional_keys=[]):
-        report.description_html = self._img_to_a_balisis(report.description_html)
-        return super().report_as_description(report, template=template, additional_keys=additional_keys, html_parser=html2jira)
+        report.description_html = self._img_to_a_balisis(
+            report.description_html
+        )
+        return super().report_as_description(
+            report,
+            template=template,
+            additional_keys=additional_keys,
+            html_parser=html2jira,
+        )
 
     def _img_to_a_balisis(self, html):
         """
@@ -102,11 +110,12 @@ class YWHJira(BugTracker):
         soup = BeautifulSoup(html, features="lxml")
         n_html = str(soup)
         for img in soup.findAll("img"):
-            alt = img.attrs.get('alt', '')
-            src = img.attrs.get('src', '')
+            alt = img.attrs.get("alt", "")
+            src = img.attrs.get("src", "")
             a = f'<a href="{src}">{alt}</a>'
             n_html = n_html.replace(str(img), a)
         return n_html
+
 
 class YWHJiraConfig(BugTrackerConfig):
 

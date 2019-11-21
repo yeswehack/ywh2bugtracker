@@ -18,6 +18,7 @@ class YWHGitlab(BugTracker):
     """
     Gitlab Client Wrapper
     """
+
     ############################################################
     ####################### Constructor ########################
     ############################################################
@@ -48,12 +49,14 @@ class YWHGitlab(BugTracker):
         for attachment in report.attachments:
             # Add attachment to gitlab issue if there is attachement in the original bug
             f = project.upload(attachment.original_name, attachment.data)
-            report.description_html = report.description_html.replace(attachment.url, f['url'])
+            report.description_html = report.description_html.replace(
+                attachment.url, f["url"]
+            )
 
         description = self.report_as_description(report)
         issue_data = {
             "title": self.report_as_title(report),
-            "description": description
+            "description": description,
         }
         issue = project.issues.create(issue_data)
         return issue

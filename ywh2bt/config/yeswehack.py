@@ -40,7 +40,7 @@ class YesWeHackConfig(ConfigObject):
         bugtrackers,
         no_interactive=False,
         configure_mode=False,
-        **config
+        **config,
     ):
         assert bugtrackers is not None
         self._name = name
@@ -52,7 +52,9 @@ class YesWeHackConfig(ConfigObject):
         self._password = ""
         self._totp_secret = ""
 
-        self.check_secret_keys(no_interactive,  ["totp_secret", "password"], config)
+        self.check_secret_keys(
+            no_interactive, ["totp_secret", "password"], config
+        )
 
         if config or not configure_mode:
             self._totp = config.get("totp", False)
@@ -70,8 +72,8 @@ class YesWeHackConfig(ConfigObject):
                 else ""
             )
             self._oauth_mode = "oauth_args" in config
-            self._oauth_args = config.get('oauth_args', {})
-            self._apps_headers = config.get('apps_headers', {})
+            self._oauth_args = config.get("oauth_args", {})
+            self._apps_headers = config.get("apps_headers", {})
             self._totp = config.get("totp", False)
             self._programs = self._config_programs(
                 bugtrackers, config["programs"]
@@ -127,8 +129,12 @@ class YesWeHackConfig(ConfigObject):
         """
         Configure oauth public information interactively.
         """
-        self._oauth_args['client_id'] = read_input(Fore.BLUE + "Client id: " + Style.RESET_ALL)
-        self._oauth_args['redirect_uri'] = read_input(Fore.BLUE + "Redirect URI: " + Style.RESET_ALL)
+        self._oauth_args["client_id"] = read_input(
+            Fore.BLUE + "Client id: " + Style.RESET_ALL
+        )
+        self._oauth_args["redirect_uri"] = read_input(
+            Fore.BLUE + "Redirect URI: " + Style.RESET_ALL
+        )
 
     def config_secret(self):
         """
@@ -144,7 +150,9 @@ class YesWeHackConfig(ConfigObject):
             secret=True,
         )
         if self.oauth_mode:
-            self._oauth_args['client_secret'] = read_input(Fore.BLUE + "Client Secret: " + Style.RESET_ALL, secret=True)
+            self._oauth_args["client_secret"] = read_input(
+                Fore.BLUE + "Client Secret: " + Style.RESET_ALL, secret=True
+            )
         if self.totp:
             self._totp_secret = read_input(
                 Fore.BLUE + "Totp secret: " + Style.RESET_ALL, secret=True
@@ -184,12 +192,14 @@ class YesWeHackConfig(ConfigObject):
         self._totp = True if totp in ["y", "Y"] else False
 
         while True:
-            inpt = read_input(Fore.BLUE + "OAuth2 Authentication ? [y/N]: " + Fore.RESET)
-            if inpt in ['y', 'Y']:
+            inpt = read_input(
+                Fore.BLUE + "OAuth2 Authentication ? [y/N]: " + Fore.RESET
+            )
+            if inpt in ["y", "Y"]:
                 self._oauth_mode = True
                 self.config_oauth()
                 break
-            elif inpt in ['', 'n', 'N']:
+            elif inpt in ["", "n", "N"]:
                 self._oauth_mode = False
                 break
 
@@ -281,9 +291,13 @@ class YesWeHackConfig(ConfigObject):
         self.ywh.login(totp_code=totp_code)
         managed_programs = set(self.ywh.managed_programs())
         pgms_names = [pgm.name for pgm in self.programs]
-        diffs =set(pgms_names).difference(managed_programs)
+        diffs = set(pgms_names).difference(managed_programs)
         if diffs:
-            logger.error("Program-s {} are not manageable for {} yeswehack user".format("".join(diffs), self.login))
+            logger.error(
+                "Program-s {} are not manageable for {} yeswehack user".format(
+                    "".join(diffs), self.login
+                )
+            )
             sys.exit(110)
         if self.no_interactive:
             logger.info("Testing program")
@@ -338,7 +352,7 @@ class YesWeHackConfig(ConfigObject):
         }
 
         if self.oauth_mode:
-            component['oauth_args'] = self.oauth_args
+            component["oauth_args"] = self.oauth_args
         if self.apps_headers:
             component["apps_headers"] = self.apps_headers
         if self.no_interactive:
@@ -375,24 +389,38 @@ class YesWeHackConfig(ConfigObject):
         """
         Config headers interactively
         """
-        logger.info('Yeswehack Apps Headers configuration')
+        logger.info("Yeswehack Apps Headers configuration")
         for know_header in self.known_headers:
-            header = read_input(Fore.BLUE + "Value for {}: ".format(Fore.GREEN + know_header + Fore.BLUE) + Fore.RESET, secret=True)
+            header = read_input(
+                Fore.BLUE
+                + "Value for {}: ".format(Fore.GREEN + know_header + Fore.BLUE)
+                + Fore.RESET,
+                secret=True,
+            )
             if header:
                 self.apps_headers[know_header] = header
-        inpt = ''
+        inpt = ""
         exit_config = False
         while not exit_config:
             while True:
-                inpt = read_input(Fore.BLUE + "Append an other Application Header ? [y/N]: " + Fore.RESET)
-                if inpt in ['y', 'Y']:
-                    apps_header_name = read_input(Fore.BLUE + 'Header Name: '+ Fore.RESET)
-                    apps_header_value = read_input(Fore.BLUE + 'Header Value: '+ Fore.RESET)
+                inpt = read_input(
+                    Fore.BLUE
+                    + "Append an other Application Header ? [y/N]: "
+                    + Fore.RESET
+                )
+                if inpt in ["y", "Y"]:
+                    apps_header_name = read_input(
+                        Fore.BLUE + "Header Name: " + Fore.RESET
+                    )
+                    apps_header_value = read_input(
+                        Fore.BLUE + "Header Value: " + Fore.RESET
+                    )
                     self.apps_headers[apps_header_name] = apps_header_value
                     break
-                if inpt in ['', 'n', 'N']:
+                if inpt in ["", "n", "N"]:
                     exit_config = True
                     break
+
     ############################################################
     ####################### Properties #########################
     ############################################################
@@ -469,7 +497,6 @@ class ProgramConfig(ConfigObject):
     ############################################################
     ################### Instance Methods #######################
     ############################################################
-
 
     def configure(self, bugtrackers):
         """

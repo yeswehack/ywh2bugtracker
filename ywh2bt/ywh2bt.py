@@ -26,7 +26,6 @@ Entry point for script and setup
 """
 
 
-
 def main():
     """
     Parse args from commande line, setup GlobalConfig and run corresponding process.
@@ -93,9 +92,7 @@ def run(cfg, options):
                         "id": cfg_bt.bugtracker.get_id(issue),
                     }
 
-                    logger.info(
-                            report.title + " posted to " + cfg_bt.name
-                    )
+                    logger.info(report.title + " posted to " + cfg_bt.name)
 
                     marker = BugTracker.ywh_comment_marker.format(
                         url=cfg_bt.url, project_id=cfg_bt.project
@@ -110,14 +107,26 @@ def run(cfg, options):
                             bug_url=issue_meta["url"],
                         )
                     )
-                    resp = report.put_tracking_status("T", cfg_bt.name, issue_meta['url'], tracker_id=issue_meta["id"], message=comment)
+                    resp = report.put_tracking_status(
+                        "T",
+                        cfg_bt.name,
+                        issue_meta["url"],
+                        tracker_id=issue_meta["id"],
+                        message=comment,
+                    )
 
                     try:
                         resp_json = resp.json()
                     except:
                         logger.error("Response from YesWeHack not JSON")
                     else:
-                        if 'error' in resp_json:
-                            logger.error("Status Update Error : {}".format(resp_json.get('error_description', resp.text)))
+                        if "error" in resp_json:
+                            logger.error(
+                                "Status Update Error : {}".format(
+                                    resp_json.get(
+                                        "error_description", resp.text
+                                    )
+                                )
+                            )
                         else:
                             logger.info("Status updated.")

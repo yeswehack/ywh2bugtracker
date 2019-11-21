@@ -12,10 +12,12 @@ __all__ = ["ExtraPackageConfig"]
 Module to load and configure External BugTracker packages to append.
 """
 
+
 class ExtraPackageConfig(ConfigObject):
     """
     Load / Configure External packages to append.
     """
+
     ############################################################
     ###################### Constructor #########################
     ############################################################

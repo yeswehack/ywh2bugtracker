@@ -17,6 +17,7 @@ __all__ = ["GlobalConfig"]
 Module to load configuration file globaly
 """
 
+
 class GlobalConfig(ConfigObject):
 
     """
@@ -141,8 +142,9 @@ class GlobalConfig(ConfigObject):
                 exit_config = True
             elif exit_configuration in ["y", "Y"]:
                 self.packages.append(ExtraPackageConfig(configure_mode=True))
-        self.default_supported_bugtrackers = [tr.bugtracker_type for tr in get_all_subclasses(BugTrackerConfig)
-            ] or []
+        self.default_supported_bugtrackers = [
+            tr.bugtracker_type for tr in get_all_subclasses(BugTrackerConfig)
+        ] or []
 
     def configure_new_yeswehack(self):
         """
@@ -218,8 +220,9 @@ class GlobalConfig(ConfigObject):
         self.yeswehack = self._config_ywh(config["yeswehack"])
         if "packages" in config:
             self.packages = self._config_packages(config["packages"])
-        self.default_supported_bugtrackers = [tr.bugtracker_type for tr in get_all_subclasses(BugTrackerConfig)
-            ] or []
+        self.default_supported_bugtrackers = [
+            tr.bugtracker_type for tr in get_all_subclasses(BugTrackerConfig)
+        ] or []
 
     def _config_bugtrackers(self, bgtrackers, configure_mode=False):
         """
@@ -257,7 +260,6 @@ class GlobalConfig(ConfigObject):
         for params in packages:
             pkgs.append(ExtraPackageConfig(configure_mode=False, **params))
         return pkgs
-
 
     def _config_ywh(self, ywh, configure_mode=False):
         """

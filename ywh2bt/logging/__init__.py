@@ -10,6 +10,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 Logging Module.
 """
 
+
 def _setup_logger(level="INFO"):
     """
     Setup a Color Logger.

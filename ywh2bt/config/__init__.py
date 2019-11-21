@@ -11,7 +11,7 @@ __all__ = [
     "BugTrackerConfig",
     "YesWeHackConfig",
     "ProgramConfig",
-    "ExtraPackageConfig"
+    "ExtraPackageConfig",
 ]
 
 """

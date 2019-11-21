@@ -2,7 +2,7 @@
 # coding: utf-8
 """html2jira: Turn HTML into equivalent jira wiki format."""
 
-# Based On https://github.com/Qazzian/html2jira
+#  Based On https://github.com/Qazzian/html2jira
 
 import html.entities as htmlentitydefs
 import urllib.parse as urlparse
@@ -42,25 +42,55 @@ IGNORE_EMPHASIS = False
 
 ### Entity Nonsense ###
 # For checking space-only lines on line 771
-SPACE_RE = re.compile(r'\s\+')
+SPACE_RE = re.compile(r"\s\+")
 
 
 def name2cp(k):
-    if k == 'apos':
+    if k == "apos":
         return ord("'")
     return htmlentitydefs.name2codepoint[k]
 
 
-unifiable = {'rsquo': "'", 'lsquo': "'", 'rdquo': '"', 'ldquo': '"',
-             'copy': '(C)', 'mdash': '--', 'nbsp': ' ', 'rarr': '->',
-             'larr': '<-', 'middot': '*', 'ndash': '-', 'oelig': 'oe',
-             'aelig': 'ae', 'agrave': 'a', 'aacute': 'a', 'acirc': 'a',
-             'atilde': 'a', 'auml': 'a', 'aring': 'a', 'egrave': 'e',
-             'eacute': 'e', 'ecirc': 'e', 'euml': 'e', 'igrave': 'i',
-             'iacute': 'i', 'icirc': 'i', 'iuml': 'i', 'ograve': 'o',
-             'oacute': 'o', 'ocirc': 'o', 'otilde': 'o', 'ouml': 'o',
-             'ugrave': 'u', 'uacute': 'u', 'ucirc': 'u', 'uuml': 'u',
-             'lrm': '', 'rlm': ''}
+unifiable = {
+    "rsquo": "'",
+    "lsquo": "'",
+    "rdquo": '"',
+    "ldquo": '"',
+    "copy": "(C)",
+    "mdash": "--",
+    "nbsp": " ",
+    "rarr": "->",
+    "larr": "<-",
+    "middot": "*",
+    "ndash": "-",
+    "oelig": "oe",
+    "aelig": "ae",
+    "agrave": "a",
+    "aacute": "a",
+    "acirc": "a",
+    "atilde": "a",
+    "auml": "a",
+    "aring": "a",
+    "egrave": "e",
+    "eacute": "e",
+    "ecirc": "e",
+    "euml": "e",
+    "igrave": "i",
+    "iacute": "i",
+    "icirc": "i",
+    "iuml": "i",
+    "ograve": "o",
+    "oacute": "o",
+    "ocirc": "o",
+    "otilde": "o",
+    "ouml": "o",
+    "ugrave": "u",
+    "uacute": "u",
+    "ucirc": "u",
+    "uuml": "u",
+    "lrm": "",
+    "rlm": "",
+}
 
 unifiable_n = {}
 
@@ -70,7 +100,7 @@ for k in unifiable.keys():
 
 ### End Entity Nonsense ###
 def hn(tag):
-    if tag[0] == 'h' and len(tag) == 2:
+    if tag[0] == "h" and len(tag) == 2:
         try:
             n = int(tag[1])
             if n in range(1, 10):
@@ -81,9 +111,12 @@ def hn(tag):
 
 def dumb_property_dict(style):
     """returns a hash of css attributes"""
-    out = dict([(x.strip(), y.strip()) for x, y in
-               [z.split(':', 1) for z in
-               style.split(';') if ':' in z]])
+    out = dict(
+        [
+            (x.strip(), y.strip())
+            for x, y in [z.split(":", 1) for z in style.split(";") if ":" in z]
+        ]
+    )
     return out
 
 
@@ -91,18 +124,19 @@ def dumb_css_parser(data):
     """returns a hash of css selectors, each of which contains a hash of
     css attributes"""
     # remove @import sentences
-    data += ';'
-    importIndex = data.find('@import')
+    data += ";"
+    importIndex = data.find("@import")
     while importIndex != -1:
-        data = data[0:importIndex] + data[data.find(';', importIndex) + 1:]
-        importIndex = data.find('@import')
+        data = data[0:importIndex] + data[data.find(";", importIndex) + 1 :]
+        importIndex = data.find("@import")
 
     # parse the css. reverted from dictionary compehension in order to
     # support older pythons
-    elements = [x.split('{') for x in data.split('}') if '{' in x.strip()]
+    elements = [x.split("{") for x in data.split("}") if "{" in x.strip()]
     try:
-        elements = dict([(a.strip(), dumb_property_dict(b))
-                        for a, b in elements])
+        elements = dict(
+            [(a.strip(), dumb_property_dict(b)) for a, b in elements]
+        )
     except ValueError:
         elements = {}  # not that important
 
@@ -112,29 +146,29 @@ def dumb_css_parser(data):
 def element_style(attrs, style_def, parent_style):
     """returns a hash of the 'final' style attributes of the element"""
     style = parent_style.copy()
-    if 'class' in attrs:
-        for css_class in attrs['class'].split():
-            css_style = style_def['.' + css_class]
+    if "class" in attrs:
+        for css_class in attrs["class"].split():
+            css_style = style_def["." + css_class]
             style.update(css_style)
-    if 'style' in attrs:
-        immediate_style = dumb_property_dict(attrs['style'])
+    if "style" in attrs:
+        immediate_style = dumb_property_dict(attrs["style"])
         style.update(immediate_style)
     return style
 
 
 def google_list_style(style):
     """finds out whether this is an ordered or unordered list"""
-    if 'list-style-type' in style:
-        list_style = style['list-style-type']
-        if list_style in ['disc', 'circle', 'square', 'none']:
-            return 'ul'
-    return 'ol'
+    if "list-style-type" in style:
+        list_style = style["list-style-type"]
+        if list_style in ["disc", "circle", "square", "none"]:
+            return "ul"
+    return "ol"
 
 
 def google_has_height(style):
     """check if the style of the element has the 'height' attribute
     explicitly defined"""
-    if 'height' in style:
+    if "height" in style:
         return True
     return False
 
@@ -142,30 +176,30 @@ def google_has_height(style):
 def google_text_emphasis(style):
     """return a list of all emphasis modifiers of the element"""
     emphasis = []
-    if 'text-decoration' in style:
-        emphasis.append(style['text-decoration'])
-    if 'font-style' in style:
-        emphasis.append(style['font-style'])
-    if 'font-weight' in style:
-        emphasis.append(style['font-weight'])
+    if "text-decoration" in style:
+        emphasis.append(style["text-decoration"])
+    if "font-style" in style:
+        emphasis.append(style["font-style"])
+    if "font-weight" in style:
+        emphasis.append(style["font-weight"])
     return emphasis
 
 
 def google_fixed_width_font(style):
     """check if the css of the current element defines a fixed width font"""
-    font_family = ''
-    if 'font-family' in style:
-        font_family = style['font-family']
-    if 'Courier New' == font_family or 'Consolas' == font_family:
+    font_family = ""
+    if "font-family" in style:
+        font_family = style["font-family"]
+    if "Courier New" == font_family or "Consolas" == font_family:
         return True
     return False
 
 
 def list_numbering_start(attrs):
     """extract numbering from list element attributes"""
-    if 'start' in attrs:
+    if "start" in attrs:
         try:
-            return int(attrs['start']) - 1
+            return int(attrs["start"]) - 1
         except ValueError:
             pass
 
@@ -173,7 +207,7 @@ def list_numbering_start(attrs):
 
 
 class HTML2Jira(HTMLParser.HTMLParser):
-    def __init__(self, out=None, baseurl='', bodywidth=BODY_WIDTH):
+    def __init__(self, out=None, baseurl="", bodywidth=BODY_WIDTH):
         HTMLParser.HTMLParser.__init__(self)
 
         # Config options
@@ -188,9 +222,9 @@ class HTML2Jira(HTMLParser.HTMLParser):
         self.ignore_images = IGNORE_IMAGES
         self.ignore_emphasis = IGNORE_EMPHASIS
         self.google_doc = False
-        self.ul_item_mark = '*'
-        self.emphasis_mark = '_'
-        self.strong_mark = '*'
+        self.ul_item_mark = "*"
+        self.emphasis_mark = "_"
+        self.strong_mark = "*"
 
         if out is None:
             self.out = self.outtextf
@@ -210,14 +244,14 @@ class HTML2Jira(HTMLParser.HTMLParser):
         self.a = []
         self.astack = []
         self.maybe_automatic_link = None
-        self.absolute_url_matcher = re.compile(r'^[a-zA-Z+]+://')
+        self.absolute_url_matcher = re.compile(r"^[a-zA-Z+]+://")
         self.acount = 0
         self.list = []
         self.blockquote = 0
         self.pre = 0
         self.startpre = 0
         self.code = False
-        self.br_toggle = ''
+        self.br_toggle = ""
         self.lastWasNL = 0
         self.lastWasList = False
         self.style = 0
@@ -232,10 +266,10 @@ class HTML2Jira(HTMLParser.HTMLParser):
         self.baseurl = baseurl
 
         try:
-            del unifiable_n[name2cp('nbsp')]
+            del unifiable_n[name2cp("nbsp")]
         except KeyError:
             pass
-        unifiable['nbsp'] = '&nbsp_place_holder;'
+        unifiable["nbsp"] = "&nbsp_place_holder;"
 
     def feed(self, data):
         data = data.replace("</' + 'script>", "</ignore>")
@@ -249,30 +283,31 @@ class HTML2Jira(HTMLParser.HTMLParser):
     def outtextf(self, s):
         self.outtextlist.append(s)
         if s:
-            self.lastWasNL = s[-1] == '\n'
+            self.lastWasNL = s[-1] == "\n"
 
     def close(self):
         HTMLParser.HTMLParser.close(self)
 
         self.pbr()
-        self.o('', 0, 'end')
+        self.o("", 0, "end")
 
         self.outtext = self.outtext.join(self.outtextlist)
         if self.unicode_snob:
             try:
-                nbsp = unichr(name2cp('nbsp'))
+                nbsp = unichr(name2cp("nbsp"))
             except NameError:
-                nbsp = chr(name2cp('nbsp'))
+                nbsp = chr(name2cp("nbsp"))
         else:
             try:
                 nbsp = unichr(32)
             except NameError:
                 nbsp = chr(32)
         try:
-            self.outtext = self.outtext.replace(unicode('&nbsp_place_holder;'),
-                                                nbsp)
+            self.outtext = self.outtext.replace(
+                unicode("&nbsp_place_holder;"), nbsp
+            )
         except NameError:
-            self.outtext = self.outtext.replace('&nbsp_place_holder;', nbsp)
+            self.outtext = self.outtext.replace("&nbsp_place_holder;", nbsp)
 
         return self.outtext
 
@@ -294,7 +329,7 @@ class HTML2Jira(HTMLParser.HTMLParser):
 
             If the set of attributes is not found, returns None
         """
-        if 'href' not in attrs:
+        if "href" not in attrs:
             return None
 
         i = -1
@@ -302,11 +337,14 @@ class HTML2Jira(HTMLParser.HTMLParser):
             i += 1
             match = 0
 
-            if ('href' in a) and a['href'] == attrs['href']:
-                if ('title' in a) or ('title' in attrs):
-                        if (('title' in a) and ('title' in attrs) and
-                                a['title'] == attrs['title']):
-                            match = True
+            if ("href" in a) and a["href"] == attrs["href"]:
+                if ("title" in a) or ("title" in attrs):
+                    if (
+                        ("title" in a)
+                        and ("title" in attrs)
+                        and a["title"] == attrs["title"]
+                    ):
+                        match = True
                 else:
                     match = True
 
@@ -323,12 +361,16 @@ class HTML2Jira(HTMLParser.HTMLParser):
         parent_emphasis = google_text_emphasis(parent_style)
 
         # handle Google's text emphasis
-        strikethrough = 'line-through' in \
-            tag_emphasis and self.hide_strikethrough
-        bold = 'bold' in tag_emphasis and not 'bold' in parent_emphasis
-        italic = 'italic' in tag_emphasis and not 'italic' in parent_emphasis
-        fixed = google_fixed_width_font(tag_style) and not \
-            google_fixed_width_font(parent_style) and not self.pre
+        strikethrough = (
+            "line-through" in tag_emphasis and self.hide_strikethrough
+        )
+        bold = "bold" in tag_emphasis and not "bold" in parent_emphasis
+        italic = "italic" in tag_emphasis and not "italic" in parent_emphasis
+        fixed = (
+            google_fixed_width_font(tag_style)
+            and not google_fixed_width_font(parent_style)
+            and not self.pre
+        )
 
         if start:
             # crossed-out text must be handled before other attributes
@@ -344,7 +386,7 @@ class HTML2Jira(HTMLParser.HTMLParser):
                 self.o(self.strong_mark)
                 self.drop_white_space += 1
             if fixed:
-                self.o('`')
+                self.o("`")
                 self.drop_white_space += 1
                 self.code = True
         else:
@@ -359,7 +401,7 @@ class HTML2Jira(HTMLParser.HTMLParser):
                     self.drop_last(1)
                     self.drop_white_space -= 1
                 else:
-                    self.o('`')
+                    self.o("`")
                 self.code = False
             if bold:
                 if self.drop_white_space:
@@ -377,12 +419,12 @@ class HTML2Jira(HTMLParser.HTMLParser):
                     self.o(self.emphasis_mark)
             # space is only allowed after *all* emphasis marks
             if (bold or italic) and not self.emphasis:
-                    self.o(" ")
+                self.o(" ")
             if strikethrough:
                 self.quiet -= 1
 
     def handle_tag(self, tag, attrs, start):
-        #attrs = fixattrs(attrs)
+        # attrs = fixattrs(attrs)
         # attrs is None for endtags
         if attrs is None:
             attrs = {}
@@ -409,12 +451,12 @@ class HTML2Jira(HTMLParser.HTMLParser):
             self.p()
             if start:
                 self.inheader = True
-                self.o("h" + str(hn(tag)) + '. ')
+                self.o("h" + str(hn(tag)) + ". ")
             else:
                 self.inheader = False
                 return  # prevent redundant emphasis marks on headers
 
-        if tag in ['p', 'div']:
+        if tag in ["p", "div"]:
             if self.google_doc:
                 if start and google_has_height(tag_style):
                     self.p()
@@ -431,7 +473,7 @@ class HTML2Jira(HTMLParser.HTMLParser):
             self.o("----")
             self.p()
 
-        if tag in ["head", "style", 'script']:
+        if tag in ["head", "style", "script"]:
             if start:
                 self.quiet += 1
             else:
@@ -449,18 +491,18 @@ class HTML2Jira(HTMLParser.HTMLParser):
         if tag == "blockquote":
             if start:
                 self.p()
-                self.o('> ', 0, 1)
+                self.o("> ", 0, 1)
                 self.start = 1
                 self.blockquote += 1
             else:
                 self.blockquote -= 1
                 self.p()
 
-        if tag in ['em', 'i', 'u'] and not self.ignore_emphasis:
+        if tag in ["em", "i", "u"] and not self.ignore_emphasis:
             self.o(self.emphasis_mark)
-        if tag in ['strong', 'b'] and not self.ignore_emphasis:
+        if tag in ["strong", "b"] and not self.ignore_emphasis:
             self.o(self.strong_mark)
-        if tag in ['del', 'strike', 's']:
+        if tag in ["del", "strike", "s"]:
             if start:
                 self.o("<" + tag + ">")
             else:
@@ -472,26 +514,26 @@ class HTML2Jira(HTMLParser.HTMLParser):
                 self.handle_emphasis(start, tag_style, parent_style)
 
         if tag in ["code", "tt"] and not self.pre:
-            self.o('`')  # TODO: `` `this` ``
+            self.o("`")  # TODO: `` `this` ``
         if tag == "abbr":
             if start:
                 self.abbr_title = None
-                self.abbr_data = ''
-                if ('title' in attrs):
-                    self.abbr_title = attrs['title']
+                self.abbr_data = ""
+                if "title" in attrs:
+                    self.abbr_title = attrs["title"]
             else:
                 if self.abbr_title is not None:
                     self.abbr_list[self.abbr_data] = self.abbr_title
                     self.abbr_title = None
-                self.abbr_data = ''
+                self.abbr_data = ""
 
         if tag == "a" and not self.ignore_links:
             if start:
-                if ('href' in attrs) and \
-                        not (self.skip_internal_links and
-                             attrs['href'].startswith('#')):
+                if ("href" in attrs) and not (
+                    self.skip_internal_links and attrs["href"].startswith("#")
+                ):
                     self.astack.append(attrs)
-                    self.maybe_automatic_link = attrs['href']
+                    self.maybe_automatic_link = attrs["href"]
                 else:
                     self.astack.append(None)
             else:
@@ -501,44 +543,44 @@ class HTML2Jira(HTMLParser.HTMLParser):
                         self.maybe_automatic_link = None
                     elif a:
                         if self.inline_links:
-                            self.o("|" + escape_md(a['href']) + "]")
+                            self.o("|" + escape_md(a["href"]) + "]")
                         else:
                             i = self.previousIndex(a)
                             if i is not None:
                                 a = self.a[i]
                             else:
                                 self.acount += 1
-                                a['count'] = self.acount
-                                a['outcount'] = self.outcount
+                                a["count"] = self.acount
+                                a["outcount"] = self.outcount
                                 self.a.append(a)
-                            self.o("][" + str(a['count']) + "]")
+                            self.o("][" + str(a["count"]) + "]")
 
         if tag == "img" and start and not self.ignore_images:
-            if ('src' in attrs):
-                attrs['href'] = attrs['src']
-                alt = attrs.get('alt', '')
+            if "src" in attrs:
+                attrs["href"] = attrs["src"]
+                alt = attrs.get("alt", "")
                 self.o("![" + escape_md(alt) + "]")
 
                 if self.inline_links:
-                    self.o("(" + escape_md(attrs['href']) + ")")
+                    self.o("(" + escape_md(attrs["href"]) + ")")
                 else:
                     i = self.previousIndex(attrs)
                     if i is not None:
                         attrs = self.a[i]
                     else:
                         self.acount += 1
-                        attrs['count'] = self.acount
-                        attrs['outcount'] = self.outcount
+                        attrs["count"] = self.acount
+                        attrs["outcount"] = self.outcount
                         self.a.append(attrs)
-                    self.o("[" + str(attrs['count']) + "]")
+                    self.o("[" + str(attrs["count"]) + "]")
 
-        if tag == 'dl' and start:
+        if tag == "dl" and start:
             self.p()
-        if tag == 'dt' and not start:
+        if tag == "dt" and not start:
             self.pbr()
-        if tag == 'dd' and start:
-            self.o('    ')
-        if tag == 'dd' and not start:
+        if tag == "dd" and start:
+            self.o("    ")
+        if tag == "dd" and not start:
             self.pbr()
 
         if tag in ["ol", "ul"]:
@@ -551,10 +593,7 @@ class HTML2Jira(HTMLParser.HTMLParser):
                 else:
                     list_style = tag
                 numbering_start = list_numbering_start(attrs)
-                self.list.append({
-                    'name': list_style,
-                    'num': numbering_start
-                })
+                self.list.append({"name": list_style, "num": numbering_start})
             else:
                 if self.list:
                     self.list.pop()
@@ -562,29 +601,29 @@ class HTML2Jira(HTMLParser.HTMLParser):
         else:
             self.lastWasList = False
 
-        if tag == 'li':
+        if tag == "li":
             self.pbr()
             if start:
                 if self.list:
                     li = self.list[-1]
                 else:
-                    li = {'name': 'ul', 'num': 0}
+                    li = {"name": "ul", "num": 0}
                 if self.google_doc:
                     nest_count = self.google_nest_count(tag_style)
                 else:
                     nest_count = len(self.list)
                 # TODO: line up <ol><li>s > 9 correctly.
                 self.o("  ")
-                if li['name'] == "ul":
-                    self.o((self.ul_item_mark* nest_count) + " ")
-                elif li['name'] == "ol":
-                    li['num'] += 1
-                    self.o(str(li['num']) + ". ")
+                if li["name"] == "ul":
+                    self.o((self.ul_item_mark * nest_count) + " ")
+                elif li["name"] == "ol":
+                    li["num"] += 1
+                    self.o(str(li["num"]) + ". ")
                 self.start = 1
 
         if tag in ["table", "tr"] and start:
             self.p()
-        if tag == 'td':
+        if tag == "td":
             self.pbr()
 
         if tag == "pre":
@@ -604,7 +643,7 @@ class HTML2Jira(HTMLParser.HTMLParser):
 
     def soft_br(self):
         self.pbr()
-        self.br_toggle = '  '
+        self.br_toggle = "  "
 
     def o(self, data, puredata=0, force=0):
         if self.abbr_data is not None:
@@ -617,33 +656,33 @@ class HTML2Jira(HTMLParser.HTMLParser):
                 lstripped_data = data.lstrip()
                 if self.drop_white_space and not (self.pre or self.code):
                     data = lstripped_data
-                if lstripped_data != '':
+                if lstripped_data != "":
                     self.drop_white_space = 0
 
             if puredata and not self.pre:
                 # This is a very dangerous call ... it could mess up
                 # all handling of &nbsp; when not handled properly
                 # (see entityref)
-                data = re.sub(r'\s+', r' ', data)
-                if data and data[0] == ' ':
+                data = re.sub(r"\s+", r" ", data)
+                if data and data[0] == " ":
                     self.space = 1
                     data = data[1:]
             if not data and not force:
                 return
 
             if self.startpre:
-                #self.out(" :") #TODO: not output when already one there
+                # self.out(" :") #TODO: not output when already one there
                 if not data.startswith("\n"):  # <pre>stuff...
                     data = "\n" + data
 
-            bq = (">" * self.blockquote)
+            bq = ">" * self.blockquote
             if not (force and data and data[0] == ">") and self.blockquote:
                 bq += " "
 
             if self.pre:
                 if not self.list:
                     bq += "    "
-                #else: list content is already partially indented
+                # else: list content is already partially indented
                 for i in range(len(self.list)):
                     bq += "    "
                 data = data.replace("\n", "\n" + bq)
@@ -659,34 +698,39 @@ class HTML2Jira(HTMLParser.HTMLParser):
                 self.p_p = 0
                 self.start = 0
 
-            if force == 'end':
+            if force == "end":
                 # It's the end.
                 self.p_p = 0
                 self.out("\n")
                 self.space = 0
 
             if self.p_p:
-                self.out((self.br_toggle + '\n' + bq) * self.p_p)
+                self.out((self.br_toggle + "\n" + bq) * self.p_p)
                 self.space = 0
-                self.br_toggle = ''
+                self.br_toggle = ""
 
             if self.space:
                 if not self.lastWasNL:
-                    self.out(' ')
+                    self.out(" ")
                 self.space = 0
 
-            if self.a and ((self.p_p == 2 and self.links_each_paragraph)
-                           or force == "end"):
+            if self.a and (
+                (self.p_p == 2 and self.links_each_paragraph) or force == "end"
+            ):
                 if force == "end":
                     self.out("\n")
 
                 newa = []
                 for link in self.a:
-                    if self.outcount > link['outcount']:
-                        self.out("   [" + str(link['count']) + "]: " +
-                                 urlparse.urljoin(self.baseurl, link['href']))
-                        if 'title' in link:
-                            self.out(" (" + link['title'] + ")")
+                    if self.outcount > link["outcount"]:
+                        self.out(
+                            "   ["
+                            + str(link["count"])
+                            + "]: "
+                            + urlparse.urljoin(self.baseurl, link["href"])
+                        )
+                        if "title" in link:
+                            self.out(" (" + link["title"] + ")")
                         self.out("\n")
                     else:
                         newa.append(link)
@@ -706,7 +750,7 @@ class HTML2Jira(HTMLParser.HTMLParser):
             self.outcount += 1
 
     def handle_data(self, data):
-        if r'\/script>' in data:
+        if r"\/script>" in data:
             self.quiet -= 1
 
         if self.style:
@@ -729,7 +773,7 @@ class HTML2Jira(HTMLParser.HTMLParser):
         pass
 
     def charref(self, name):
-        if name[0] in ['x', 'X']:
+        if name[0] in ["x", "X"]:
             c = int(name[1:], 16)
         else:
             c = int(name)
@@ -749,9 +793,9 @@ class HTML2Jira(HTMLParser.HTMLParser):
             try:
                 name2cp(c)
             except KeyError:
-                return "&" + c + ';'
+                return "&" + c + ";"
             else:
-                if c == 'nbsp':
+                if c == "nbsp":
                     return unifiable[c]
                 else:
                     try:
@@ -774,9 +818,10 @@ class HTML2Jira(HTMLParser.HTMLParser):
     def google_nest_count(self, style):
         """calculate the nesting count of google doc lists"""
         nest_count = 0
-        if 'margin-left' in style:
-            nest_count = int(style['margin-left'][:-2]) \
-                // self.google_list_indent
+        if "margin-left" in style:
+            nest_count = (
+                int(style["margin-left"][:-2]) // self.google_list_indent
+            )
         return nest_count
 
     def optwrap(self, text):
@@ -785,13 +830,13 @@ class HTML2Jira(HTMLParser.HTMLParser):
             return text
 
         assert wrap, "Requires Python 2.3."
-        result = ''
+        result = ""
         newlines = 0
         for para in text.split("\n"):
             if len(para) > 0:
                 if not skipwrap(para):
                     result += "\n".join(wrap(para, self.body_width))
-                    if para.endswith('  '):
+                    if para.endswith("  "):
                         result += "  \n"
                         newlines = 1
                     else:
@@ -811,41 +856,54 @@ class HTML2Jira(HTMLParser.HTMLParser):
                     newlines += 1
         return result
 
-ordered_list_matcher = re.compile(r'\d+\.\s')
-unordered_list_matcher = re.compile(r'[-\*\+]\s')
+
+ordered_list_matcher = re.compile(r"\d+\.\s")
+unordered_list_matcher = re.compile(r"[-\*\+]\s")
 md_chars_matcher = re.compile(r"([\\\[\]\(\)])")
 md_chars_matcher_all = re.compile(r"([`\*_{}\[\]\(\)#!])")
-md_dot_matcher = re.compile(r"""
+md_dot_matcher = re.compile(
+    r"""
     ^             # start of line
     (\s*\d+)      # optional whitespace and a number
     (\.)          # dot
     (?=\s)        # lookahead assert whitespace
-    """, re.MULTILINE | re.VERBOSE)
-md_plus_matcher = re.compile(r"""
+    """,
+    re.MULTILINE | re.VERBOSE,
+)
+md_plus_matcher = re.compile(
+    r"""
     ^
     (\s*)
     (\+)
     (?=\s)
-    """, flags=re.MULTILINE | re.VERBOSE)
-md_dash_matcher = re.compile(r"""
+    """,
+    flags=re.MULTILINE | re.VERBOSE,
+)
+md_dash_matcher = re.compile(
+    r"""
     ^
     (\s*)
     (-)
     (?=\s|\-)     # followed by whitespace (bullet list, or spaced out hr)
                   # or another dash (header or hr)
-    """, flags=re.MULTILINE | re.VERBOSE)
-slash_chars = r'\`*_{}[]()#+-.!'
-md_backslash_matcher = re.compile(r'''
+    """,
+    flags=re.MULTILINE | re.VERBOSE,
+)
+slash_chars = r"\`*_{}[]()#+-.!"
+md_backslash_matcher = re.compile(
+    r"""
     (\\)          # match one slash
     (?=[%s])      # followed by a char that requires escaping
-    ''' % re.escape(slash_chars),
-    flags=re.VERBOSE)
+    """
+    % re.escape(slash_chars),
+    flags=re.VERBOSE,
+)
 
 
 def skipwrap(para):
     # If the text begins with four spaces or one tab, it's a code block;
     # don't wrap
-    if para[0:4] == '    ' or para[0] == '\t':
+    if para[0:4] == "    " or para[0] == "\t":
         return True
     # If the text begins with only two "--", possibly preceded by
     # whitespace, that's an emdash; so wrap.
@@ -855,26 +913,27 @@ def skipwrap(para):
     # I'm not sure what this is for; I thought it was to detect lists,
     # but there's a <br>-inside-<span> case in one of the tests that
     # also depends upon it.
-    if stripped[0:1] == '-' or stripped[0:1] == '*':
+    if stripped[0:1] == "-" or stripped[0:1] == "*":
         return True
     # If the text begins with a single -, *, or +, followed by a space,
     # or an integer, followed by a ., followed by a space (in either
     # case optionally preceeded by whitespace), it's a list; don't wrap.
-    if ordered_list_matcher.match(stripped) or \
-            unordered_list_matcher.match(stripped):
+    if ordered_list_matcher.match(stripped) or unordered_list_matcher.match(
+        stripped
+    ):
         return True
     return False
 
 
 def wrapwrite(text):
-    text = text.encode('utf-8')
+    text = text.encode("utf-8")
     try:  # Python3
         sys.stdout.buffer.write(text)
     except AttributeError:
         sys.stdout.write(text)
 
 
-def html2jira(html, baseurl='', bodywidth=BODY_WIDTH):
+def html2jira(html, baseurl="", bodywidth=BODY_WIDTH):
     h = HTML2Jira(baseurl=baseurl, bodywidth=bodywidth)
     return h.handle(html)
 
@@ -900,7 +959,6 @@ def escape_md_section(text, snob=False):
     text = md_plus_matcher.sub(r"\1\\\2", text)
     text = md_dash_matcher.sub(r"\1\\\2", text)
     return text
-
 
 
 # def main():

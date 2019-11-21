@@ -16,6 +16,7 @@ __all__ = ["ConfigObject", "BugTrackerConfig"]
 Base Configuration classes.
 """
 
+
 class ConfigObject(object):
 
     ############################################################
@@ -24,6 +25,7 @@ class ConfigObject(object):
     """
     Base class for all configuration class.
     """
+
     def __init__(self, keys, type_name, **config):
         self.validate(keys, type_name, config)
 
@@ -69,7 +71,12 @@ class ConfigObject(object):
             if s in config:
                 secrect_in_config.append(s)
         if secrect_in_config and not no_interactive:
-            logger.warning("{} secrets key-s in configuration but non interactive is not actif ".format(", ".join(secrect_in_config)))
+            logger.warning(
+                "{} secrets key-s in configuration but non interactive is not actif ".format(
+                    ", ".join(secrect_in_config)
+                )
+            )
+
 
 class BugTrackerConfig(ConfigObject):
 
@@ -83,6 +90,7 @@ class BugTrackerConfig(ConfigObject):
     :attr list secret_keys: keys define as secret (asked in interactive mode).
     :attr dict optional_keys: keys with default value.
     """
+
     ############################################################
     ######################## Attributes ########################
     ############################################################
@@ -114,8 +122,16 @@ class BugTrackerConfig(ConfigObject):
             if no_interactive:
                 keys += self.secret_keys
         type_ = config.get("type", self.bugtracker_type)
-        if not 'project' in [*self.mandatory_keys, *self.secret_keys, *self.optional_keys_list()]:
-            logger.critical("'project' key not present in mandatory_keys, secret_keys or optional_keys for {} class".format(self.__class__))
+        if not "project" in [
+            *self.mandatory_keys,
+            *self.secret_keys,
+            *self.optional_keys_list(),
+        ]:
+            logger.critical(
+                "'project' key not present in mandatory_keys, secret_keys or optional_keys for {} class".format(
+                    self.__class__
+                )
+            )
             sys.exit(210)
         super().__init__(keys, "{} BugTracker".format(type_.title()), **config)
         self._name = name
@@ -170,8 +186,18 @@ class BugTrackerConfig(ConfigObject):
         for key in self.mandatory_keys:
             desc = ""
             if key in self._description:
-                desc += Fore.GREEN + f" - ({self._description[key]})" + Fore.RESET
-            setattr(self, '_' + key, read_input(Fore.BLUE + "{}{}: ".format(key.title(), desc) + Style.RESET_ALL))
+                desc += (
+                    Fore.GREEN + f" - ({self._description[key]})" + Fore.RESET
+                )
+            setattr(
+                self,
+                "_" + key,
+                read_input(
+                    Fore.BLUE
+                    + "{}{}: ".format(key.title(), desc)
+                    + Style.RESET_ALL
+                ),
+            )
 
     def read_conditional(self, interactive=False, configure=False):
         """
@@ -180,37 +206,72 @@ class BugTrackerConfig(ConfigObject):
         for key, info in self.conditional_keys.items():
             desc = ""
             if key in self._description:
-                desc += Fore.GREEN + f" - ({self._description[key]})" + Fore.RESET
+                desc += (
+                    Fore.GREEN + f" - ({self._description[key]})" + Fore.RESET
+                )
             default = info.get("default", None)
             secret = info.get("secret", False)
-            condition = info['condition']
+            condition = info["condition"]
             if condition(self):
                 if secret and interactive:
                     setattr(
-                        self, '_' + key,
+                        self,
+                        "_" + key,
                         read_input(
-                            Fore.GREEN + self.type.title() + Fore.BLUE +
-                            " {}{}{}: ".format(
-                                "{}".format(key.title()) +
-                                    (
-                                        " for {}".format(
-                                            Fore.GREEN + self.login + Fore.BLUE
-                                        ) if hasattr(self, 'login') else ""
-                                    ) +
-                                    (
-                                        " on {}".format(
-                                            Fore. GREEN + self.url + Fore.BLUE
-                                        ) if hasattr(self, 'url') else ""
+                            Fore.GREEN
+                            + self.type.title()
+                            + Fore.BLUE
+                            + " {}{}{}: ".format(
+                                "{}".format(key.title())
+                                + (
+                                    " for {}".format(
+                                        Fore.GREEN + self.login + Fore.BLUE
                                     )
-                                , " [default='{}']" if default is not None else "", desc
-                            ) + Style.RESET_ALL or default, secret=True
-                        )
+                                    if hasattr(self, "login")
+                                    else ""
+                                )
+                                + (
+                                    " on {}".format(
+                                        Fore.GREEN + self.url + Fore.BLUE
+                                    )
+                                    if hasattr(self, "url")
+                                    else ""
+                                ),
+                                " [default='{}']"
+                                if default is not None
+                                else "",
+                                desc,
+                            )
+                            + Style.RESET_ALL
+                            or default,
+                            secret=True,
+                        ),
                     )
                 elif not secret and default is not None and configure:
-                    setattr(self, '_' + key, read_input(Fore.GREEN + self.type.title() + Fore.BLUE + " {} [default='{}']{}: ".format(key.title(), default, desc) + Style.RESET_ALL) or default)
+                    setattr(
+                        self,
+                        "_" + key,
+                        read_input(
+                            Fore.GREEN
+                            + self.type.title()
+                            + Fore.BLUE
+                            + " {} [default='{}']{}: ".format(
+                                key.title(), default, desc
+                            )
+                            + Style.RESET_ALL
+                        )
+                        or default,
+                    )
                 elif not secret and default is None and configure:
-                    setattr(self, '_' + key, read_input(Fore.BLUE + "{}{}: ".format(key.title(), desc) + Style.RESET_ALL))
-
+                    setattr(
+                        self,
+                        "_" + key,
+                        read_input(
+                            Fore.BLUE
+                            + "{}{}: ".format(key.title(), desc)
+                            + Style.RESET_ALL
+                        ),
+                    )
 
     def read_optional(self):
         """
@@ -219,8 +280,23 @@ class BugTrackerConfig(ConfigObject):
         for key, default in self.optional_keys.items():
             desc = ""
             if key in self._description:
-                desc += Fore.GREEN + f" - ({self._description[key]})" + Fore.RESET
-            setattr(self, '_' + key, read_input(Fore.GREEN + self.type.title() + Fore.BLUE + " {} [default='{}']{}: ".format(key.title(), default, desc) + Style.RESET_ALL) or default)
+                desc += (
+                    Fore.GREEN + f" - ({self._description[key]})" + Fore.RESET
+                )
+            setattr(
+                self,
+                "_" + key,
+                read_input(
+                    Fore.GREEN
+                    + self.type.title()
+                    + Fore.BLUE
+                    + " {} [default='{}']{}: ".format(
+                        key.title(), default, desc
+                    )
+                    + Style.RESET_ALL
+                )
+                or default,
+            )
 
     def read_secret(self):
         """
@@ -229,10 +305,34 @@ class BugTrackerConfig(ConfigObject):
         for key in self.secret_keys:
             desc = ""
             if key in self._description:
-                desc += Fore.GREEN + f" - ({self._description[key]})" + Fore.RESET
-            setattr(self, '_' + key, read_input(Fore.BLUE + "{}{}: ".format("{}".format(key.title()) +
-            (" for {}".format(Fore.GREEN + self.login + Fore.BLUE) if hasattr(self, 'login') else "") +
-            (" on {}".format(Fore. GREEN + self.url + Fore.BLUE) if hasattr(self, 'url') else "" ), desc) + Style.RESET_ALL, secret=True))
+                desc += (
+                    Fore.GREEN + f" - ({self._description[key]})" + Fore.RESET
+                )
+            setattr(
+                self,
+                "_" + key,
+                read_input(
+                    Fore.BLUE
+                    + "{}{}: ".format(
+                        "{}".format(key.title())
+                        + (
+                            " for {}".format(
+                                Fore.GREEN + self.login + Fore.BLUE
+                            )
+                            if hasattr(self, "login")
+                            else ""
+                        )
+                        + (
+                            " on {}".format(Fore.GREEN + self.url + Fore.BLUE)
+                            if hasattr(self, "url")
+                            else ""
+                        ),
+                        desc,
+                    )
+                    + Style.RESET_ALL,
+                    secret=True,
+                ),
+            )
 
     def test_project(self):
         """
@@ -283,9 +383,9 @@ class BugTrackerConfig(ConfigObject):
             component[attr] = self.__getattribute__(attr)
 
         for attr, info in self.conditional_keys.items():
-            condition = info['condition']
-            secret = info.get('secret', False)
-            default = info.get('default', None)
+            condition = info["condition"]
+            secret = info.get("secret", False)
+            default = info.get("default", None)
             if (secret and self.no_interactive) or not secret:
                 component[attr] = self.__getattribute__(attr)
 
@@ -307,32 +407,44 @@ class BugTrackerConfig(ConfigObject):
         self.test_project()
 
     def _configure_attributes(self, **config):
-            """
+        """
             Append protected attribute for each keys in mandatory keys and optional_keys, secret keys if no_interactive,
             in aggreement with config file.
             """
-            for attr in self.mandatory_keys:
-                setattr(self, "_" + attr, config[attr])
-            for attr in self.secret_keys:
-                setattr(
-                    self, "_" + attr, config[attr] if self._no_interactive else ""
-                )
-            for attr, default in self.optional_keys.items():
-                setattr(self, "_" + attr, config.get(attr, default))
-            for attr, info in self.conditional_keys.items():
-                default = info.get("default", None)
-                secret = info.get("secret", False)
-                condition = info["condition"]
-                if condition(self):
-                    if secret:
-                        if default is not None:
-                            setattr(self, "_" + attr, config.get(attr, default) if self._no_interactive else "")
-                        else:
-                            setattr(self, "_" + attr, config[attr] if self._no_interactive else "")
-                    elif default is not None: # secret == False, default is not None
-                        setattr(self, "_" + attr, config.get(attr, default))
-                    else: # secret == False, default is None => mandatory
-                        setattr(self, "_" + attr, config[attr])
+        for attr in self.mandatory_keys:
+            setattr(self, "_" + attr, config[attr])
+        for attr in self.secret_keys:
+            setattr(
+                self, "_" + attr, config[attr] if self._no_interactive else ""
+            )
+        for attr, default in self.optional_keys.items():
+            setattr(self, "_" + attr, config.get(attr, default))
+        for attr, info in self.conditional_keys.items():
+            default = info.get("default", None)
+            secret = info.get("secret", False)
+            condition = info["condition"]
+            if condition(self):
+                if secret:
+                    if default is not None:
+                        setattr(
+                            self,
+                            "_" + attr,
+                            config.get(attr, default)
+                            if self._no_interactive
+                            else "",
+                        )
+                    else:
+                        setattr(
+                            self,
+                            "_" + attr,
+                            config[attr] if self._no_interactive else "",
+                        )
+                elif (
+                    default is not None
+                ):  # secret == False, default is not None
+                    setattr(self, "_" + attr, config.get(attr, default))
+                else:  #  secret == False, default is None => mandatory
+                    setattr(self, "_" + attr, config[attr])
 
     def _get_bugtracker(self, *args, **kwargs):
         """
@@ -396,16 +508,18 @@ class BugTrackerConfig(ConfigObject):
         """
         Set get properties for each keys define in mandatory, optonial and secret keys.
         """
+
         def set_item(cls, attr):
             def func(self):
                 return self.__getattribute__("_" + attr)
+
             setattr(cls, attr, property(copy.copy(func)))
 
         for attr in [
             *cls.mandatory_keys,
             *cls.secret_keys,
             *cls.optional_keys_list(),
-            *cls.conditional_keys_list()
+            *cls.conditional_keys_list(),
         ]:
             set_item(cls, attr)
 

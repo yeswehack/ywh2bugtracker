@@ -5,20 +5,20 @@ from ywh2bt.ywh2bt import __VERSION__
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-install_requires=[
-        "requests",
-        "python-gitlab",
-        "pygithub",
-        "jira",
-        "colorama",
-        "pyotp",
-        "pyyaml",
-        "html2text",
-        "coloredLogs",
-        "yeswehack",
-        "beautifulsoup4",
-        "python-magic-win64"
-    ]
+install_requires = [
+    "requests",
+    "python-gitlab",
+    "pygithub",
+    "jira",
+    "colorama",
+    "pyotp",
+    "pyyaml",
+    "html2text",
+    "coloredLogs",
+    "yeswehack",
+    "beautifulsoup4",
+    "python-magic-win64",
+]
 
 setuptools.setup(
     name=ywh2bt.name,

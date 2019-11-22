@@ -231,9 +231,7 @@ class GlobalConfig(ConfigObject):
         exit_config = False
 
         bts = [
-            bt
-            for bt in self.bugtrackers
-            if bt not in cfg_program.bugtrackers
+            bt for bt in self.bugtrackers if bt not in cfg_program.bugtrackers
         ]
         while not exit_config and bts:
             for count, bt in enumerate(bts):
@@ -285,9 +283,7 @@ class GlobalConfig(ConfigObject):
 
         config_to_keep = []
         if read_config_to_keep == "":
-            config_to_keep = [
-                config for config in range(1, len(cfg_bt) + 1)
-            ]
+            config_to_keep = [config for config in range(1, len(cfg_bt) + 1)]
         elif read_config_to_keep.lower() == "none":
             self.yeswehack = []
             self.bugtrackers = []
@@ -417,8 +413,6 @@ class GlobalConfig(ConfigObject):
             for i in sorted(del_modules, reverse=True):
                 del package.modules[i]
 
-
-
     def _update_configuration(self):
         """
         In configure mode only, used to change configured object.
@@ -431,7 +425,9 @@ class GlobalConfig(ConfigObject):
 
                 # Replace current config with the item we keep
                 if len(config_to_keep) < len(cfg_program.bugtrackers):
-                    cfg_program._delete_bugtrackers(config_to_keep, self.bugtrackers)
+                    cfg_program._delete_bugtrackers(
+                        config_to_keep, self.bugtrackers
+                    )
                 cfg_program.bugtrackers = [
                     cfg_program.bugtrackers[i - 1] for i in config_to_keep
                 ]

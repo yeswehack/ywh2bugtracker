@@ -563,9 +563,7 @@ class ProgramConfig(ConfigObject):
             elif user_input in ["y", "Y"]:
                 delete_bugtrackers = [
                     bugtrackers[i - 1]
-                    for i in range(
-                        1, len(bugtrackers) + 1
-                    )
+                    for i in range(1, len(bugtrackers) + 1)
                     if i not in config_to_keep
                 ]
                 break
@@ -578,6 +576,7 @@ class ProgramConfig(ConfigObject):
                         del_bg.name
                     )
                 )
+
     def _validate_and_set_bugtrackers(self, program_bt_names, bugtrackers):
         """
         Configure and link to bugtrackers from configuration file.

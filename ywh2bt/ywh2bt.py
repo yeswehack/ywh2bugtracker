@@ -35,10 +35,14 @@ def main():
 
     description = (
         "ywh2bt is a simple YesWeHack tools for Bounty Program manager."
-       +"it's build to exchange report log from the platform to your issue manager."
+        + "it's build to exchange report log from the platform to your issue manager."
     )
 
-    parser = OptionParser(usage="", version="%prog {}".format(__VERSION__), description=description)
+    parser = OptionParser(
+        usage="",
+        version="%prog {}".format(__VERSION__),
+        description=description,
+    )
     parser.add_option(
         "-c",
         "--configure",
@@ -60,7 +64,11 @@ def main():
         help="non interactive mode. Store credencials on disk. You need to activate it on configure to store credencials",
     )
 
-    parser.set_usage("usage: %prod [-f|--filename] FILENAME [-n|--no-interactive] [-c|--configure]\n\n{}".format(parser.format_help()))
+    parser.set_usage(
+        "usage: %prod [-f|--filename] FILENAME [-n|--no-interactive] [-c|--configure]\n\n{}".format(
+            parser.format_help()
+        )
+    )
     (options, args) = parser.parse_args()
 
     ywh_cfg = config.GlobalConfig(

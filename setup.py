@@ -1,6 +1,7 @@
 import setuptools
 import ywh2bt
 from ywh2bt.ywh2bt import __VERSION__
+
 with open("README.md", "r") as fh:
     long_description = fh.read()
 #

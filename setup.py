@@ -4,18 +4,8 @@ from ywh2bt.ywh2bt import __VERSION__
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
-#
-setuptools.setup(
-    name=ywh2bt.name,
-    version=__VERSION__,
-    author="Jean Lou Hau",
-    author_email="jl.hau@yeswehack.com",
-    description="YesWeHack BugTracker",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    url="https://yeswehack.com",
-    packages=setuptools.find_packages(),
-    install_requires=[
+
+install_requires=[
         "requests",
         "python-gitlab",
         "pygithub",
@@ -27,8 +17,20 @@ setuptools.setup(
         "coloredLogs",
         "yeswehack",
         "beautifulsoup4",
-        "python-magic",
-    ],
+        "python-magic-win64"
+    ]
+
+setuptools.setup(
+    name=ywh2bt.name,
+    version=__VERSION__,
+    author="Jean Lou Hau",
+    author_email="jl.hau@yeswehack.com",
+    description="YesWeHack BugTracker",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://yeswehack.com",
+    packages=setuptools.find_packages(),
+    install_requires=install_requires,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

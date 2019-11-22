@@ -15,9 +15,9 @@ pip install ywh2bt
 ## From source
 
 * Download source from git.
-* Build wheel:
-   * ```python setup.py sdist bdist_wheel```
-   * install wheel with pip : ```pip install dist/*.whl```
+* Installation:
+   * install dependencies: ```pip install -r requirement.txt```
+   * install ywh2bt : ```python setup.py install```
 
 
 # Usage

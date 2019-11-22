@@ -6,7 +6,8 @@ from ywh2bt.config import BugTrackerConfig
 from bs4 import BeautifulSoup
 import requests
 from requests_toolbelt import MultipartEncoder
-import magic
+
+from winmagic import magic
 from ywh2bt.utils import read_input
 from colorama import Fore, Style
 

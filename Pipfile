@@ -15,7 +15,7 @@ pyotp = "*"
 coloredLogs = "*"
 yeswehack = "*"
 beautifulsoup4 = "*"
-python-magic = "*"
+python-magic-win64 = "*"
 
 
 [requires]

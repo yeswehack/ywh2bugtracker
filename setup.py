@@ -1,12 +1,12 @@
 import setuptools
 import ywh2bt
-
+from ywh2bt.ywh2bt import __VERSION__
 with open("README.md", "r") as fh:
     long_description = fh.read()
 #
 setuptools.setup(
-    name="ywh2bt",
-    version="0.2a6",
+    name=ywh2bt.name,
+    version=__VERSION__,
     author="Jean Lou Hau",
     author_email="jl.hau@yeswehack.com",
     description="YesWeHack BugTracker",

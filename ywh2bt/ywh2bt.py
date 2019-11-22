@@ -20,6 +20,7 @@ from ywh2bt import config
 from ywh2bt.logging import logger
 
 __all__ = ["main"]
+__VERSION__ = "0.2a6"
 
 """
 Entry point for script and setup
@@ -31,7 +32,13 @@ def main():
     Parse args from commande line, setup GlobalConfig and run corresponding process.
     """
     init()
-    parser = OptionParser(usage="usage: %prod [option]")
+
+    description = (
+        "ywh2bt is a simple YesWeHack tools for Bounty Program manager."
+       +"it's build to exchange report log from the platform to your issue manager."
+    )
+
+    parser = OptionParser(usage="", version="%prog {}".format(__VERSION__), description=description)
     parser.add_option(
         "-c",
         "--configure",
@@ -53,6 +60,7 @@ def main():
         help="non interactive mode. Store credencials on disk. You need to activate it on configure to store credencials",
     )
 
+    parser.set_usage("usage: %prod [-f|--filename] FILENAME [-n|--no-interactive] [-c|--configure]\n\n{}".format(parser.format_help()))
     (options, args) = parser.parse_args()
 
     ywh_cfg = config.GlobalConfig(

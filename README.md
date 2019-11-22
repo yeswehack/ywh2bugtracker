@@ -7,9 +7,18 @@ ywh2bugtracker allows you to integrate your bug tracking system(s) with yeswehac
 
 installation is available from pip for windows, linux, mac OS.
 
+## With pip
 ```
 pip install ywh2bt
 ```
+
+## From source
+
+* Download source from git.
+* Build wheel:
+   * ```python setup.py sdist bdist_wheel```
+   * install wheel with pip : ```pip install dist/*.whl```
+
 
 # Usage
 

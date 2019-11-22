@@ -14,7 +14,9 @@ colorama = "*"
 pyotp = "*"
 coloredLogs = "*"
 yeswehack = "*"
-[requires]
-python_version = "3.7"
 beautifulsoup4 = "*"
 python-magic = "*"
+
+
+[requires]
+python_version = "3.7"

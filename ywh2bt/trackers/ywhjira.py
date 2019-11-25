@@ -88,7 +88,7 @@ class YWHJira(BugTracker):
 
         issue.update(
             description=self.report_as_description(copy_report).replace(
-                "][", "] ["
+                "!!", "! !"
             )
         )
         return issue
@@ -100,7 +100,8 @@ class YWHJira(BugTracker):
         return issue.key
 
     def report_as_description(self, report, template=None, additional_keys=[]):
-        report.description_html = self._img_to_a_balisis(
+        report.description_html = self.replace_external_link(report)
+        report.description_html = self._img_to_jira_tag(
             report.description_html
         )
         return super().report_as_description(
@@ -110,7 +111,7 @@ class YWHJira(BugTracker):
             html_parser=html2jira,
         )
 
-    def _img_to_a_balisis(self, html):
+    def _img_to_jira_tag(self, html):
         """
         Replace "img" balisis in html to "a" balisis.
         """
@@ -119,7 +120,7 @@ class YWHJira(BugTracker):
         for img in soup.findAll("img"):
             alt = img.attrs.get("alt", "")
             src = img.attrs.get("src", "")
-            a = f'<a href="{src}">{alt}</a>'
+            a = f'!{alt}|{src}!'
             n_html = n_html.replace(str(img), a)
         return unescape_text(n_html)
 

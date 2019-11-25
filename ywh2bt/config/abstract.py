@@ -485,7 +485,8 @@ class BugTrackerConfig(ConfigObject):
                 raise e
                 sys.exit(-200)
             self.configure()
-
+    def set_yeswehack_domain(self, ywh_domain):
+        self._bugtracker.set_yeswehack_domain(ywh_domain)
     ############################################################
     ####################### Class methods ######################
     ############################################################

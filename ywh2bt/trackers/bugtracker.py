@@ -7,6 +7,7 @@ from abc import abstractmethod
 import html2text
 import urllib.parse as uparse
 import re
+
 __all__ = ["BugTracker"]
 
 """
@@ -77,12 +78,23 @@ class BugTracker(object):
 
     def replace_external_link(self, report):
         description = report.description_html
-        base_string = 'https://{ywhdomain}/redirect?url='.format(ywhdomain=self._ywh_domain)
+        base_string = "https://{ywhdomain}/redirect?url=".format(
+            ywhdomain=self._ywh_domain
+        )
 
-        pattern = re.compile('"{base_string}(.*)"'.format(base_string=base_string.replace('/','\/').replace('?', '\?').replace('.','\.')))
+        pattern = re.compile(
+            '"{base_string}(.*)"'.format(
+                base_string=base_string.replace("/", "\/")
+                .replace("?", "\?")
+                .replace(".", "\.")
+            )
+        )
         redirect_urls = pattern.findall(report.description_html)
         for url in redirect_urls:
-            description = description.replace('{base_string}{url}'.format(base_string=base_string, url=url), uparse.unquote(url))
+            description = description.replace(
+                "{base_string}{url}".format(base_string=base_string, url=url),
+                uparse.unquote(url),
+            )
         return description
 
     def report_as_title(
@@ -157,6 +169,7 @@ class BugTracker(object):
 
     def set_yeswehack_domain(self, ywh_domain):
         self._ywh_domain = ywh_domain
+
     ############################################################
     ####################### Static methods #####################
     ############################################################

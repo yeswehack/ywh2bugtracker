@@ -89,8 +89,12 @@ def run(cfg, options):
     for cfg_ywh in cfg.yeswehack:
         # Iterate on every referenced program
         logger.info("Get info for " + cfg_ywh.name)
-        ywh_domain = ".".join(cfg_ywh.api_url.replace('https://', '').replace('http://', "").split('.')[1:])
-        ywh_domain = ywh_domain.split('/')[0]
+        ywh_domain = ".".join(
+            cfg_ywh.api_url.replace("https://", "")
+            .replace("http://", "")
+            .split(".")[1:]
+        )
+        ywh_domain = ywh_domain.split("/")[0]
         for cfg_pgm in cfg_ywh.programs:
 
             reports = cfg_ywh.ywh.get_reports(
@@ -104,7 +108,6 @@ def run(cfg, options):
 
                 comments = report.get_comments(lazy=True)
                 for cfg_bt in cfg_pgm.bugtrackers:
-
 
                     cfg_bt.set_yeswehack_domain(ywh_domain)
                     issue = cfg_bt.bugtracker.post_issue(report)

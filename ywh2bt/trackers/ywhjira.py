@@ -120,7 +120,7 @@ class YWHJira(BugTracker):
         for img in soup.findAll("img"):
             alt = img.attrs.get("alt", "")
             src = img.attrs.get("src", "")
-            a = f'!{alt}|{src}!'
+            a = f"!{alt}|{src}!"
             n_html = n_html.replace(str(img), a)
         return unescape_text(n_html)
 

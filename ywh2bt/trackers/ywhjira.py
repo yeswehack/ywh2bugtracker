@@ -101,15 +101,30 @@ class YWHJira(BugTracker):
 
     def report_as_description(self, report, template=None, additional_keys=[]):
         report.description_html = self.replace_external_link(report)
-        report.description_html = self._img_to_jira_tag(
+        report.description_html, tags = self._img_to_jira_tag(
             report.description_html
         )
-        return super().report_as_description(
+        description = super().report_as_description(
             report,
             template=template,
             additional_keys=additional_keys,
             html_parser=html2jira,
         )
+
+        return description.format(**tags)
+
+
+    def _code_to_jira_tag(self, html):
+        soup = BeautifulSoup(html, features="lxml")
+        n_html = str(soup)
+        code_format ="{{code:title={title}}}\n{content}\n{{code}}"
+        tags = {}
+        for idx, code in enumerate(soup.findAll("code")):
+            tag = 'code_' + str(idx)
+            title = code.attrs['class']
+            back[tag] = code_format.format(title=title, content="".join([str(i) for i in code.contents]))
+            n_html = n_html.replace(str(code), '{%(tag)s}' % ({"tag": tag}))
+        return n_html, tags
 
     def _img_to_jira_tag(self, html):
         """

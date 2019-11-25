@@ -113,17 +113,18 @@ class YWHJira(BugTracker):
 
         return description.format(**tags)
 
-
     def _code_to_jira_tag(self, html):
         soup = BeautifulSoup(html, features="lxml")
         n_html = str(soup)
-        code_format ="{{code:title={title}}}\n{content}\n{{code}}"
+        code_format = "{{code:title={title}}}\n{content}\n{{code}}"
         tags = {}
         for idx, code in enumerate(soup.findAll("code")):
-            tag = 'code_' + str(idx)
-            title = code.attrs['class']
-            back[tag] = code_format.format(title=title, content="".join([str(i) for i in code.contents]))
-            n_html = n_html.replace(str(code), '{%(tag)s}' % ({"tag": tag}))
+            tag = "code_" + str(idx)
+            title = code.attrs["class"]
+            back[tag] = code_format.format(
+                title=title, content="".join([str(i) for i in code.contents])
+            )
+            n_html = n_html.replace(str(code), "{%(tag)s}" % ({"tag": tag}))
         return n_html, tags
 
     def _img_to_jira_tag(self, html):

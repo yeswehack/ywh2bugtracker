@@ -91,7 +91,12 @@ class BugTracker(object):
         )
         redirect_urls = pattern.findall(report.description_html)
         for url in redirect_urls:
-            new_url = "&".join(['{}={}'.format(u[0], u[1]) for u in uparser.parse_qsl(uparser.unquote(url))[:-2]])
+            new_url = "&".join(
+                [
+                    "{}={}".format(u[0], u[1])
+                    for u in uparser.parse_qsl(uparser.unquote(url))[:-2]
+                ]
+            )
             description = description.replace(
                 "{base_string}{url}".format(base_string=base_string, url=url),
                 new_url,

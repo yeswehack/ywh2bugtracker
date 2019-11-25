@@ -101,7 +101,8 @@ class YWHJira(BugTracker):
 
     def report_as_description(self, report, template=None, additional_keys=[]):
         report.description_html = self.replace_external_link(report)
-        report.description_html, tags = self._img_to_jira_tag(
+        report.description_html = self._img_to_jira_tag(report.description_html)
+        report.description_html, tags = self._code_to_jira_tag(
             report.description_html
         )
         description = super().report_as_description(

@@ -16,7 +16,7 @@ coloredLogs = "*"
 yeswehack = "*"
 beautifulsoup4 = "*"
 python-magic-win64 = "*"
-
+lxml = "*"
 
 [requires]
 python_version = "3.7"

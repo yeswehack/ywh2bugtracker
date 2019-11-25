@@ -3,7 +3,7 @@
 import gitlab
 from .bugtracker import BugTracker
 from ywh2bt.config import BugTrackerConfig
-
+from copy import copy
 
 __all__ = ["YWHGitlab", "YWHGitlabConfig"]
 
@@ -45,17 +45,18 @@ class YWHGitlab(BugTracker):
         return project
 
     def post_issue(self, report):
+        copy_report = copy(report)
         project = self.bt.projects.get(self.project)
         for attachment in report.attachments:
             # Add attachment to gitlab issue if there is attachement in the original bug
             f = project.upload(attachment.original_name, attachment.data)
-            report.description_html = report.description_html.replace(
+            copy_report.description_html = copy_report.description_html.replace(
                 attachment.url, f["url"]
             )
 
-        description = self.report_as_description(report)
+        description = self.report_as_description(copy_report)
         issue_data = {
-            "title": self.report_as_title(report),
+            "title": self.report_as_title(copy_report),
             "description": description,
         }
         issue = project.issues.create(issue_data)

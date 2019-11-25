@@ -4,9 +4,10 @@ import jira
 import html2text
 from .bugtracker import BugTracker
 from ywh2bt.config import BugTrackerConfig
-from ywh2bt.utils import html2jira
+from ywh2bt.utils import html2jira, unescape_text
 from bs4 import BeautifulSoup
 from pprint import pprint
+from copy import copy
 
 __all__ = ["YWHJira", "YWHJiraConfig"]
 
@@ -18,7 +19,7 @@ class YWHJira(BugTracker):
 
     description_template = """
     || Title || {local_id} : {title} ||
-    | Bug Type | [{bug_type__name}]({bug_type__link}) &#8594; [Remediation]({bug_type__remediation_link}) |
+    | Bug Type | [{bug_type__name}]({bug_type__link}) => [Remediation]({bug_type__remediation_link}) |
     | Scope | {scope} |
     | Severity | {cvss__criticity}, score {cvss__score:.1f}, vector {cvss__vector}|
     | Endpoint |{end_point}|
@@ -28,7 +29,7 @@ class YWHJira(BugTracker):
     | Technical Environment | {technical_information}|
 
     {description_html}
-        """
+    """
 
     ############################################################
     ####################### Constructor ########################
@@ -54,20 +55,21 @@ class YWHJira(BugTracker):
             raise
 
     def post_issue(self, report):
+        copy_report = copy(report)
         html = html2text.HTML2Text()
         html.ignore_links = True
         issue_data = {
             "project": {"key": self.project},
-            "summary": self.report_as_title(report),
-            "description": self.report_as_description(report),
+            "summary": self.report_as_title(copy_report),
+            "description": self.report_as_description(copy_report),
             "issuetype": {"name": self.issuetype},
         }
+
         try:
             issue = self.jira.create_issue(**issue_data)
         except:  #  if jira need direct issuetype name
             issue_data["issuetype"] = self.issuetype
             issue = self.jira.create_issue(**issue_data)
-
         for attachment in report.attachments:
             attachment.get_data()
             attach = self.jira.add_attachment(
@@ -75,15 +77,20 @@ class YWHJira(BugTracker):
                 filename=attachment.original_name,
                 attachment=attachment.data,
             )
-            report.description_html = report.description_html.replace(
-                attachment.url,
-                (
-                    "/".join(attach.content.split("/")[:-1])
-                    + "/"
-                    + attach.filename.replace(" ", "%20")
-                ).replace("\n", ""),
+            replacer = (
+                "/".join(attach.content.split("/")[:-1])
+                + "/"
+                + attach.filename.replace(" ", "%20")
+            ).replace("\n", "")
+            copy_report.description_html = copy_report.description_html.replace(
+                attachment.url, replacer
             )
-        issue.update(description=self.report_as_description(report))
+
+        issue.update(
+            description=self.report_as_description(copy_report).replace(
+                "][", "] ["
+            )
+        )
         return issue
 
     def get_url(self, issue):
@@ -114,7 +121,7 @@ class YWHJira(BugTracker):
             src = img.attrs.get("src", "")
             a = f'<a href="{src}">{alt}</a>'
             n_html = n_html.replace(str(img), a)
-        return n_html
+        return unescape_text(n_html)
 
 
 class YWHJiraConfig(BugTrackerConfig):

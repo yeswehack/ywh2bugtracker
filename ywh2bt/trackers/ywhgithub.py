@@ -67,12 +67,15 @@ class YWHGithub(BugTracker):
         title = self.report_as_title(report)
         body = self.report_as_description(report)
         issue = repo.create_issue(title=title, body=body)
-        for attachment in report.attachments:
-            attachment.get_data()
-            url, status_code = self.post_attachment(attachment, issue.number)
-            if url:
-                body = body.replace(attachment.url, url)
-        issue.edit(body=body)
+        if self.github_cdn_on:
+            for attachment in report.attachments:
+                attachment.get_data()
+                url, status_code = self.post_attachment(
+                    attachment, issue.number
+                )
+                if url:
+                    body = body.replace(attachment.url, url)
+            issue.edit(body=body)
         return issue
 
     def get_url(self, issue):

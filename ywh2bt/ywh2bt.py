@@ -20,7 +20,7 @@ from ywh2bt import config
 from ywh2bt.logging import logger
 
 __all__ = ["main"]
-__VERSION__ = "0.2a6"
+__VERSION__ = "0.2a7"
 
 """
 Entry point for script and setup
@@ -93,7 +93,7 @@ def run(cfg, options):
 
             reports = cfg_ywh.ywh.get_reports(
                 cfg_pgm.slug,
-                filters={"filter[trackingStatus][]": "AFI"},
+                filters={"filter[trackingStatus][]": "T"},
                 lazy=True,
             )
             for report in reports:

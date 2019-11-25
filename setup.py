@@ -18,6 +18,7 @@ install_requires = [
     "yeswehack",
     "beautifulsoup4",
     "python-magic-win64",
+    "lxml",
 ]
 
 setuptools.setup(

@@ -83,7 +83,7 @@ class BugTracker(object):
         )
 
         pattern = re.compile(
-            '"{base_string}(.*)"'.format(
+            '"{base_string}([^ "]*)"'.format(
                 base_string=base_string.replace("/", "\/")
                 .replace("?", "\?")
                 .replace(".", "\.")
@@ -91,15 +91,17 @@ class BugTracker(object):
         )
         redirect_urls = pattern.findall(report.description_html)
         for url in redirect_urls:
-            new_url = "&".join(
-                [
-                    "{}={}".format(u[0], u[1])
-                    for u in uparse.parse_qsl(uparse.unquote(url))[:-2]
-                ]
-            )
+            base_url, params = uparse.splitquery(uparse.unquote(url))
+            new_params = "&".join([p for p in params.split('&') if not p.startswith("expires") and not p.startswith('token')])
+            # new_params = "&".join(
+            #     [
+            #         "{}={}".format(u[0], u[1])
+            #         for u in uparse.parse_qsl(uparse.unquote(url))[:-2]
+            #     ]
+            # )
             description = description.replace(
                 "{base_string}{url}".format(base_string=base_string, url=url),
-                new_url,
+                '{base_url}{params}'.format(base_url=base_url + ("/" if not base_url.endswith('/') else ""), params=("?" + new_params) if new_params else ""),
             )
         return description
 

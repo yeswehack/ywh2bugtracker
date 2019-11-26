@@ -8,7 +8,7 @@ from ywh2bt.utils import html2jira, unescape_text
 from bs4 import BeautifulSoup
 from pprint import pprint
 from copy import copy
-
+from string import Formatter
 __all__ = ["YWHJira", "YWHJiraConfig"]
 
 
@@ -31,6 +31,7 @@ class YWHJira(BugTracker):
     {description_html}
     """
 
+    tag_format = "yeswehack_code_section_{idx}"
     ############################################################
     ####################### Constructor ########################
     ############################################################
@@ -58,13 +59,13 @@ class YWHJira(BugTracker):
         copy_report = copy(report)
         html = html2text.HTML2Text()
         html.ignore_links = True
+        desc, tags = self.report_as_description(copy_report)
         issue_data = {
             "project": {"key": self.project},
             "summary": self.report_as_title(copy_report),
-            "description": self.report_as_description(copy_report),
+            "description": desc,
             "issuetype": {"name": self.issuetype},
         }
-
         try:
             issue = self.jira.create_issue(**issue_data)
         except:  #  if jira need direct issuetype name
@@ -85,11 +86,9 @@ class YWHJira(BugTracker):
             copy_report.description_html = copy_report.description_html.replace(
                 attachment.url, replacer
             )
-
+        desc, _ = self.report_as_description(copy_report, tags=tags)
         issue.update(
-            description=self.report_as_description(copy_report).replace(
-                "!!", "! !"
-            )
+            description=desc.replace("!!", "! !")
         )
         return issue
 
@@ -99,14 +98,17 @@ class YWHJira(BugTracker):
     def get_id(self, issue):
         return issue.key
 
-    def report_as_description(self, report, template=None, additional_keys=[]):
+    def report_as_description(self, report, template=None, additional_keys=[], tags=[]):
         report.description_html = self.replace_external_link(report)
         report.description_html = self._img_to_jira_tag(
             report.description_html
         )
-        report.description_html, tags = self._code_to_jira_tag(
+
+        report.description_html, tmp_tags = self._code_to_jira_tag(
             report.description_html
         )
+        if not tags:
+            tags = tmp_tags
         description = super().report_as_description(
             report,
             template=template,
@@ -114,18 +116,23 @@ class YWHJira(BugTracker):
             html_parser=html2jira,
         )
 
-        return description.format(**tags)
+        for (_, f_name, _, _) in Formatter().parse(description):
+            if f_name in tags:
+                description = description.replace("{%s}" % f_name, tags[f_name])
+        return description, tags
+
 
     def _code_to_jira_tag(self, html):
         soup = BeautifulSoup(html, features="lxml")
         n_html = str(soup)
-        code_format = "{{code:title={title}}}\n{content}\n{{code}}"
+        code_format = "{{code{title}}}\n{content}\n{{code}}"
         tags = {}
         for idx, code in enumerate(soup.findAll("code")):
-            tag = "code_" + str(idx)
-            title = code.attrs["class"]
-            back[tag] = code_format.format(
-                title=title, content="".join([str(i) for i in code.contents])
+            tag = self.tag_format.format(idx=str(idx))
+            title = code.attrs.get("class", "")
+            tags[tag] = code_format.format(
+                title=":title={title}".format(title=title) if title else "",
+                content="".join([str(i) for i in code.contents])
             )
             n_html = n_html.replace(str(code), "{%(tag)s}" % ({"tag": tag}))
         return n_html, tags

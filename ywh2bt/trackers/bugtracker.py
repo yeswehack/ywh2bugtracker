@@ -100,12 +100,6 @@ class BugTracker(object):
                     and not p.startswith("token")
                 ]
             )
-            # new_params = "&".join(
-            #     [
-            #         "{}={}".format(u[0], u[1])
-            #         for u in uparse.parse_qsl(uparse.unquote(url))[:-2]
-            #     ]
-            # )
             description = description.replace(
                 "{base_string}{url}".format(base_string=base_string, url=url),
                 "{base_url}{params}".format(

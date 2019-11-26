@@ -132,12 +132,16 @@ class YWHJira(BugTracker):
         for idx, code in enumerate(soup.findAll("code")):
             tag = self.tag_format.format(idx=str(idx))
             title = code.attrs.get("class", "")
+            if type(title) == list:
+                title = title[0] if len(title) > 0 else ""
             tags[tag] = code_format.format(
-                title=":title={title}".format(title=title) if title else "",
+                title=":{title}".format(title=title.replace("language-", ""))
+                if title
+                else "",
                 content="".join([str(i) for i in code.contents]),
             )
             n_html = n_html.replace(str(code), "{%(tag)s}" % ({"tag": tag}))
-        return n_html, tags
+        return unescape_text(n_html), tags
 
     def _img_to_jira_tag(self, html):
         """

@@ -10,6 +10,7 @@ from requests_toolbelt import MultipartEncoder
 from winmagic import magic
 from ywh2bt.utils import read_input
 from colorama import Fore, Style
+from copy import copy
 
 __all__ = ["YWHGithub", "YWHGithubConfig"]
 
@@ -63,6 +64,7 @@ class YWHGithub(BugTracker):
 
         :param yeswehack.api.Report report: Report from yeswehack
         """
+        copy_report = copy(report)
         repo = self.bt.get_repo(self.project)
         title = self.report_as_title(report)
         body = self.report_as_description(report)

@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from pprint import pprint
 from copy import copy
 from string import Formatter
+
 __all__ = ["YWHJira", "YWHJiraConfig"]
 
 
@@ -87,9 +88,7 @@ class YWHJira(BugTracker):
                 attachment.url, replacer
             )
         desc, _ = self.report_as_description(copy_report, tags=tags)
-        issue.update(
-            description=desc.replace("!!", "! !")
-        )
+        issue.update(description=desc.replace("!!", "! !"))
         return issue
 
     def get_url(self, issue):
@@ -98,7 +97,9 @@ class YWHJira(BugTracker):
     def get_id(self, issue):
         return issue.key
 
-    def report_as_description(self, report, template=None, additional_keys=[], tags=[]):
+    def report_as_description(
+        self, report, template=None, additional_keys=[], tags=[]
+    ):
         report.description_html = self.replace_external_link(report)
         report.description_html = self._img_to_jira_tag(
             report.description_html
@@ -118,9 +119,10 @@ class YWHJira(BugTracker):
 
         for (_, f_name, _, _) in Formatter().parse(description):
             if f_name in tags:
-                description = description.replace("{%s}" % f_name, tags[f_name])
+                description = description.replace(
+                    "{%s}" % f_name, tags[f_name]
+                )
         return description, tags
-
 
     def _code_to_jira_tag(self, html):
         soup = BeautifulSoup(html, features="lxml")
@@ -132,7 +134,7 @@ class YWHJira(BugTracker):
             title = code.attrs.get("class", "")
             tags[tag] = code_format.format(
                 title=":title={title}".format(title=title) if title else "",
-                content="".join([str(i) for i in code.contents])
+                content="".join([str(i) for i in code.contents]),
             )
             n_html = n_html.replace(str(code), "{%(tag)s}" % ({"tag": tag}))
         return n_html, tags

@@ -94,7 +94,7 @@ class BugTracker(object):
             new_url = "&".join(
                 [
                     "{}={}".format(u[0], u[1])
-                    for u in uparser.parse_qsl(uparser.unquote(url))[:-2]
+                    for u in uparse.parse_qsl(uparse.unquote(url))[:-2]
                 ]
             )
             description = description.replace(

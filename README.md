@@ -22,7 +22,7 @@ pip install ywh2bt
 
 # Usage
 
-a simple commande is available:
+a simple command is available:
 
 ```
 ywh-bugtracker {options}
@@ -30,12 +30,12 @@ ywh-bugtracker {options}
 
 Options:
 - -n --no-interactive: Non interactive mode.
-    * With -c options: all configure data are stored in the configuration file (included credencials).
-    * Without -c options: one test is used at load time to see if credencials exists. if not, a critical error is logged to know the specific credential missing.
+    * With -c options: all configure data are stored in the configuration file (included credentials).
+    * Without -c options: a test is made at load time to see if credentials exist. if not, a critical error is logged to know the specific credential missing.
 - -c --configure: Configuration mode.
     *  Interactive system to configure or modify configuration file.
     *  At load time, if an existing configuration file exists, it is loaded and verified.
-    *  You can add new element in configuration file and, a the tend, you can modify your existings elements.
+    *  You can add new element in configuration file and, at the tend, you can modify your existings elements.
 - -f --filename <filename>: given specified configuration file (default : HOME/.ywh2bt.cfg).
 
 ## Configuration File
@@ -43,7 +43,7 @@ Options:
 A ywh2bt configuration file is a yaml describing each element and interaction between them.
 
 This file have 3 goals :
-- Setup bugtracker system (Bugtracker-s issue-s client-s and YesWeHack-s Client-s).
+- Setup bugtracker system (Bugtracker(s) and YesWeHacks Client(s)).
 - Define configuration for the necessary interactions with Yeswehack APIs
 - Append Extra bugtrackers class to this system if needed
 

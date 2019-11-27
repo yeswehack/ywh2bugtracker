@@ -39,7 +39,10 @@ class YWHGithub(BugTracker):
         self.username = login
         self.github_cdn_on = github_cdn_on
         self.session = None
-        if url != "https://api.github.com":
+        if self.url.endswith('/'):
+            self.url = self.url[:-1]
+
+        if self.url != "https://api.github.com":
             self.bt = github.Github(
                 base_url=self.url, login_or_token=self.token
             )

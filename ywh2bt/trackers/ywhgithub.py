@@ -74,8 +74,8 @@ class YWHGithub(BugTracker):
         title = self.report_as_title(report)
         body = self.report_as_description(report)
         issue = repo.create_issue(title=title, body=body)
-        if self.github_cdn_on:
-            for attachment in report.attachments:
+        for attachment in report.attachments:
+            if self.github_cdn_on:
                 attachment.get_data()
                 url, status_code = self.post_attachment(
                     attachment, issue.number
@@ -85,10 +85,17 @@ class YWHGithub(BugTracker):
                 else:
                     body = body.replace(
                         attachment.url,
-                        "(Attachment {f_name} not available due to export script’s configuration)".format(
+                        "(Attachment {f_name} not available due to upload error)".format(
                             f_name=attachment.name
                         ),
                     )
+            else:
+                body = body.replace(
+                    attachment.url,
+                    "(Attachment {f_name} not available due to export script’s configuration)".format(
+                        f_name=attachment.name
+                    ),
+                )
         issue.edit(body=body)
         return issue
 

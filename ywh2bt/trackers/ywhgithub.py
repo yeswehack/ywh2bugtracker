@@ -224,25 +224,30 @@ class YWHGithub(BugTracker):
                 )
                 status_code = href.status_code
 
-                data = MultipartEncoder(fields={
-                    "authenticity_token":
-                        info["asset_upload_authenticity_token"]
-                })
+                data = MultipartEncoder(
+                    fields={
+                        "authenticity_token": info[
+                            "asset_upload_authenticity_token"
+                        ]
+                    }
+                )
                 r = self.session.put(
-                    "https://github.com" + info['asset_upload_url'],
+                    "https://github.com" + info["asset_upload_url"],
                     data=data,
                     headers={
                         **self.session.headers,
                         "Content-Type": data.content_type,
                         "Content-Length": str(data.len),
-                        "Referer" : "https://github.com/Kobajaski/bugtracker/issues/{}".format(issue_id),
-                        "Accept": "application/json"
-                    }
+                        "Referer": "https://github.com/Kobajaski/bugtracker/issues/{}".format(
+                            issue_id
+                        ),
+                        "Accept": "application/json",
+                    },
                 )
                 status_code = r.status_code
                 try:
                     info = r.json()
-                    url = info['href']
+                    url = info["href"]
                 except:
                     url = ""
             self.logout()

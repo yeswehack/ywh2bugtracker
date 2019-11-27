@@ -99,7 +99,7 @@ def run(cfg, options):
 
             reports = cfg_ywh.ywh.get_reports(
                 cfg_pgm.slug,
-                filters={"filter[trackingStatus][]": "AFI"},
+                filters={"filter[trackingStatus][]": "T"},
                 lazy=True,
             )
             for report in reports:

@@ -8,6 +8,7 @@ import html2text
 import urllib.parse as uparse
 import re
 from bs4 import BeautifulSoup
+
 __all__ = ["BugTracker"]
 
 """
@@ -26,14 +27,17 @@ def html_handler(html):
     soup = BeautifulSoup(html, "lxml")
     for pre in soup.findAll("pre"):
         for code in pre:
-            langs.append(code.attrs.get('class', [""])[0].replace("language-", ""))
+            langs.append(
+                code.attrs.get("class", [""])[0].replace("language-", "")
+            )
     n_html = html_parser.handle(html)
     idx = 0
     for i in range(len(langs)):
         idx = n_html[idx:].index("[code]") + 6 + idx
         n_html = n_html[:idx] + langs[i] + n_html[idx:]
-    h = n_html.replace("[code]", "```").replace('[/code]', '```')
+    h = n_html.replace("[code]", "```").replace("[/code]", "```")
     return h
+
 
 class BugTracker(object):
 
@@ -159,7 +163,7 @@ class BugTracker(object):
         report,
         template=None,
         additional_keys=[],
-        html_parser=html_handler
+        html_parser=html_handler,
     ):
         """
         Format template description with given information

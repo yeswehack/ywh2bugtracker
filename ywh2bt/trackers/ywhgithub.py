@@ -40,7 +40,9 @@ class YWHGithub(BugTracker):
         self.github_cdn_on = github_cdn_on
         self.session = None
         if url != "https://api.github.com":
-            self.bt = github.Github(base_url=self.url, login_or_token=self.token)
+            self.bt = github.Github(
+                base_url=self.url, login_or_token=self.token
+            )
         else:
             self.bt = github.Github(login_or_token=self.token)
         try:
@@ -80,8 +82,13 @@ class YWHGithub(BugTracker):
                 )
                 if url:
                     body = body.replace(attachment.url, url)
-            else:
-                body = body.replace(attachment.url, "(Attachment {f_name} not available due to export script’s configuration)".format(f_name=attachment.name))
+                else:
+                    body = body.replace(
+                        attachment.url,
+                        "(Attachment {f_name} not available due to export script’s configuration)".format(
+                            f_name=attachment.name
+                        ),
+                    )
         issue.edit(body=body)
         return issue
 
@@ -216,6 +223,28 @@ class YWHGithub(BugTracker):
                     },
                 )
                 status_code = href.status_code
+
+                data = MultipartEncoder(fields={
+                    "authenticity_token":
+                        info["asset_upload_authenticity_token"]
+                })
+                r = self.session.put(
+                    "https://github.com" + info['asset_upload_url'],
+                    data=data,
+                    headers={
+                        **self.session.headers,
+                        "Content-Type": data.content_type,
+                        "Content-Length": str(data.len),
+                        "Referer" : "https://github.com/Kobajaski/bugtracker/issues/{}".format(issue_id),
+                        "Accept": "application/json"
+                    }
+                )
+                status_code = r.status_code
+                try:
+                    info = r.json()
+                    url = info['href']
+                except:
+                    url = ""
             self.logout()
             return url, status_code
 
@@ -263,7 +292,7 @@ class YWHGithubConfig(BugTrackerConfig):
                 github_cdn_on=self._github_cdn_on,
             )
         else:
-            self._get_bugtracker(self._url,self._project, self._token)
+            self._get_bugtracker(self._url, self._project, self._token)
 
     def user_config(self):
         self._github_cdn_on = (

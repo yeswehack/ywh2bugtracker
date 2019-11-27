@@ -7,15 +7,33 @@ from abc import abstractmethod
 import html2text
 import urllib.parse as uparse
 import re
-
+from bs4 import BeautifulSoup
 __all__ = ["BugTracker"]
 
 """
 Define Abstract client class
 """
 
-html2text.BODY_WIDTH = 0
 
+def html_handler(html):
+    """
+    Process html to markdown
+    """
+    html_parser = html2text.HTML2Text()
+    html_parser.body_width = 0
+    html_parser.mark_code = True
+    langs = []
+    soup = BeautifulSoup(html, "lxml")
+    for pre in soup.findAll("pre"):
+        for code in pre:
+            langs.append(code.attrs.get('class', [""])[0].replace("language-", ""))
+    n_html = html_parser.handle(html)
+    idx = 0
+    for i in range(len(langs)):
+        idx = n_html[idx:].index("[code]") + 6 + idx
+        n_html = n_html[:idx] + langs[i] + n_html[idx:]
+    h = n_html.replace("[code]", "```").replace('[/code]', '```')
+    return h
 
 class BugTracker(object):
 
@@ -141,7 +159,7 @@ class BugTracker(object):
         report,
         template=None,
         additional_keys=[],
-        html_parser=html2text.html2text,
+        html_parser=html_handler
     ):
         """
         Format template description with given information
@@ -188,7 +206,7 @@ class BugTracker(object):
     ############################################################
     @staticmethod
     def format_template(
-        report, template, keys=[], fmt_keys={}, html_parser=html2text.html2text
+        report, template, keys=[], fmt_keys={}, html_parser=html_handler
     ):
         """
         Format given template with report information

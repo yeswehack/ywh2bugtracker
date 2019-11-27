@@ -2,6 +2,7 @@
 
 import github
 from .bugtracker import BugTracker
+from github.GithubException import BadCredentialsException
 from ywh2bt.config import BugTrackerConfig
 from bs4 import BeautifulSoup
 import requests
@@ -29,20 +30,22 @@ class YWHGithub(BugTracker):
     ####################### Constructor ########################
     ############################################################
     def __init__(
-        self, project, token, login="", password="", github_cdn_on=False
+        self, url, project, token, login="", password="", github_cdn_on=False
     ):
-
+        self.url = url
         self.project = project
         self.token = token
         self.password = password
         self.username = login
         self.github_cdn_on = github_cdn_on
         self.session = None
-
-        self.bt = github.Github(self.token)
+        if url != "https://api.github.com":
+            self.bt = github.Github(base_url=self.url, login_or_token=self.token)
+        else:
+            self.bt = github.Github(login_or_token=self.token)
         try:
             self.bt.get_user().name
-        except github.GithubException.BadCredentialsException:
+        except BadCredentialsException:
             raise
 
     ############################################################
@@ -77,7 +80,9 @@ class YWHGithub(BugTracker):
                 )
                 if url:
                     body = body.replace(attachment.url, url)
-            issue.edit(body=body)
+            else:
+                body = body.replace(attachment.url, "(Attachment {f_name} not available due to export script’s configuration)".format(f_name=attachment.name))
+        issue.edit(body=body)
         return issue
 
     def get_url(self, issue):
@@ -233,7 +238,7 @@ class YWHGithubConfig(BugTrackerConfig):
 
     mandatory_keys = ["project"]
     secret_keys = ["token"]
-    optional_keys = dict(url="https://github.com/api/v3", github_cdn_on=False)
+    optional_keys = dict(url="https://api.github.com", github_cdn_on=False)
     _description = dict(
         project="path/to/project",
         github_cdn_on="Enable or Disable saving attachment file to Github CDN",
@@ -250,6 +255,7 @@ class YWHGithubConfig(BugTrackerConfig):
     def _set_bugtracker(self):
         if self._github_cdn_on:
             self._get_bugtracker(
+                self._url,
                 self._project,
                 self._token,
                 login=self._login,
@@ -257,7 +263,7 @@ class YWHGithubConfig(BugTrackerConfig):
                 github_cdn_on=self._github_cdn_on,
             )
         else:
-            self._get_bugtracker(self._project, self._token)
+            self._get_bugtracker(self._url,self._project, self._token)
 
     def user_config(self):
         self._github_cdn_on = (

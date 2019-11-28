@@ -8,7 +8,6 @@ from bs4 import BeautifulSoup
 import requests
 from requests_toolbelt import MultipartEncoder
 
-from winmagic import magic
 from ywh2bt.utils import read_input
 from colorama import Fore, Style
 from copy import copy
@@ -47,8 +46,14 @@ class YWHGithub(BugTracker):
             self.bt = github.Github(
                 base_url=self.url, login_or_token=self.token
             )
+            self.github_domain = (
+                self.url.replace("https://", "")
+                .replace("http://", "")
+                .split("/")[0]
+            )
         else:
             self.bt = github.Github(login_or_token=self.token)
+            self.github_domain = "github.com"
         try:
             self.bt.get_user().name
         except BadCredentialsException:
@@ -135,7 +140,7 @@ class YWHGithub(BugTracker):
         status = None
         if self.session is None:
             self.session = requests.Session()
-            r = self.session.get("https://github.com/login")
+            r = self.session.get(f"https://{self.github_domain}/login")
             form = BeautifulSoup(r.text, features="lxml").find("form")
             keys = {}
             for key in [
@@ -150,7 +155,7 @@ class YWHGithub(BugTracker):
                 value = form.find("input", {"name": key})
                 keys = {**keys, key: value["value"] if value else None}
             status = self.session.post(
-                "https://github.com/session",
+                f"https://{self.github_domain}/session",
                 data={
                     **keys,
                     "login": self.username,
@@ -165,7 +170,7 @@ class YWHGithub(BugTracker):
         """
         status = None
         if self.session is not None:
-            r = self.session.get("https://github.com/")
+            r = self.session.get(f"https://{self.github_domain}/")
             hiddens = (
                 BeautifulSoup(r.text, features="lxml")
                 .find("form", {"action": "/logout"})
@@ -175,7 +180,7 @@ class YWHGithub(BugTracker):
             for h in hiddens:
                 data = {**data, h["name"]: h["value"]}
             status = self.session.post(
-                "https://github.com/logout", data=data
+                f"https://{self.github_domain}/logout", data=data
             ).status_code
             self.session = None
         return status
@@ -198,15 +203,15 @@ class YWHGithub(BugTracker):
 
             r = self.session.request(
                 "GET",
-                "https://github.com/{}/issues/{}".format(
-                    self.project, issue_id
+                "https://{}/{}/issues/{}".format(
+                    self.github_domain, self.project, issue_id
                 ),
             )
             file_attach = BeautifulSoup(r.text, features="lxml").find(
                 "file-attachment"
             )
             filename = attachment.original_name.split("/")[-1]
-            content_type = magic.from_buffer(attachment.data, mime=True)
+            content_type = attachment.mime_type
             fields = {
                 "name": filename,
                 "size": str(len(attachment.data)),
@@ -219,7 +224,7 @@ class YWHGithub(BugTracker):
             data = MultipartEncoder(fields=fields)
             href = self.session.request(
                 "POST",
-                "https://github.com/upload/policies/assets",
+                f"https://{self.github_domain}/upload/policies/assets",
                 data=data,
                 headers={
                     **self.session.headers,
@@ -256,14 +261,14 @@ class YWHGithub(BugTracker):
                     }
                 )
                 r = self.session.put(
-                    "https://github.com" + info["asset_upload_url"],
+                    f"https://{self.github_domain}" + info["asset_upload_url"],
                     data=data,
                     headers={
                         **self.session.headers,
                         "Content-Type": data.content_type,
                         "Content-Length": str(data.len),
-                        "Referer": "https://github.com/{}/issues/{}".format(
-                            self.project, issue_id
+                        "Referer": "https://{}/{}/issues/{}".format(
+                            self.github_domain, self.project, issue_id
                         ),
                         "Accept": "application/json",
                     },

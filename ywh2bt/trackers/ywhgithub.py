@@ -12,6 +12,7 @@ from winmagic import magic
 from ywh2bt.utils import read_input
 from colorama import Fore, Style
 from copy import copy
+import re
 
 __all__ = ["YWHGithub", "YWHGithubConfig"]
 
@@ -39,7 +40,7 @@ class YWHGithub(BugTracker):
         self.username = login
         self.github_cdn_on = github_cdn_on
         self.session = None
-        if self.url.endswith('/'):
+        if self.url.endswith("/"):
             self.url = self.url[:-1]
 
         if self.url != "https://api.github.com":
@@ -77,7 +78,16 @@ class YWHGithub(BugTracker):
         title = self.report_as_title(report)
         body = self.report_as_description(report)
         issue = repo.create_issue(title=title, body=body)
+        substitute_regex = r"!?\[[^\[\]]*\]\({text}\)"
+        attach_name_regex = "(?:!?\[)([^\[\]]*)(?:\])(?:\({text}\))"
         for attachment in report.attachments:
+            attach_name = re.findall(
+                attach_name_regex.format(text=re.escape(attachment.url)), body
+            )
+            if attach_name:
+                attach_name = attach_name[0]
+            else:
+                attach_name = attachment.name
             if self.github_cdn_on:
                 attachment.get_data()
                 url, status_code = self.post_attachment(
@@ -86,18 +96,22 @@ class YWHGithub(BugTracker):
                 if url:
                     body = body.replace(attachment.url, url)
                 else:
-                    body = body.replace(
-                        attachment.url,
-                        "(Attachment {f_name} not available due to upload error)".format(
-                            f_name=attachment.name
+                    body = re.sub(
+                        substitute_regex.format(
+                            text=re.escape(attachment.url)
                         ),
+                        '(Attachment "{f_name}" not available due to upload error)'.format(
+                            f_name=attach_name
+                        ),
+                        body,
                     )
             else:
-                body = body.replace(
-                    attachment.url,
-                    "(Attachment {f_name} not available due to export script’s configuration)".format(
-                        f_name=attachment.name
+                body = re.sub(
+                    substitute_regex.format(text=re.escape(attachment.url)),
+                    '(Attachment "{f_name}" not available due to export script’s configuration)'.format(
+                        f_name=attach_name
                     ),
+                    body,
                 )
         issue.edit(body=body)
         return issue

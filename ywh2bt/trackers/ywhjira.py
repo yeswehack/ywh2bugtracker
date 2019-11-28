@@ -134,10 +134,11 @@ class YWHJira(BugTracker):
             title = code.attrs.get("class", "")
             if type(title) == list:
                 title = title[0] if len(title) > 0 else ""
+            title = title.replace("language-", "")
+            if title.lower() in ["burp", "http", "shell", "graphql"]:
+                title = ""
             tags[tag] = code_format.format(
-                title=":{title}".format(title=title.replace("language-", ""))
-                if title
-                else "",
+                title=":{title}".format(title=title) if title else "",
                 content="".join([str(i) for i in code.contents]),
             )
             n_html = n_html.replace(str(code), "{%(tag)s}" % ({"tag": tag}))

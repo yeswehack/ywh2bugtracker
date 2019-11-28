@@ -262,8 +262,8 @@ class YWHGithub(BugTracker):
                         **self.session.headers,
                         "Content-Type": data.content_type,
                         "Content-Length": str(data.len),
-                        "Referer": "https://github.com/Kobajaski/bugtracker/issues/{}".format(
-                            issue_id
+                        "Referer": "https://github.com/{}/issues/{}".format(
+                            self.project, issue_id
                         ),
                         "Accept": "application/json",
                     },

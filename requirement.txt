@@ -1,0 +1,12 @@
+requests
+python-gitlab
+pyyaml
+pygithub
+jira
+html2text
+colorama
+pyotp
+coloredLogs
+yeswehack
+beautifulsoup4
+lxml

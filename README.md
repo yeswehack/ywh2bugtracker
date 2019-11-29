@@ -93,7 +93,7 @@ yeswehack:
       - github
       - jira
       - myissuelogger
-      slug: myproject
+      slug: myprogram
     totp: false
     apps_headers:
       X-YesWeHack-Apps: ywh_app_header
@@ -195,7 +195,7 @@ yeswehack:
     programs:
     - bugtrackers_name:
       - bugtracker_3
-      slug: myproject
+      slug: myprogram
   yeswehack_2:
     api_url: https://apps.yeswehack.com
     login: myotherlogintoyeswehack@yeswehack.com
@@ -213,7 +213,7 @@ yeswehack:
       slug: myproject_api
     - bugtrackers_name:
       - bugtracker_2
-      slug: anotherproject
+      slug: anotherprogram
     totp: True
     totp_secret: mytopt
 ```

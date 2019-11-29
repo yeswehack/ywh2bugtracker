@@ -155,4 +155,8 @@ def run(cfg, options):
                             else:
                                 logger.info("Status updated.")
                     except:
-                        logger.error("An error occur on {}, continue to the next bugtracker".format(cfg_bt.name))
+                        logger.error(
+                            "An error occur on {}, continue to the next bugtracker".format(
+                                cfg_bt.name
+                            )
+                        )

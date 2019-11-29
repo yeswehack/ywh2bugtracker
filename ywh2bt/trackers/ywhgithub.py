@@ -136,7 +136,9 @@ class YWHGithub(BugTracker):
     def cdn_request(self, method, url, data=None, headers={}):
         try:
             if headers:
-                requested =  self.session.request(method, url, data=data, headers=headers)
+                requested = self.session.request(
+                    method, url, data=data, headers=headers
+                )
             else:
                 requested = self.session.request(method, url, data=data)
         except Exception as e:
@@ -191,9 +193,7 @@ class YWHGithub(BugTracker):
             for h in hiddens:
                 data = {**data, h["name"]: h["value"]}
             status = self.cdn_request(
-                "POST",
-                f"https://{self.github_domain}/logout",
-                data=data
+                "POST", f"https://{self.github_domain}/logout", data=data
             ).status_code
             self.session = None
         return status

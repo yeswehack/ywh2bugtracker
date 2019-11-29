@@ -108,49 +108,51 @@ def run(cfg, options):
 
                 comments = report.get_comments(lazy=True)
                 for cfg_bt in cfg_pgm.bugtrackers:
-
-                    cfg_bt.set_yeswehack_domain(ywh_domain)
-                    issue = cfg_bt.bugtracker.post_issue(report)
-                    issue_meta = {
-                        "url": cfg_bt.bugtracker.get_url(issue),
-                        "id": cfg_bt.bugtracker.get_id(issue),
-                    }
-
-                    logger.info(report.title + " posted to " + cfg_bt.name)
-
-                    marker = BugTracker.ywh_comment_marker.format(
-                        url=cfg_bt.url, project_id=cfg_bt.project
-                    )
-
-                    comment = (
-                        marker
-                        + "\n"
-                        + BugTracker.ywh_comment_template.format(
-                            type=cfg_bt.type,
-                            issue_id=issue_meta["id"],
-                            bug_url=issue_meta["url"],
-                        )
-                    )
-                    resp = report.put_tracking_status(
-                        "T",
-                        cfg_bt.name,
-                        issue_meta["url"],
-                        tracker_id=issue_meta["id"],
-                        message=comment,
-                    )
-
                     try:
-                        resp_json = resp.json()
-                    except:
-                        logger.error("Response from YesWeHack not JSON")
-                    else:
-                        if "error" in resp_json:
-                            logger.error(
-                                "Status Update Error : {}".format(
-                                    resp_json.get(
-                                        "error_description", resp.text
+                        cfg_bt.set_yeswehack_domain(ywh_domain)
+                        issue = cfg_bt.bugtracker.post_issue(report)
+                        issue_meta = {
+                            "url": cfg_bt.bugtracker.get_url(issue),
+                            "id": cfg_bt.bugtracker.get_id(issue),
+                        }
+
+                        logger.info(report.title + " posted to " + cfg_bt.name)
+
+                        marker = BugTracker.ywh_comment_marker.format(
+                            url=cfg_bt.url, project_id=cfg_bt.project
+                        )
+
+                        comment = (
+                            marker
+                            + "\n"
+                            + BugTracker.ywh_comment_template.format(
+                                type=cfg_bt.type,
+                                issue_id=issue_meta["id"],
+                                bug_url=issue_meta["url"],
+                            )
+                        )
+                        resp = report.put_tracking_status(
+                            "T",
+                            cfg_bt.name,
+                            issue_meta["url"],
+                            tracker_id=issue_meta["id"],
+                            message=comment,
+                        )
+
+                        try:
+                            resp_json = resp.json()
+                        except:
+                            logger.error("Response from YesWeHack not JSON")
+                        else:
+                            if "error" in resp_json:
+                                logger.error(
+                                    "Status Update Error : {}".format(
+                                        resp_json.get(
+                                            "error_description", resp.text
+                                        )
                                     )
                                 )
-                            )
-                        else:
-                            logger.info("Status updated.")
+                            else:
+                                logger.info("Status updated.")
+                    except:
+                        logger.error("An error occur on {}, continue to the next bugtracker".format(cfg_bt.name))

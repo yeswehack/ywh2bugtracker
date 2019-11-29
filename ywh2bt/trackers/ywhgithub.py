@@ -7,7 +7,7 @@ from ywh2bt.config import BugTrackerConfig
 from bs4 import BeautifulSoup
 import requests
 from requests_toolbelt import MultipartEncoder
-
+from ywh2bt.logging import logger
 from ywh2bt.utils import read_input
 from colorama import Fore, Style
 from copy import copy
@@ -133,6 +133,17 @@ class YWHGithub(BugTracker):
         """
         return issue.number
 
+    def cdn_request(self, method, url, data=None, headers={}):
+        try:
+            if headers:
+                requested =  self.session.request(method, url, data=data, headers=headers)
+            else:
+                requested = self.session.request(method, url, data=data)
+        except Exception as e:
+            logger.error(f"An exception occur on {self.name} : {str(e)}")
+            raise e
+        return requested
+
     def login(self):
         """
         Login to github platform
@@ -140,7 +151,7 @@ class YWHGithub(BugTracker):
         status = None
         if self.session is None:
             self.session = requests.Session()
-            r = self.session.get(f"https://{self.github_domain}/login")
+            r = self.cdn_request("GET", f"https://{self.github_domain}/login")
             form = BeautifulSoup(r.text, features="lxml").find("form")
             keys = {}
             for key in [
@@ -170,7 +181,7 @@ class YWHGithub(BugTracker):
         """
         status = None
         if self.session is not None:
-            r = self.session.get(f"https://{self.github_domain}/")
+            r = self.cdn_request("GET", f"https://{self.github_domain}/")
             hiddens = (
                 BeautifulSoup(r.text, features="lxml")
                 .find("form", {"action": "/logout"})
@@ -179,8 +190,10 @@ class YWHGithub(BugTracker):
             data = {}
             for h in hiddens:
                 data = {**data, h["name"]: h["value"]}
-            status = self.session.post(
-                f"https://{self.github_domain}/logout", data=data
+            status = self.cdn_request(
+                "POST",
+                f"https://{self.github_domain}/logout",
+                data=data
             ).status_code
             self.session = None
         return status
@@ -196,20 +209,28 @@ class YWHGithub(BugTracker):
         status_code = self.login()
         href = None
         if status_code != 200:
-            return url, status_code
+            msg = 'Github CDN ("https://{self.github_domain}") login error'
+            logger.error(msg)
+            raise Exception(msg)
 
         if self.session:
             repo_id = self.bt.get_repo(self.project).id
 
-            r = self.session.request(
+            r = self.cdn_request(
                 "GET",
                 "https://{}/{}/issues/{}".format(
                     self.github_domain, self.project, issue_id
                 ),
             )
+
             file_attach = BeautifulSoup(r.text, features="lxml").find(
                 "file-attachment"
             )
+
+            if not file_attach:
+                msg = f"Can't get information to upload data, status code: {r.status_code}"
+                logger.error(msg)
+                raise Exception(msg)
             filename = attachment.original_name.split("/")[-1]
             content_type = attachment.mime_type
             fields = {
@@ -222,7 +243,7 @@ class YWHGithub(BugTracker):
                 "repository_id": "{}".format(repo_id),
             }
             data = MultipartEncoder(fields=fields)
-            href = self.session.request(
+            href = self.cdn_request(
                 "POST",
                 f"https://{self.github_domain}/upload/policies/assets",
                 data=data,
@@ -235,13 +256,17 @@ class YWHGithub(BugTracker):
             status_code = href.status_code
             if status_code == 201:  #  status_code 201
                 info = href.json()
+                if "asset" not in info:
+                    msg = f"Can't upload data, response: {info}"
+                    logger.error(msg)
+                    raise Exception(msg)
                 url = info["asset"]["href"]
                 fields = {}
                 for field, value in info["form"].items():
                     fields[field] = value
                 fields["file"] = (filename, attachment.data, content_type)
                 data = MultipartEncoder(fields=fields)
-                href = self.session.request(
+                href = self.cdn_request(
                     "POST",
                     info["upload_url"],
                     data=data,
@@ -260,7 +285,8 @@ class YWHGithub(BugTracker):
                         ]
                     }
                 )
-                r = self.session.put(
+                r = self.cdn_request(
+                    "PUT",
                     f"https://{self.github_domain}" + info["asset_upload_url"],
                     data=data,
                     headers={

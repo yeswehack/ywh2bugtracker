@@ -20,7 +20,7 @@ from ywh2bt import config
 from ywh2bt.logging import logger
 
 __all__ = ["main"]
-__VERSION__ = "0.2a7"
+__VERSION__ = "0.2"
 
 """
 Entry point for script and setup

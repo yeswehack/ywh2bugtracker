@@ -20,6 +20,10 @@ pip install ywh2bt
    * install ywh2bt : ```python setup.py install```
 
 
+# Requirement
+
+To use this script you need to have "create API" right on YesWeHack platform and a specific header value. Both can be obtained by sending us a mail at support@yeswehack.com
+
 # Usage
 
 a simple command is available:
@@ -80,7 +84,7 @@ bugtrackers:
     url: http://myissuelogger.com/
 yeswehack:
   yeswehack_1:
-    api_url: https://api.yeswehack.com
+    api_url: https://apps.yeswehack.com
     login: mylogintoyeswehack@yeswehack.com
     password: password_login
     programs:
@@ -184,7 +188,7 @@ YesWeHack configuration part define one or more yeswehack object:
 ```yaml
 yeswehack:
   yeswehack_1:
-    api_url: https://api.yeswehack.com
+    api_url: https://apps.yeswehack.com
     login: mylogintoyeswehack@yeswehack.com
     password: password_login
     totp: false
@@ -193,7 +197,7 @@ yeswehack:
       - bugtracker_3
       slug: myproject
   yeswehack_2:
-    api_url: https://api.yeswehack.com
+    api_url: https://apps.yeswehack.com
     login: myotherlogintoyeswehack@yeswehack.com
     password: otherpassword_login
     apps_headers:

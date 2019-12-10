@@ -20,6 +20,7 @@ class YWHJira(BugTracker):
 
     description_template = """
     || Title || {local_id} : {title} ||
+    | Priority | {priority} |
     | Bug Type | [{bug_type__name}]({bug_type__link}) => [Remediation]({bug_type__remediation_link}) |
     | Scope | {scope} |
     | Severity | {cvss__criticity}, score {cvss__score:.1f}, vector {cvss__vector}|
@@ -43,7 +44,9 @@ class YWHJira(BugTracker):
         self.project = project
         self.issuetype = issuetype
         try:
-            self.jira = jira.JIRA(self.url, basic_auth=(self.login, self.password))
+            self.jira = jira.JIRA(
+                self.url, basic_auth=(self.login, self.password)
+            )
         except jira.exceptions.JIRAError:
             raise
 

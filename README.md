@@ -125,7 +125,7 @@ bugtrackers:
   jira:
     issuetype: Task
     login: user
-    password: password_user
+    password: password_user (or token api)
     project: projectname
     type: jira
     url: http://myjira.com
@@ -158,7 +158,7 @@ Jira:
 - optional keys:
     * issuetype (default 'Task'): type of the issue, by default we consider 'Task', but it could have an other name (depend of jira language installation).
 - secret keys:
-    * password: password for the user login set.
+    * password: password for the user login set for jira server, or token api for jira Cloud service.
 
 Gitlab:
 - mandatory keys:

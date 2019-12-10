@@ -43,7 +43,7 @@ class YWHJira(BugTracker):
         self.project = project
         self.issuetype = issuetype
         try:
-            self.jira = jira.JIRA(self.url, auth=(self.login, self.password))
+            self.jira = jira.JIRA(self.url, basic_auth=(self.login, self.password))
         except jira.exceptions.JIRAError:
             raise
 

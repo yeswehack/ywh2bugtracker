@@ -160,7 +160,7 @@ Jira:
 - secret keys:
     * password: password for the user login set for jira server.
 
-**If you use jiracloud,  url must be set to https://*yourInstance*.atlassian.net/jira/software/projects/ and password set to jira Cloud service token api**
+**If you use jiracloud,  url must be set to https://*yourInstance*.atlassian.net and password set to jira Cloud service token api**
 
 Gitlab:
 - mandatory keys:

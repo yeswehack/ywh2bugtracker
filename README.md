@@ -158,7 +158,9 @@ Jira:
 - optional keys:
     * issuetype (default 'Task'): type of the issue, by default we consider 'Task', but it could have an other name (depend of jira language installation).
 - secret keys:
-    * password: password for the user login set for jira server, or token api for jira Cloud service.
+    * password: password for the user login set for jira server.
+
+**If you use jiracloud,  url must be set to https://*yourInstance*.atlassian.net and password set to jira Cloud service token api**
 
 Gitlab:
 - mandatory keys:

@@ -20,7 +20,7 @@ from ywh2bt import config
 from ywh2bt.logging import logger
 
 __all__ = ["main"]
-__VERSION__ = "0.3"
+__VERSION__ = "0.4"
 
 """
 Entry point for script and setup
@@ -105,7 +105,6 @@ def run(cfg, options):
             for report in reports:
                 report = cfg_ywh.ywh.get_report(report.id)
                 logger.info("Checking " + report.title)
-
                 comments = report.get_comments(lazy=True)
                 for cfg_bt in cfg_pgm.bugtrackers:
                     try:
@@ -154,7 +153,7 @@ def run(cfg, options):
                                 )
                             else:
                                 logger.info("Status updated.")
-                    except:
+                    except Exception as e:
                         logger.error(
                             "An error occur on {}, continue to the next bugtracker".format(
                                 cfg_bt.name

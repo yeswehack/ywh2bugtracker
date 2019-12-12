@@ -302,7 +302,7 @@ class YWHGithub(BugTracker):
                 status_code = r.status_code
                 try:
                     info = r.json()
-                    url = info["href"]
+                    url = info.get("href", "") or url
                 except:
                     url = ""
             self.logout()

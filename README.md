@@ -1,6 +1,6 @@
 # What is that ?
 
-ywh2bugtracker allows you to integrate your bug tracking system(s) with yeswehack platform. It automatically creates issues in your bug tracking system for all your program's report with tracking status "Ask for integration", and add to the concerned reports the link to the issue in your bugtracker . Currently github, jira and gitlab are supported, and you can add your own bug tracker by following instructions [below](#Create-Your-Config-Manager-Object).
+ywh2bugtracker allows you to integrate your bug tracking system(s) with yeswehack platform. It automatically creates issues in your bug tracking system for all your program's report with tracking status "Ask for integration", and add to the concerned reports the link to the issue in your bugtracker . Currently github, jira (also jiracloud) and gitlab are supported, and you can add your own bug tracker by following instructions [below](#Create-Your-Config-Manager-Object).
 
 
 # Installation
@@ -125,7 +125,7 @@ bugtrackers:
   jira:
     issuetype: Task
     login: user
-    password: password_user
+    password: password_user (or token api)
     project: projectname
     type: jira
     url: http://myjira.com
@@ -158,7 +158,9 @@ Jira:
 - optional keys:
     * issuetype (default 'Task'): type of the issue, by default we consider 'Task', but it could have an other name (depend of jira language installation).
 - secret keys:
-    * password: password for the user login set.
+    * password: password for the user login set for jira server.
+
+**If you use jiracloud,  url must be set to https://*yourInstance*.atlassian.net and password set to jira Cloud service token api**
 
 Gitlab:
 - mandatory keys:

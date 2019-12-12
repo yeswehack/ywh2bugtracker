@@ -59,6 +59,7 @@ class BugTracker(object):
     description_template = """
 | Title | {local_id} : {title}|
 |-------|---------------------|
+| Priority | {priority__name} |
 | Bug Type | [{bug_type__name}]({bug_type__link}) &#8594; [Remediation]({bug_type__remediation_link}) |
 | Scope | {scope} |
 | Severity | {cvss__criticity}, score: {cvss__score:.1f}, vector: {cvss__vector} |
@@ -180,6 +181,7 @@ class BugTracker(object):
         keys = [
             "scope",
             "cvss__score",
+            "priority__name",
             "cvss__criticity",
             "cvss__vector",
             "vulnerable_part",
@@ -225,7 +227,10 @@ class BugTracker(object):
         for key in keys:
             obj = report
             for i in key.split("__"):
-                obj = obj.__getattribute__(i)
+                if obj:
+                    obj = getattr(obj, i, None)
+                else:
+                    break
             if "html" in key:
                 obj = html_parser(obj)
             fmt_keys[key] = obj

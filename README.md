@@ -95,6 +95,7 @@ yeswehack:
       - myissuelogger
       slug: myprogram
     totp: false
+    verify: true
     apps_headers:
       X-YesWeHack-Apps: ywh_app_header
     oauth_args:
@@ -194,6 +195,7 @@ yeswehack:
     login: mylogintoyeswehack@yeswehack.com
     password: password_login
     totp: false
+    verify: true
     programs:
     - bugtrackers_name:
       - bugtracker_3
@@ -218,6 +220,7 @@ yeswehack:
       slug: anotherprogram
     totp: True
     totp_secret: mytopt
+    verify: False
 ```
 
 YesWeHack Object:
@@ -227,6 +230,7 @@ YesWeHack Object:
   * login: my user Login . **NB : This user must have program consumer role on the program**
   * totp: if totp is enable on for my user.
   * totp_secret: needed in configuration file only if totp is True and in no interactive mode.
+  * verify: (true by default) SSL verification is enable or not
   * programs (list of item):
     * bugtrackers_name: bugtrackers names defined in ["Setup bugtracker System" section](#Setup-bugtracker-System).
     * slug: program slug (found in th url of your program)

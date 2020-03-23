@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 import gitlab
+import requests
 from .bugtracker import BugTracker
 from ywh2bt.config import BugTrackerConfig
 from copy import copy
@@ -22,11 +23,13 @@ class YWHGitlab(BugTracker):
     ############################################################
     ####################### Constructor ########################
     ############################################################
-    def __init__(self, url, project, token):
+    def __init__(self, url, project, token, verify=True):
         self.url = url
         self.project = project
         self.token = token
-        self.bt = gitlab.Gitlab(self.url, private_token=self.token)
+        self.session = requests.Session()
+        self.session.verify = verify
+        self.bt = gitlab.Gitlab(self.url, private_token=self.token, session=self.session)
         try:
             self.bt.auth()
         except gitlab.exceptions.GitlabAuthenticationError:
@@ -87,11 +90,11 @@ class YWHGitlabConfig(BugTrackerConfig):
 
     mandatory_keys = ["project"]
     secret_keys = ["token"]
-    optional_keys = dict(url="http://gitlab.com")
+    optional_keys = dict(url="http://gitlab.com", verify=True)
     _description = dict(project="path/to/project")
 
     ############################################################
     #################### Instance methods ######################
     ############################################################
     def _set_bugtracker(self):
-        self._get_bugtracker(self._url, self._project, self._token)
+        self._get_bugtracker(self._url, self._project, self._token, verify=self._verify)

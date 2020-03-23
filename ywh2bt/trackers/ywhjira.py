@@ -37,15 +37,16 @@ class YWHJira(BugTracker):
     ############################################################
     ####################### Constructor ########################
     ############################################################
-    def __init__(self, url, login, password, project, issuetype="Task"):
+    def __init__(self, url, login, password, project, issuetype="Task", verify=True):
         self.url = url
         self.login = login
         self.password = password
         self.project = project
         self.issuetype = issuetype
+        self.verify = verify
         try:
             self.jira = jira.JIRA(
-                self.url, basic_auth=(self.login, self.password)
+                    self.url, basic_auth=(self.login, self.password), options={'verify': self.verify}
             )
         except jira.exceptions.JIRAError:
             raise
@@ -179,7 +180,7 @@ class YWHJiraConfig(BugTrackerConfig):
 
     mandatory_keys = ["url", "login", "project"]
     secret_keys = ["password"]
-    optional_keys = dict(issuetype="Task")
+    optional_keys = dict(issuetype="Task", verify="True")
     _description = dict(project="Jira slug")
 
     ############################################################
@@ -192,4 +193,5 @@ class YWHJiraConfig(BugTrackerConfig):
             self._password,
             self._project,
             issuetype=self._issuetype,
+            verify=self._verify,
         )

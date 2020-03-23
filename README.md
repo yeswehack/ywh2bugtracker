@@ -130,6 +130,7 @@ bugtrackers:
     project: projectname
     type: jira
     url: http://myjira.com
+    verify: true
   github:
     project: path/to/my/project/on/github
     token: myaccesstoken
@@ -138,11 +139,13 @@ bugtrackers:
     github_cdn_on: true
     login: mylogin
     password: mypassword
+    verify: true
   gitlab:
     project: path/to/my/project/on/mygitlab
     token: myaccesstoken
     type: gitlab
     url: http://local.gitlab.com/
+    verify: true
 ```
 
 #### Bugtrackers Object
@@ -158,6 +161,7 @@ Jira:
     * project: project slug which have the issue on it.
 - optional keys:
     * issuetype (default 'Task'): type of the issue, by default we consider 'Task', but it could have an other name (depend of jira language installation).
+    * verify: (true by default) SSL verification is enable or not
 - secret keys:
     * password: password for the user login set for jira server.
 
@@ -168,6 +172,7 @@ Gitlab:
     * project: path/of/the/project. If the project is in a group named 'projectsgroups', and the project name is 'test', your project is 'projectsgroups/test'
 - optional keys:
     * url (default 'http://gitlab.com'): url to your gitlab installation
+    * verify: (true by default) SSL verification is enable or not
 - secret keys:
     * token: user token to push the issue on your gitlab. the user and the token need to have sufficient rights to push the issue on the project.
 
@@ -177,6 +182,7 @@ Github:
 - optional keys:
     * url (default 'https://github/api/v3'): url to github api access, by default, we used the V3 api url.
     * github_cdn_on (default ```false```): set to true to  save attachment in github cdn, false otherwise (attachment such as inline images in report description won't be in the issue createdd in github).
+    * verify: (true by default) SSL verification is enable or not
 - secret keys:
     * token: user token to push the issue on github. the user and the token need to have sufficient rights to push the issue on the project.
 - conditional keys (if github_cdn set to true)

@@ -180,7 +180,7 @@ class YWHJiraConfig(BugTrackerConfig):
 
     mandatory_keys = ["url", "login", "project"]
     secret_keys = ["password"]
-    optional_keys = dict(issuetype="Task", verify="True")
+    optional_keys = dict(issuetype="Task", verify=True)
     _description = dict(project="Jira slug")
 
     ############################################################

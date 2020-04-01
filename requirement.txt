@@ -6,7 +6,7 @@ jira
 html2text
 colorama
 pyotp
-coloredLogs
+coloredlogs==10.0
 yeswehack
 beautifulsoup4
 lxml

@@ -30,7 +30,7 @@ class YWHGithub(BugTracker):
     ####################### Constructor ########################
     ############################################################
     def __init__(
-        self, url, project, token, login="", password="", github_cdn_on=False
+        self, url, project, token, login="", password="", github_cdn_on=False, verify=True
     ):
         self.url = url
         self.project = project
@@ -38,13 +38,14 @@ class YWHGithub(BugTracker):
         self.password = password
         self.username = login
         self.github_cdn_on = github_cdn_on
+        self.verify = verify
         self.session = None
         if self.url.endswith("/"):
             self.url = self.url[:-1]
 
         if self.url != "https://api.github.com":
             self.bt = github.Github(
-                base_url=self.url, login_or_token=self.token
+                base_url=self.url, login_or_token=self.token, verify=self.verify
             )
             self.github_domain = (
                 self.url.replace("https://", "")
@@ -52,7 +53,7 @@ class YWHGithub(BugTracker):
                 .split("/")[0]
             )
         else:
-            self.bt = github.Github(login_or_token=self.token)
+            self.bt = github.Github(login_or_token=self.token, verify=self.verify)
             self.github_domain = "github.com"
         try:
             self.bt.get_user().name
@@ -153,6 +154,7 @@ class YWHGithub(BugTracker):
         status = None
         if self.session is None:
             self.session = requests.Session()
+            self.session.verify = self.verify
             r = self.cdn_request("GET", f"https://{self.github_domain}/login")
             form = BeautifulSoup(r.text, features="lxml").find("form")
             keys = {}
@@ -327,7 +329,7 @@ class YWHGithubConfig(BugTrackerConfig):
 
     mandatory_keys = ["project"]
     secret_keys = ["token"]
-    optional_keys = dict(url="https://api.github.com", github_cdn_on=False)
+    optional_keys = dict(url="https://api.github.com", github_cdn_on=False, verify=True)
     _description = dict(
         project="path/to/project",
         github_cdn_on="Enable or Disable saving attachment file to Github CDN",
@@ -350,6 +352,7 @@ class YWHGithubConfig(BugTrackerConfig):
                 login=self._login,
                 password=self._password,
                 github_cdn_on=self._github_cdn_on,
+                verify=self._verify
             )
         else:
             self._get_bugtracker(self._url, self._project, self._token)

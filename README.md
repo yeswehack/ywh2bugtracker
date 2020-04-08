@@ -62,6 +62,7 @@ bugtrackers:
     project: myprojectonjira
     type: jira
     url: http://myjira.com
+    verify: true
   github:
     project: path/to/myprojectongithub
     token: myaccesstoken
@@ -70,11 +71,13 @@ bugtrackers:
     github_cdn_on: true
     login: githublogin
     password: githubpassword
+    verify: true
   gitlab:
     project: path/to/myproject
     token: mygitlabtoken
     type: gitlab
     url: gitlab_valid_url
+    verify: true
   myissuelogger:
     project: myprojectonmyissuelogger
     assigned_to: user_name_to_assign_issue
@@ -95,7 +98,6 @@ yeswehack:
       - myissuelogger
       slug: myprogram
     totp: false
-    verify: true
     apps_headers:
       X-YesWeHack-Apps: ywh_app_header
     oauth_args:
@@ -161,7 +163,7 @@ Jira:
     * project: project slug which have the issue on it.
 - optional keys:
     * issuetype (default 'Task'): type of the issue, by default we consider 'Task', but it could have an other name (depend of jira language installation).
-    * verify: (true by default) SSL verification is enable or not
+    * verify (default true): SSL verify is activate or not.
 - secret keys:
     * password: password for the user login set for jira server.
 
@@ -172,7 +174,7 @@ Gitlab:
     * project: path/of/the/project. If the project is in a group named 'projectsgroups', and the project name is 'test', your project is 'projectsgroups/test'
 - optional keys:
     * url (default 'http://gitlab.com'): url to your gitlab installation
-    * verify: (true by default) SSL verification is enable or not
+    * verify (default true): SSL verify is activate or not.
 - secret keys:
     * token: user token to push the issue on your gitlab. the user and the token need to have sufficient rights to push the issue on the project.
 
@@ -182,7 +184,7 @@ Github:
 - optional keys:
     * url (default 'https://github/api/v3'): url to github api access, by default, we used the V3 api url.
     * github_cdn_on (default ```false```): set to true to  save attachment in github cdn, false otherwise (attachment such as inline images in report description won't be in the issue createdd in github).
-    * verify: (true by default) SSL verification is enable or not
+    * verify (default true): SSL verify is activate or not.
 - secret keys:
     * token: user token to push the issue on github. the user and the token need to have sufficient rights to push the issue on the project.
 - conditional keys (if github_cdn set to true)
@@ -201,7 +203,6 @@ yeswehack:
     login: mylogintoyeswehack@yeswehack.com
     password: password_login
     totp: false
-    verify: true
     programs:
     - bugtrackers_name:
       - bugtracker_3
@@ -226,7 +227,6 @@ yeswehack:
       slug: anotherprogram
     totp: True
     totp_secret: mytopt
-    verify: False
 ```
 
 YesWeHack Object:
@@ -236,7 +236,6 @@ YesWeHack Object:
   * login: my user Login . **NB : This user must have program consumer role on the program**
   * totp: if totp is enable on for my user.
   * totp_secret: needed in configuration file only if totp is True and in no interactive mode.
-  * verify: (true by default) SSL verification is enable or not
   * programs (list of item):
     * bugtrackers_name: bugtrackers names defined in ["Setup bugtracker System" section](#Setup-bugtracker-System).
     * slug: program slug (found in th url of your program)

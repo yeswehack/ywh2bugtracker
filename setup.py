@@ -6,18 +6,18 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 install_requires = [
-    "requests",
-    "python-gitlab",
-    "pygithub",
-    "jira",
-    "colorama",
-    "pyotp",
-    "pyyaml",
-    "html2text",
-    "coloredLogs",
+    "requests==2.23.0",
+    "python-gitlab==2.1.2",
+    "pyyaml==5.3.1",
+    "pygithub==1.47",
+    "jira==2.0.0",
+    "html2text==2020.1.16",
+    "colorama==0.4.3",
+    "pyotp==2.3.0",
+    "coloredLogs==10.0",
     "yeswehack",
-    "beautifulsoup4",
-    "lxml",
+    "beautifulsoup4==4.8.2",
+    "lxml==4.5.0",
 ]
 
 setuptools.setup(

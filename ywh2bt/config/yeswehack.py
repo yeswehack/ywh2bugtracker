@@ -215,7 +215,7 @@ class YesWeHackConfig(ConfigObject):
         logger.info(
             "Getting account info for "
             + Fore.GREEN
-            + ", ".join([pgm.name for pgm in self.programs])
+            + ", ".join([pgm.slug for pgm in self.programs])
             + Style.RESET_ALL
             + " on "
             + Fore.GREEN

@@ -5,7 +5,7 @@ ywh2bugtracker allows you to integrate your bug tracking system(s) with yeswehac
 
 # Installation
 
-installation is available from pip for windows, linux, mac OS.
+installation is available from pip for Windows, Linux and Mac OS.
 
 ## With pip
 ```
@@ -16,8 +16,8 @@ pip install ywh2bt
 
 * Download source from git.
 * Installation:
-   * install dependencies: ```pip install -r requirement.txt```
-   * install ywh2bt : ```python setup.py install```
+   * install dependencies: `pip install -r requirement.txt`
+   * install ywh2bt : `python setup.py install`
 
 
 # Requirement
@@ -29,18 +29,17 @@ To use this script you need to have "create API" right on YesWeHack platform and
 a simple command is available:
 
 ```
-ywh-bugtracker {options}
+ywh-bugtracker [-n|-c] [-f file]
 ```
 
+By default, interactive mode is active to protect against hardcoded credentials in configuration file.
+
 Options:
-- -n --no-interactive: Non interactive mode.
-    * With -c options: all configure data are stored in the configuration file (included credentials).
-    * Without -c options: a test is made at load time to see if credentials exist. if not, a critical error is logged to know the specific credential missing.
+- -n --no-interactive: Non interactive mode
+    *  Credentials of configuration file are used.
+- -f --filename <filename>: given specified configuration file (default : HOME/.ywh2bt.cfg).
 - -c --configure: Configuration mode.
     *  Interactive system to configure or modify configuration file.
-    *  At load time, if an existing configuration file exists, it is loaded and verified.
-    *  You can add new element in configuration file and, at the tend, you can modify your existings elements.
-- -f --filename <filename>: given specified configuration file (default : HOME/.ywh2bt.cfg).
 
 ## Configuration File
 
@@ -51,7 +50,60 @@ This file have 3 goals :
 - Define configuration for the necessary interactions with Yeswehack APIs
 - Append Extra bugtrackers class to this system if needed
 
-Example of typical configuration file:
+Example of typical configuration file without hardcoded credentials:
+
+```yaml
+bugtrackers:
+  jira:
+    issuetype: Task
+    login: user
+    project: myprojectonjira
+    type: jira
+    url: http://myjira.com
+    verify: true
+  github:
+    project: path/to/myprojectongithub
+    type: github
+    url: https://github/api/v3
+    github_cdn_on: true
+    login: githublogin
+    verify: true
+  gitlab:
+    project: path/to/myproject
+    type: gitlab
+    url: gitlab_valid_url
+    verify: true
+  myissuelogger:
+    project: myprojectonmyissuelogger
+    assigned_to: user_name_to_assign_issue
+    login: user_login
+    type: myissuelogger
+    url: http://myissuelogger.com/
+yeswehack:
+  yeswehack_1:
+    api_url: https://apps.yeswehack.com
+    login: mylogintoyeswehack@yeswehack.com
+    programs:
+    - bugtrackers_name:
+      - gitlab
+      - github
+      - jira
+      - myissuelogger
+      slug: myprogram
+    totp: false
+    apps_headers:
+      X-YesWeHack-Apps: ywh_app_header
+    oauth_args:
+      client_id: apps_client_id
+      redirect_uri: apps_redirect_uri
+packages:
+- modules:
+  - ywhmyissuelogger
+  package: myissueloggerconfig
+  path: ../../myissuelogger
+```
+
+Example of typical configuration file for no-interactive mode:
 
 ```yaml
 bugtrackers:
@@ -62,6 +114,7 @@ bugtrackers:
     project: myprojectonjira
     type: jira
     url: http://myjira.com
+    verify: true
   github:
     project: path/to/myprojectongithub
     token: myaccesstoken
@@ -70,11 +123,13 @@ bugtrackers:
     github_cdn_on: true
     login: githublogin
     password: githubpassword
+    verify: true
   gitlab:
     project: path/to/myproject
     token: mygitlabtoken
     type: gitlab
     url: gitlab_valid_url
+    verify: true
   myissuelogger:
     project: myprojectonmyissuelogger
     assigned_to: user_name_to_assign_issue
@@ -95,8 +150,6 @@ yeswehack:
       - myissuelogger
       slug: myprogram
     totp: false
-    apps_headers:
-      X-YesWeHack-Apps: ywh_app_header
     oauth_args:
       client_id: apps_client_id
       client_secret: apps_client_secrect
@@ -118,7 +171,7 @@ On this configuration file, we define three bugtrackers :
 In this section we explain the "bugtrackers" part, and how to configure each type of bugtrackers supported by YesWeHack.
 
 As you can see on the example below, we proposed three type of bugtrackers by default. Each of them have some attribute,
-each attribute can be mandatory, optional (github ```url``` for example), secret (an access token) or conditioned by an other attribute (github ```login``` or ```password``` are conditioned by ```github_cdn_on``` value).
+each attribute can be mandatory, optional (github `url` for example), secret (an access token) or conditioned by an other attribute (github `login` or `password` are conditioned by `github_cdn_on` value).
 
 ```yaml
 bugtrackers:
@@ -129,6 +182,7 @@ bugtrackers:
     project: projectname
     type: jira
     url: http://myjira.com
+    verify: true
   github:
     project: path/to/my/project/on/github
     token: myaccesstoken
@@ -137,11 +191,13 @@ bugtrackers:
     github_cdn_on: true
     login: mylogin
     password: mypassword
+    verify: true
   gitlab:
     project: path/to/my/project/on/mygitlab
     token: myaccesstoken
     type: gitlab
     url: http://local.gitlab.com/
+    verify: true
 ```
 
 #### Bugtrackers Object
@@ -157,6 +213,7 @@ Jira:
     * project: project slug which have the issue on it.
 - optional keys:
     * issuetype (default 'Task'): type of the issue, by default we consider 'Task', but it could have an other name (depend of jira language installation).
+    * verify (default 'true'): SSL verify is activate or not.
 - secret keys:
     * password: password for the user login set for jira server.
 
@@ -167,6 +224,7 @@ Gitlab:
     * project: path/of/the/project. If the project is in a group named 'projectsgroups', and the project name is 'test', your project is 'projectsgroups/test'
 - optional keys:
     * url (default 'http://gitlab.com'): url to your gitlab installation
+    * verify (default 'true'): SSL verify is activate or not.
 - secret keys:
     * token: user token to push the issue on your gitlab. the user and the token need to have sufficient rights to push the issue on the project.
 
@@ -175,7 +233,8 @@ Github:
     * project: github repository path to your project. If my name is 'BugTracker' and my 'project' is example, my repository path is 'BugTracker/project'
 - optional keys:
     * url (default 'https://github/api/v3'): url to github api access, by default, we used the V3 api url.
-    * github_cdn_on (default ```false```): set to true to  save attachment in github cdn, false otherwise (attachment such as inline images in report description won't be in the issue createdd in github).
+    * github_cdn_on (default 'false'): set to true to  save attachment in github cdn, false otherwise (attachment such as inline images in report description won't be in the issue createdd in github).
+    * verify (default 'true'): SSL verify is activate or not.
 - secret keys:
     * token: user token to push the issue on github. the user and the token need to have sufficient rights to push the issue on the project.
 - conditional keys (if github_cdn set to true)
@@ -217,26 +276,31 @@ yeswehack:
       - bugtracker_2
       slug: anotherprogram
     totp: True
+    verify: True
     totp_secret: mytopt
 ```
 
 YesWeHack Object:
 - mandatory keys
-  * apps_headers: headers to update reports in YesWeHack program.
   * api_url: url to YesWeHack api
   * login: my user Login . **NB : This user must have program consumer role on the program**
   * totp: if totp is enable on for my user.
-  * totp_secret: needed in configuration file only if totp is True and in no interactive mode.
   * programs (list of item):
     * bugtrackers_name: bugtrackers names defined in ["Setup bugtracker System" section](#Setup-bugtracker-System).
     * slug: program slug (found in th url of your program)
   * oauth_args: (object)
     * client_id: client_id for the app
-    * client_secret: client_id for the app (in no interactive mode)
     * redirect_uri : redirect_uri for the app
+
+- optional keys:
+  * verify (default 'true'): SSL verify is activate or not.
 
 - secret keys:
   * password: my user password
+  * apps_headers: headers to update reports in YesWeHack program.
+  * oauth_args: (object)
+    * client_secret: client_id for the app (in no interactive mode)
+  * totp_secret: needed in configuration file only if totp is True and in no interactive mode.
 
 
 ## Append Extra BugTracker class
@@ -374,33 +438,33 @@ class MyOwnConfig(BugTrackerConfig):
 ```
 
 A BugTracker client class need to implement 4 methods:
-- ```def get_project(self):``` : return a project object
-- ```def post_issue(self, report):```: post the issue according to the report on the client and return the issue
-- ```def get_url(self, issue):```: return issue url
-- ```def get_id(self, issue):```: return issue id
+- `def get_project(self):` : return a project object
+- `def post_issue(self, report):`: post the issue according to the report on the client and return the issue
+- `def get_url(self, issue):`: return issue url
+- `def get_id(self, issue):`: return issue id
 
 
 A BugTrackerConfig class need to have 2 class attributes:
-- ```bugtracker_type```: name of the bugtracker for selection in configuration mode
-- ```client```: client class
+- `bugtracker_type`: name of the bugtracker for selection in configuration mode
+- `client`: client class
 
 and optionally have 5 other:
-- ```mandatory_keys```: List of str needed in configuration file
-- ```secret_keys```: List of str, corresponding of all keys must be secret, but are clearly store in configure file in no interactive mode
-- ```optional_keys```: dictionary wich each pairs of (key, value) correspond to (optional_key, default_value).
-- ```conditional_keys```: dictionary wich each key name and info dictionary description. an info dictionary is describe below:
-    - ```condition``` key (mandatory): lambda expression with bugtracker parameter. return a boolean.
-    - ```default``` key (optional): default value if is define.
-    - ```secret``` key (optonial): the key is define as secret or not (default ```False```)
-- ```_description```: dictionary which associate a description of an existing keys define un one of :
-    - ```mandatory_keys```
-    - ```secret_keys```
-    - ```optional_keys```
+- `mandatory_keys`: List of str needed in configuration file
+- `secret_keys`: List of str, corresponding of all keys must be secret, but are clearly store in configure file in no interactive mode
+- `optional_keys`: dictionary wich each pairs of (key, value) correspond to (optional_key, default_value).
+- `conditional_keys`: dictionary wich each key name and info dictionary description. an info dictionary is describe below:
+    - `condition` key (mandatory): lambda expression with bugtracker parameter. return a boolean.
+    - `default` key (optional): default value if is define.
+    - `secret` key (optonial): the key is define as secret or not (default 'False')
+- `_description`: dictionary which associate a description of an existing keys define un one of :
+    - `mandatory_keys`
+    - `secret_keys`
+    - `optional_keys`
 
 And need one method :
-- ```def _set_bugtracker(self)```: call to ```_get_bugtracker``` method of BugTrackerConfig with your client class ```__init__``` input.
+- `def _set_bugtracker(self)`: call to `_get_bugtracker` method of BugTrackerConfig with your client class `__init__` input.
 
-NB: a ```project``` key must be present in ```mandatory_keys```, ```optional_keys``` or ```secret_keys```!
+NB: a `project` key must be present in `mandatory_keys`, `optional_keys` or `secret_keys`!
 
 Each key in mandatory, optional, secret or conditional keys is convert as protected attribute with get property access.
 

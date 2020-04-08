@@ -2,6 +2,8 @@ from abc import abstractmethod
 from ywh2bt.logging import logger
 from colorama import Fore, Style
 
+from requests.exceptions import SSLError
+
 import sys
 import copy
 from colorama import Fore, Style
@@ -72,7 +74,7 @@ class ConfigObject(object):
                 secrect_in_config.append(s)
         if secrect_in_config and not no_interactive:
             logger.warning(
-                "{} secrets key-s in configuration but non interactive is not actif ".format(
+                "'{}' secret parameter hardcoded in your configuration".format(
                     ", ".join(secrect_in_config)
                 )
             )
@@ -467,6 +469,12 @@ class BugTrackerConfig(ConfigObject):
                         type=self.type, url=self.url
                     )
                 )
+        except SSLError as e:
+                logger.error(
+                    "Certificate verification failed. If you accept this risk, "\
+                    + "you can update configuration with verifiy:false in {} section".format(self.name)
+                )
+                sys.exit(-200)
         except Exception as e:
             if self.no_interactive:
                 logger.info(

@@ -9,15 +9,17 @@ installation is available from pip for Windows, Linux and Mac OS.
 
 ## With pip
 ```
-pip install ywh2bt
+pip3 install ywh2bt
 ```
+It is necessary to use `pip3` and not `pip` if you have python2 on your system.
+
 
 ## From source
 
 * Download source from git.
 * Installation:
-   * install dependencies: `pip install -r requirement.txt`
-   * install ywh2bt : `python setup.py install`
+   * install dependencies: `pip3 install -r requirement.txt`
+   * install ywh2bt : `python3 setup.py install`
 
 
 # Requirement

@@ -114,7 +114,7 @@ class BugTracker(object):
         )
         redirect_urls = pattern.findall(report.description_html)
         for url in redirect_urls:
-            base_url, params = uparse.splitquery(uparse.unquote(url))
+            base_url, params = uparse.splitquery(uparse.unquote(uparse.unquote(url)))
             new_params = "&".join(
                 [
                     p
@@ -122,7 +122,7 @@ class BugTracker(object):
                     if not p.startswith("expires")
                     and not p.startswith("token")
                 ]
-            )
+            ) if params else ''
             description = description.replace(
                 "{base_string}{url}".format(base_string=base_string, url=url),
                 "{base_url}{params}".format(

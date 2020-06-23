@@ -233,15 +233,22 @@ class YWHGithub(BugTracker):
                 msg = f"Can't get information to upload data, status code: {r.status_code}"
                 logger.error(msg)
                 raise Exception(msg)
+            authenticity_token = file_attach.get("data-upload-policy-authenticity-token", None)
+            if authenticity_token is None:
+                csrf_policy_input = file_attach.find('input', {'class': 'js-data-upload-policy-url-csrf'})
+                if csrf_policy_input is not None:
+                    authenticity_token = csrf_policy_input.get('value', None)
+            if authenticity_token is None:
+                msg = f'Unable to find authenticity token. Please report this error to the script maintainer.'
+                logger.error(msg)
+                raise Exception(msg)
             filename = attachment.original_name.split("/")[-1]
             content_type = attachment.mime_type
             fields = {
                 "name": filename,
                 "size": str(len(attachment.data)),
                 "content_type": content_type,
-                "authenticity_token": (
-                    file_attach["data-upload-policy-authenticity-token"]
-                ),
+                "authenticity_token": authenticity_token,
                 "repository_id": "{}".format(repo_id),
             }
             data = MultipartEncoder(fields=fields)

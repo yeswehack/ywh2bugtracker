@@ -65,7 +65,7 @@ def main():
     )
 
     parser.set_usage(
-        "usage: %prod [-f|--filename] FILENAME [-n|--no-interactive] [-c|--configure]\n\n{}".format(
+        "usage: %prog [-f|--filename] FILENAME [-n|--no-interactive] [-c|--configure]\n\n{}".format(
             parser.format_help()
         )
     )
@@ -143,7 +143,7 @@ def run(cfg, options):
                         except:
                             logger.error("Response from YesWeHack not JSON")
                         else:
-                            if "error" in resp_json:
+                            if "errors" in resp_json:
                                 logger.error(
                                     "Status Update Error : {}".format(
                                         resp_json.get(
@@ -155,7 +155,7 @@ def run(cfg, options):
                                 logger.info("Status updated.")
                     except Exception as e:
                         logger.error(
-                            "An error occur on {}, continue to the next bugtracker".format(
+                            "An error occurred on {}, continuing with the next bugtracker".format(
                                 cfg_bt.name
                             )
                         )

@@ -143,7 +143,7 @@ class YWHGithub(BugTracker):
             else:
                 requested = self.session.request(method, url, data=data)
         except Exception as e:
-            logger.error(f"An exception occur on {self.name} : {str(e)}")
+            logger.error(f"An exception occurred on {self.name} : {str(e)}")
             raise e
         return requested
 

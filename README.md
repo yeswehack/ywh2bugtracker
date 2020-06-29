@@ -13,6 +13,11 @@ pip3 install ywh2bt
 ```
 It is necessary to use `pip3` and not `pip` if you have python2 on your system.
 
+### Upgrade
+If the package is already installed and you want to upgrade to the latest version:
+```
+pip3 install ywh2bt --upgrade
+```
 
 ## From source
 

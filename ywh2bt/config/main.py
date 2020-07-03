@@ -1,15 +1,16 @@
-from ywh2bt.utils import get_all_subclasses
-from ywh2bt.exceptions import BugTrackerNotFound, MultipleBugTrackerMacth
-from .abstract import ConfigObject, BugTrackerConfig
-from .yeswehack import YesWeHackConfig
-from .packages import ExtraPackageConfig
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
+
 import yaml
-from ywh2bt.utils import read_input
-from ywh2bt.logging import logger
 from colorama import Fore, Style
+
+from ywh2bt.config.abstract import BugTrackerConfig, ConfigObject
+from ywh2bt.config.packages import ExtraPackageConfig
+from ywh2bt.config.yeswehack import YesWeHackConfig
+from ywh2bt.exceptions import BugTrackerNotFound, MultipleBugTrackerMacth
+from ywh2bt.logging import logger
+from ywh2bt.utils import get_all_subclasses, read_input
 
 __all__ = ["GlobalConfig"]
 

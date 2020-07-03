@@ -1,16 +1,12 @@
-from .abstract import ConfigObject
-from ywh2bt.logging import logger
-from colorama import Fore, Style
-
-from yeswehack.api import YesWeHack
-from yeswehack.exceptions import (
-    BadCredentials,
-    ObjectNotFound,
-    InvalidResponse,
-    TOTPLoginEnabled,
-)
-from ywh2bt.utils import read_input
 import sys
+
+from colorama import Fore, Style
+from yeswehack.api import YesWeHack
+from yeswehack.exceptions import (BadCredentials, InvalidResponse, ObjectNotFound, TOTPLoginEnabled)
+
+from ywh2bt.config.abstract import ConfigObject
+from ywh2bt.logging import logger
+from ywh2bt.utils import read_input
 
 __all__ = ["YesWeHackConfig", "ProgramConfig"]
 

@@ -1,12 +1,13 @@
 # -*- encoding: utf-8 -*-
-import io
 import base64
 import imghdr
+import io
 import mimetypes
-from abc import abstractmethod
-import html2text
-import urllib.parse as uparse
 import re
+import urllib.parse as uparse
+from abc import abstractmethod
+
+import html2text
 from bs4 import BeautifulSoup
 
 __all__ = ["BugTracker"]

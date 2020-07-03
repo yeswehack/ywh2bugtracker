@@ -1,24 +1,13 @@
 #!/usr/bin/env python3
 # -*- encoding: utf-8 -*-
 
-import sys
-import os
-import yaml
-import getpass
-from pathlib import Path
-from colorama import Fore, Style, init, deinit
 from optparse import OptionParser
-from yeswehack.api import YesWeHack
-from yeswehack.exceptions import (
-    BadCredentials,
-    ObjectNotFound,
-    InvalidResponse,
-    TOTPLoginEnabled,
-)
-from ywh2bt.trackers.bugtracker import BugTracker
-from ywh2bt import config
-from ywh2bt import version as __VERSION__
+
+from colorama import deinit, init
+
+from ywh2bt import config, version as __VERSION__
 from ywh2bt.logging import logger
+from ywh2bt.trackers.bugtracker import BugTracker
 
 __all__ = ["main"]
 

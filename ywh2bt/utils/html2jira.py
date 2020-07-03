@@ -5,12 +5,10 @@
 #  Based On https://github.com/Qazzian/html2jira
 
 import html.entities as htmlentitydefs
-import urllib.parse as urlparse
 import html.parser as HTMLParser
-import urllib.request as urllib
-import optparse
 import re
 import sys
+import urllib.parse as urlparse
 from textwrap import wrap
 
 # Use Unicode characters instead of their ascii psuedo-replacements

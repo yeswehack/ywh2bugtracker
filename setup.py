@@ -1,4 +1,5 @@
 import setuptools
+
 from ywh2bt import (
     version as library_version,
 )

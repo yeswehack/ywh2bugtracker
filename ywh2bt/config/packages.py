@@ -1,10 +1,12 @@
-from .abstract import ConfigObject
-from ywh2bt.logging import logger
 import importlib
 import os
 import sys
-from ywh2bt.utils import read_input
+
 from colorama import Fore, Style
+
+from ywh2bt.config.abstract import ConfigObject
+from ywh2bt.logging import logger
+from ywh2bt.utils import read_input
 
 __all__ = ["ExtraPackageConfig"]
 

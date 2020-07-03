@@ -17,10 +17,11 @@ from yeswehack.exceptions import (
 )
 from ywh2bt.trackers.bugtracker import BugTracker
 from ywh2bt import config
+from ywh2bt import version as __VERSION__
 from ywh2bt.logging import logger
 
 __all__ = ["main"]
-__VERSION__ = "0.5.3"
+
 
 """
 Entry point for script and setup

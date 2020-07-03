@@ -1,6 +1,6 @@
+.venv
 .coverage
 **/__pycache__
 **/*.egg*
 build/
 dist/
-**.lock

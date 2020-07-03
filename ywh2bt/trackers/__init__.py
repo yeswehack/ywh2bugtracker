@@ -1,7 +1,4 @@
-from . import ywhjira
-from . import ywhgithub
-from . import ywhgitlab
-from . import bugtracker
+from . import bugtracker, ywhgithub, ywhgitlab, ywhjira
 
 """
 Module of trackers maintain definitions

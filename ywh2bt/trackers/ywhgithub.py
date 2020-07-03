@@ -1,17 +1,17 @@
 # -*- encoding: utf-8 -*-
 
-import github
-from .bugtracker import BugTracker
-from github.GithubException import BadCredentialsException
-from ywh2bt.config import BugTrackerConfig
-from bs4 import BeautifulSoup
-import requests
-from requests_toolbelt import MultipartEncoder
-from ywh2bt.logging import logger
-from ywh2bt.utils import read_input
-from colorama import Fore, Style
-from copy import copy
 import re
+from copy import copy
+
+import github
+import requests
+from bs4 import BeautifulSoup
+from github.GithubException import BadCredentialsException
+from requests_toolbelt import MultipartEncoder
+
+from ywh2bt.config import BugTrackerConfig
+from ywh2bt.logging import logger
+from ywh2bt.trackers.bugtracker import BugTracker
 
 __all__ = ["YWHGithub", "YWHGithubConfig"]
 

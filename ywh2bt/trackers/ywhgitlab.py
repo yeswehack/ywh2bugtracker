@@ -1,10 +1,12 @@
 # -*- encoding: utf-8 -*-
 
+from copy import copy
+
 import gitlab
 import requests
-from .bugtracker import BugTracker
+
 from ywh2bt.config import BugTrackerConfig
-from copy import copy
+from ywh2bt.trackers.bugtracker import BugTracker
 
 __all__ = ["YWHGitlab", "YWHGitlabConfig"]
 

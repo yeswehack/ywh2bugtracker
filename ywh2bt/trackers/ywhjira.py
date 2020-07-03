@@ -1,14 +1,15 @@
 # -*- encoding: utf-8 -*-
 
-import jira
-import html2text
-from .bugtracker import BugTracker
-from ywh2bt.config import BugTrackerConfig
-from ywh2bt.utils import html2jira, unescape_text
-from bs4 import BeautifulSoup
-from pprint import pprint
 from copy import copy
 from string import Formatter
+
+import html2text
+import jira
+from bs4 import BeautifulSoup
+
+from ywh2bt.config import BugTrackerConfig
+from ywh2bt.trackers.bugtracker import BugTracker
+from ywh2bt.utils import html2jira, unescape_text
 
 __all__ = ["YWHJira", "YWHJiraConfig"]
 

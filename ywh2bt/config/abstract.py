@@ -1,15 +1,12 @@
+import copy
+import sys
 from abc import abstractmethod
-from ywh2bt.logging import logger
-from colorama import Fore, Style
 
+from colorama import Fore, Style
 from requests.exceptions import SSLError
 
-import sys
-import copy
-from colorama import Fore, Style
-
+from ywh2bt.logging import logger
 from ywh2bt.utils import read_input
-from abc import abstractmethod
 
 __all__ = ["ConfigObject", "BugTrackerConfig"]
 

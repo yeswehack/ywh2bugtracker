@@ -1,6 +1,6 @@
 import logging
+
 import coloredlogs
-import os
 import urllib3
 
 __all__ = ["_setup_logger", "logger"]

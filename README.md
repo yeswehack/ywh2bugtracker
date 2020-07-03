@@ -1,6 +1,6 @@
 # What is that ?
 
-ywh2bugtracker allows you to integrate your bug tracking system(s) with yeswehack platform. It automatically creates issues in your bug tracking system for all your program's report with tracking status "Ask for integration", and add to the concerned reports the link to the issue in your bugtracker . Currently github, jira (also jiracloud) and gitlab are supported, and you can add your own bug tracker by following instructions [below](#Create-Your-Config-Manager-Object).
+ywh2bugtracker allows you to integrate your bug tracking system(s) with yeswehack platform. It automatically creates issues in your bug tracking system for all your program's report with tracking status "Ask for integration", and add to the concerned reports the link to the issue in your bugtracker . Currently github, jira (also jiracloud) and gitlab are supported, and you can add your own bug tracker by following instructions [below](#Create-Your-Config-Manager-in-Python).
 
 
 # Installation
@@ -23,8 +23,9 @@ pip3 install ywh2bt --upgrade
 
 * Download source from git.
 * Installation:
-   * install dependencies: `pip3 install -r requirement.txt`
-   * install ywh2bt : `python3 setup.py install`
+   * install pipenv: `pip3 install pipenv`
+   * install dependencies: `pipenv --python 3 sync`
+   * install ywh2bt : `pipenv run python3 setup.py install`
 
 
 # Requirement

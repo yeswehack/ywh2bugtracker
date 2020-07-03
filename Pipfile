@@ -3,19 +3,22 @@ name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
-[packages]
-requests = "==2.23.0"
-python-gitlab = "==2.1.2"
-pyyaml = "==5.3.1"
-pygithub = "==1.47"
-jira = "==2.0.0"
-html2text = "==2020.1.16"
-colorama = "==0.4.3"
-pyotp = "==2.3.0"
-coloredLogs = "==10.0"
-yeswehack = "*"
-beautifulsoup4 = "==4.8.2"
-lxml = "==4.5.0"
-
 [requires]
 python_version = "3.7"
+
+[packages]
+PyYAML = "==5.3.1"
+colorama = "==0.4.3"
+yeswehack = "==0.4"
+jira = "==2.0.0"
+html2text = "==2020.1.16"
+beautifulsoup4 = "==4.8.2"
+coloredlogs = "==10.0"
+PyGithub = "==1.47"
+python-gitlab = "==2.1.2"
+lxml = "==4.5.0"
+"ywh2bt" = {editable = true, path = "."}
+
+[dev-packages]
+coverage = "*"
+tox = "*"

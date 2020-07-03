@@ -1,28 +1,29 @@
 import setuptools
-import ywh2bt
-from ywh2bt.ywh2bt import __VERSION__
+from ywh2bt import (
+    version as library_version,
+)
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 install_requires = [
-    "requests==2.23.0",
-    "python-gitlab==2.1.2",
-    "pyyaml==5.3.1",
-    "pygithub==1.47",
+    "PyYAML==5.3.1",
+    "colorama==0.4.3",
+    "yeswehack==0.4",
     "jira==2.0.0",
     "html2text==2020.1.16",
-    "colorama==0.4.3",
-    "pyotp==2.3.0",
-    "coloredLogs==10.0",
-    "yeswehack",
     "beautifulsoup4==4.8.2",
+    "coloredLogs==10.0",
+    "PyGithub==1.47",
+    "python-gitlab==2.1.2",
+    "requests==2.23.0",
+    "pyotp==2.3.0",
     "lxml==4.5.0",
 ]
 
 setuptools.setup(
-    name=ywh2bt.name,
-    version=__VERSION__,
+    name="ywh2bt",
+    version=library_version,
     author="Jean Lou Hau",
     author_email="jl.hau@yeswehack.com",
     description="YesWeHack BugTracker",
@@ -31,6 +32,7 @@ setuptools.setup(
     url="https://yeswehack.com",
     packages=setuptools.find_packages(),
     install_requires=install_requires,
+    python_requires='>=3',
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

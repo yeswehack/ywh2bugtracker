@@ -1,0 +1,35 @@
+[flake8]
+htmltitle = ywh2bt: flake8 violations
+max-line-length = 120
+docstring-style = google
+max-imports = 30
+max-import-from-members = 15
+max-name-length = 75
+max-module-members = 25
+max-methods = 40
+max-arguments = 10
+max-attributes = 10
+max-local-variables = 6
+rst-roles =
+    class,
+    func,
+    ref,
+ignore =
+    # docstring
+    I001,
+    N804,
+    S106,
+    W503,
+    WPS110,
+    WPS111,
+    WPS204,
+    WPS226,
+    WPS305,
+    WPS306,
+    WPS322,
+    WPS338,
+    WPS432,
+    WPS601,
+
+exclude =
+    ywh2bt/gui/resources.py

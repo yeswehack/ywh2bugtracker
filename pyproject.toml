@@ -1,0 +1,61 @@
+[tool.poetry]
+name = "ywh2bt"
+version = "2.0.0"
+description = "ywh2bt - YesWeHack to Bug Tracker"
+readme = "README.md"
+authors = ["m.honel <m.honel@yeswehack.com>"]
+repository = "https://github.com/yeswehack/ywh2bugtracker"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Customer Service",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Security",
+    "Topic :: Software Development :: Bug Tracking",
+    "Typing :: Typed",
+]
+packages = [
+    { include = "ywh2bt" },
+]
+exclude = [
+    "ywh2bt/tests",
+]
+
+[tool.poetry.dependencies]
+python = ">=3.7.0,<3.10"
+beautifulsoup4 = "^4.9.3"
+html2text = "^2020.1.16"
+jira = "^3.0a2"
+lxml = "^4.5.2"
+markdown = "^3.3.3"
+PyGithub = "^1.53"
+PySide2 = "^5.15.1"
+python-gitlab = "^2.5.0"
+requests = "^2.24.0"
+requests-toolbelt = "^0.9.1"
+"ruamel.yaml" = "~0.16.12"
+singledispatchmethod = "^1.0"
+typing-extensions = "*"
+tomlkit = "^0.7.0"
+yeswehack = "0.*"
+
+[tool.poetry.dev-dependencies]
+mypy = "*"
+flake8 = "^3.8.3"
+flake8-html = "^0.4.1"
+tox = "^3.20.1"
+wemake-python-styleguide = "^0.14.1"
+
+[tool.poetry.scripts]
+ywh2bt = 'ywh2bt.cli.main:run'
+ywh2bt-gui = 'ywh2bt.gui.main:run'
+
+[build-system]
+requires = [
+    "poetry>=0.12"
+]
+build-backend = "poetry.masonry.api"

@@ -1,0 +1,4 @@
+#cache-dir = ".pypoetry"
+
+[virtualenvs]
+in-project = true

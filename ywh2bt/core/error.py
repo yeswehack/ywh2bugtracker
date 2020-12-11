@@ -9,7 +9,7 @@ from ywh2bt.core.configuration.error import (
     BaseAttributeError,
     InvalidAttributeError,
     MissingAttributeError,
-    UnsupportedAttributesError,
+    UnsupportedAttributeError,
 )
 from ywh2bt.core.configuration.subtypable import SubtypeError
 from ywh2bt.core.core import write_message
@@ -129,9 +129,7 @@ def _get_formatted_attribute_error_items(
         return _get_formatted_attributes_error_items(
             error=error,
         )
-    elif isinstance(error, UnsupportedAttributesError):
-        return [f'  - {key}' for key in error.extra.keys()]
-    elif isinstance(error, (InvalidAttributeError, MissingAttributeError, SubtypeError)):
+    elif isinstance(error, (InvalidAttributeError, MissingAttributeError, SubtypeError, UnsupportedAttributeError)):
         return []
     return [
         f'Nonformatted error {error.__class__.__name__}: {error}',

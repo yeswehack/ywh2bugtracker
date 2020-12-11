@@ -46,43 +46,10 @@ class InvalidAttributeError(BaseAttributeError):
     """A class representing an invalid attribute error."""
 
 
-class UnsupportedAttributesError(BaseAttributeError):
+class UnsupportedAttributeError(BaseAttributeError):
     """A class representing an extra attribute error."""
 
     extra: Dict[str, Any]
-
-    def __init__(
-        self,
-        message: str,
-        context: Any,
-        extra: Dict[str, Any],
-    ):
-        """
-        Initialize the error.
-
-        Args:
-            message: a message
-            context: a context in which the error occurred
-            extra: extra attributes
-        """
-        super().__init__(
-            message=message,
-            context=context,
-        )
-        self.extra = extra
-
-    def __repr__(self) -> str:
-        """
-        Is called by the `repr()` built-in function to compute the "official" string representation.
-
-        Returns:
-            The string representation
-        """
-        message_repr = repr(self.message)
-        context_repr = repr(self.context)
-        extra_keys_repr = repr(self.extra.keys())
-        details = f'context={context_repr}, extra={extra_keys_repr}'
-        return f'{self.__class__.__name__}({message_repr}, {details})'
 
 
 class AttributesError(BaseAttributeError):

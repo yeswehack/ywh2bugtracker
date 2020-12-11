@@ -22,7 +22,7 @@ from ywh2bt.core.configuration.error import (
     BaseAttributeError,
     InvalidAttributeError,
     MissingAttributeError,
-    UnsupportedAttributesError,
+    UnsupportedAttributeError,
 )
 from ywh2bt.core.configuration.exportable import Exportable
 from ywh2bt.core.configuration.validatable import Validatable
@@ -345,6 +345,7 @@ class AttributesContainer(
     """A class representing a container for all the attributes of a configuration."""
 
     _values: Dict[Attribute[Any], Any]
+    _extra: Dict[str, Any]
 
     def __init__(
         self,
@@ -355,20 +356,12 @@ class AttributesContainer(
 
         Args:
             kwargs: keyword arguments
-
-        Raises:
-            UnsupportedAttributesError: if unsupported attributes are supplied
         """
         self._values = {}
         for _, value in self.get_attributes().items():
             if isinstance(value, Attribute):
                 self._values[value] = None
-        if kwargs:
-            raise UnsupportedAttributesError(
-                message='Extra attributes',
-                extra=kwargs,
-                context=self,
-            )
+        self._extra = kwargs or {}
 
     @classmethod
     def get_attributes(cls) -> Dict[str, Attribute[Any]]:
@@ -429,6 +422,11 @@ class AttributesContainer(
                 )
             except BaseAttributeError as e:
                 errors[attribute.name] = e
+        for extra_key, _ in self._extra.items():
+            errors[extra_key] = UnsupportedAttributeError(
+                message='Unsupported attribute',
+                context=self,
+            )
         if errors:
             raise AttributesError(
                 message='Validation failed',
@@ -451,6 +449,7 @@ class AttributesContainer(
                     values[attribute.name] = exported
             elif value is not None:
                 values[attribute.name] = value
+        values.update(self._extra)
         return values
 
     def __str__(self) -> str:

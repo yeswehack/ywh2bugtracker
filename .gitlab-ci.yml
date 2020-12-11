@@ -2,10 +2,13 @@ image: python:3.8
 
 variables:
   PIP_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/pip"
+  POETRY_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/poetry"
 
 cache:
+  key: global
   paths:
     - .cache/pip
+    - .cache/poetry
 
 stages:
   - verify

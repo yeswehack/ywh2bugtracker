@@ -154,6 +154,9 @@ class Synchronizer(YesWeHackApiClientsMixin, TrackerClientsMixin):  # noqa: WPS2
             (
                 synchronize_options.upload_private_comments,
                 synchronize_options.upload_public_comments,
+                synchronize_options.upload_details_updates,
+                synchronize_options.upload_rewards,
+                synchronize_options.upload_status_updates,
             ),
         )
         if include_tracked:

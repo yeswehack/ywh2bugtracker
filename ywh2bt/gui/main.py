@@ -1,4 +1,5 @@
 """Models and functions used for the main GUI."""
+import platform
 import sys
 
 import urllib3  # type: ignore
@@ -9,6 +10,10 @@ from PySide2.QtWidgets import QApplication
 import ywh2bt.gui.resources  # noqa: F401, WPS301
 from ywh2bt.gui.settings import settings
 from ywh2bt.gui.widgets.main_window import MainWindow
+from ywh2bt.version import __VERSION__
+
+if platform.system() == 'Windows':
+    import ctypes  # noqa: WPS433
 
 urllib3.disable_warnings(
     category=urllib3.exceptions.InsecureRequestWarning,
@@ -22,6 +27,12 @@ def run(*argv: str) -> None:
     Args:
         argv: command line arguments
     """
+    if platform.system() == 'Windows':
+        # set explicit AppUserModelID ; allows custom icon in Windows taskbar
+        # see https://stackoverflow.com/a/1552105/248343
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(  # type: ignore
+            f'yeswehack.ywh2bt.gui.{__VERSION__}'.encode('utf-8'),
+        )
     args = [
         'ywh2bt-gui',
         *argv[1:],

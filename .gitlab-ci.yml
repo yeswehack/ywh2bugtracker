@@ -1,31 +1,31 @@
 image: python:3.8
 
 variables:
-  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  PIP_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/pip"
 
 cache:
   paths:
     - .cache/pip
 
 stages:
-  - check
-  - lint
-  - types
-  - test
+  - verify
+  - version
+  - build
+  - publish
 
 .base_poetry:
   before_script:
     - pip install poetry
-    - poetry install
+    - poetry install --no-root
 
 Poetry check:
-  stage: check
+  stage: verify
   extends: .base_poetry
   script:
     - poetry check
 
 Flake8 code style check:
-  stage: lint
+  stage: verify
   extends: .base_poetry
   script:
     - make flake8
@@ -35,7 +35,7 @@ Flake8 code style check:
     expire_in: 1 day
 
 Static type check:
-  stage: types
+  stage: verify
   extends: .base_poetry
   script:
     - make mypy
@@ -45,7 +45,37 @@ Static type check:
     expire_in: 1 day
 
 Unit tests:
-  stage: test
+  stage: verify
   extends: .base_poetry
   script:
     - make tox
+
+Bump dev version:
+  stage: version
+  except:
+    - master
+  extends: .base_poetry
+  script:
+    - poetry version "$(poetry version -s)-beta-$(date +%s)"
+  artifacts:
+    paths:
+      - pyproject.toml
+
+Build:
+  stage: build
+  extends: .base_poetry
+  script:
+    - make build
+  artifacts:
+    paths:
+      - dist
+
+Publish Test PyPi:
+  stage: publish
+  extends: .base_poetry
+  when: manual
+  except:
+    - master
+  script:
+    - poetry publish --repository testpypi
+

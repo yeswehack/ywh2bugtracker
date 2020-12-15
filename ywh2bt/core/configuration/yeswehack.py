@@ -315,13 +315,14 @@ class YesWeHackConfiguration(AttributesContainer):
         value_type=bool,
         short_description='Use TOTP',
         description=''.join((
-            '(deprecated) Use TOTP\n',
+            'Use TOTP\n',
             "Apps API doesn't require TOTP authentication, even if corresponding user has TOTP enabled.\n",
             'However, on a secured program, information is limited for user with TOTP disabled, even in apps.\n',
             'As a consequence, to allow proper bug tracking integration on a secured program,',
             'program consumer must have TOTP enabled and, in BTI configuration TOTP must be set to false',
         )),
         default=True,
+        deprecated=True,
     )
     programs: ProgramsAttributeType = Attribute.create(
         value_type=Programs,

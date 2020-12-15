@@ -50,6 +50,7 @@ class Attribute(Generic[T]):  # noqa: WPS214
     secret: bool
     required: bool
     default: Optional[T]
+    deprecated: bool
     short_description: Optional[Text] = None
     description: Optional[Text] = None
     validator: Optional[ValidatorProtocol[T]] = None
@@ -62,6 +63,7 @@ class Attribute(Generic[T]):  # noqa: WPS214
         default: Optional[T] = None,
         secret: bool = False,
         required: bool = False,
+        deprecated: bool = False,
         validator: Optional[ValidatorProtocol[T]] = None,
     ) -> None:
         """
@@ -74,6 +76,7 @@ class Attribute(Generic[T]):  # noqa: WPS214
             default: a default value for the attribute
             secret: a flag indicating if the attribute is secret (avoid representing/printing sensible data)
             required: a flag indicating if the attribute must have a non-None value
+            deprecated: a flag indicating if the attribute is deprecated
             validator: a function validating the value of the attribute
 
         Raises:
@@ -84,6 +87,7 @@ class Attribute(Generic[T]):  # noqa: WPS214
         self.description = description
         self.secret = secret
         self.required = required
+        self.deprecated = deprecated
         self.default = default
         self.validator = validator
         if default is not None:
@@ -108,6 +112,7 @@ class Attribute(Generic[T]):  # noqa: WPS214
         default: Optional[V] = None,
         secret: bool = False,
         required: bool = False,
+        deprecated: bool = False,
         validator: Optional[ValidatorProtocol[V]] = None,
     ) -> Attribute[V]:
         """
@@ -122,6 +127,7 @@ class Attribute(Generic[T]):  # noqa: WPS214
             default: a default value for the attribute
             secret: a flag indicating if the attribute is secret (avoid representing/printing sensible data)
             required: a flag indicating if the attribute must have a non-None value
+            deprecated: a flag indicating if the attribute is deprecated
             validator: a function validating the value of the attribute
 
         Returns:
@@ -134,6 +140,7 @@ class Attribute(Generic[T]):  # noqa: WPS214
             default=default,
             secret=secret,
             required=required,
+            deprecated=deprecated,
             validator=validator,
         )
 

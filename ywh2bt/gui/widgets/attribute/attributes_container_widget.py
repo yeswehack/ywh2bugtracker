@@ -189,6 +189,8 @@ class AttributesContainerWidget(QWidget):  # noqa: WPS214
         widget.setTextFormat(Qt.RichText)
         text = attribute.short_description or name
         text = f'{text}:'
+        if attribute.deprecated:
+            text = f'<i>{text}</i>'
         if attribute.required:
             text = f'<b>{text}</b>'
         widget.setText(text)
@@ -200,8 +202,13 @@ class AttributesContainerWidget(QWidget):  # noqa: WPS214
         attribute: Attribute[Any],
     ) -> Optional[str]:
         lines = []
+        description = ''
         if attribute.description:
-            lines.append(attribute.description)
+            description = attribute.description
+        if attribute.deprecated:
+            description = f'(Deprecated)\n{description}' if description else '(Deprecated)'
+        if description:
+            lines.append(description)
         if attribute.default is not None:
             lines.append(f'Default: {repr(attribute.default)}')
         return '\n'.join(lines)

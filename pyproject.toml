@@ -26,7 +26,7 @@ exclude = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.7.0,<3.10"
+python = ">=3.7.0,<3.9"
 beautifulsoup4 = "^4.9.3"
 html2text = "^2020.1.16"
 jira = "^3.0a2"

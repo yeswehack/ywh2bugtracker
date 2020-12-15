@@ -88,6 +88,12 @@ def _attribute_to_base_schema(
         schema['title'] = attribute.short_description
     if attribute.description:
         schema['description'] = attribute.description
+    if attribute.deprecated:
+        description = schema.get('description')
+        if description:
+            schema['description'] = f'(Deprecated)\n{description}'
+        else:
+            schema['description'] = '(Deprecated)'
     if attribute.default is not None:
         schema['default'] = attribute.default
     return schema

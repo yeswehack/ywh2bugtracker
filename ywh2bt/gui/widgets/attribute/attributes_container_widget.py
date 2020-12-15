@@ -590,8 +590,8 @@ class AttributesContainerWidget(QWidget):  # noqa: WPS214
     ) -> HintedCheckBoxWidget:
         widget = HintedCheckBoxWidget(self)
         widget.setTristate(True)
-        default_label = 'Yes' if attribute.default else 'No'
-        widget.setStateLabel(Qt.PartiallyChecked, f'Default: {default_label}')
+        default_hint = 'Yes' if attribute.default else 'No'
+        widget.set_state_hint(Qt.PartiallyChecked, f'Default: {default_hint}')
         widget.setCheckState(Qt.PartiallyChecked)
         as_signal_instance(widget.stateChanged).connect(
             partial(

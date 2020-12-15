@@ -9,12 +9,13 @@ from ywh2bt.gui.widgets.typing import as_signal_instance
 
 class HintedCheckBoxWidget(QWidget):
     """A widget consisting of a checkbox with a hint."""
-    stateChanged: Signal = Signal(Qt.CheckState)
+
+    stateChanged: Signal = Signal(Qt.CheckState)  # noqa: WPS115
 
     _check_box: QCheckBox
     _label: QLabel
 
-    _state_labels: Dict[Qt.CheckState, str]
+    _state_hints: Dict[Qt.CheckState, str]
 
     def __init__(
         self,
@@ -35,7 +36,7 @@ class HintedCheckBoxWidget(QWidget):
             *args,
             **kwargs,
         )
-        self._state_labels = {}
+        self._state_hints = {}
         self._init_ui()
 
     def _init_ui(self) -> None:
@@ -73,32 +74,51 @@ class HintedCheckBoxWidget(QWidget):
         )
         as_signal_instance(self.stateChanged).emit(states[state])
 
-    def setStateLabel(
+    def set_state_hint(
         self,
         state: Qt.CheckState,
-        label: str,
+        hint: str,
     ) -> None:
-        self._state_labels[state] = label
+        """
+        Set a hint for a CheckState.
+
+        Args:
+            state: a state
+            hint: a hint
+        """
+        self._state_hints[state] = hint
 
     def _update_label_for_state(
         self,
         state: Qt.CheckState,
     ) -> None:
-        self._label.setText(self._state_labels.get(state, ''))
+        self._label.setText(self._state_hints.get(state, ''))
 
     def _create_label(
         self,
     ) -> QLabel:
         return QLabel(self)
 
-    def setTristate(
+    def setTristate(  # noqa: N802
         self,
         tristate: bool,
     ) -> None:
+        """
+        Set whether the checkbox is a tri-state checkbox.
+
+        Args:
+            tristate: a flag indicating if the checkbox is a tri-state checkbox
+        """
         self._check_box.setTristate(tristate)
 
-    def setCheckState(
+    def setCheckState(  # noqa: N802
         self,
         state: Qt.CheckState,
     ) -> None:
+        """
+        Set the checkbox's check state.
+
+        Args:
+            state: a state
+        """
         self._check_box.setCheckState(state)

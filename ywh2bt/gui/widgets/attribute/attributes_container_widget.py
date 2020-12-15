@@ -7,7 +7,6 @@ from typing import Any, Dict, Optional, Type, TypeVar, Union, cast
 
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtWidgets import (
-    QCheckBox,
     QFormLayout,
     QLabel,
     QLineEdit,
@@ -28,6 +27,7 @@ from ywh2bt.gui.widgets.attribute.attributes_container_dict_widget import Attrib
 from ywh2bt.gui.widgets.attribute.attributes_container_list_widget import AttributesContainerListWidget
 from ywh2bt.gui.widgets.attribute.exportable_dict_widget import ExportableDictModel, ExportableDictWidget
 from ywh2bt.gui.widgets.attribute.exportable_list_widget import ExportableListModel, ExportableListWidget
+from ywh2bt.gui.widgets.hinted_check_box_widget import HintedCheckBoxWidget
 from ywh2bt.gui.widgets.secret_line_edit_widget import SecretLineEditWidget
 from ywh2bt.gui.widgets.typing import as_signal_instance
 
@@ -410,7 +410,7 @@ class AttributesContainerWidget(QWidget):  # noqa: WPS214
         self,
         name: str,
         attribute: Attribute[Any],
-    ) -> QCheckBox:
+    ) -> ExportableDictWidget:
         widget = ExportableDictWidget(
             parent=self,
         )
@@ -464,7 +464,7 @@ class AttributesContainerWidget(QWidget):  # noqa: WPS214
         self,
         name: str,
         attribute: Attribute[Any],
-    ) -> QCheckBox:
+    ) -> ExportableListWidget:
         widget = ExportableListWidget(
             parent=self,
         )
@@ -587,9 +587,11 @@ class AttributesContainerWidget(QWidget):  # noqa: WPS214
         self,
         name: str,
         attribute: Attribute[Any],
-    ) -> QCheckBox:
-        widget = QCheckBox(self)
+    ) -> HintedCheckBoxWidget:
+        widget = HintedCheckBoxWidget(self)
         widget.setTristate(True)
+        default_label = 'Yes' if attribute.default else 'No'
+        widget.setStateLabel(Qt.PartiallyChecked, f'Default: {default_label}')
         widget.setCheckState(Qt.PartiallyChecked)
         as_signal_instance(widget.stateChanged).connect(
             partial(
@@ -612,7 +614,7 @@ class AttributesContainerWidget(QWidget):  # noqa: WPS214
             state = Qt.PartiallyChecked
         widget = self._find_field_widget(
             name=name,
-            widget_type=QCheckBox,
+            widget_type=HintedCheckBoxWidget,
         )
         widget.setCheckState(state)
         return widget

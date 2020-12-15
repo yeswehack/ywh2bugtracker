@@ -190,7 +190,7 @@ class AttributesContainerWidget(QWidget):  # noqa: WPS214
         text = attribute.short_description or name
         text = f'{text}:'
         if attribute.deprecated:
-            text = f'<i>{text}</i>'
+            text = f'<i><s>{text}</s></i>'
         if attribute.required:
             text = f'<b>{text}</b>'
         widget.setText(text)

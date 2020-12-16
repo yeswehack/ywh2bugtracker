@@ -202,7 +202,7 @@ class MainWindow(QMainWindow):  # noqa: WPS214
         action.setObjectName('action_test')
         action.setEnabled(False)
         action.setIcon(self.style().standardIcon(QStyle.SP_DialogApplyButton))
-        action.setStatusTip('Test the connection to the trackers')
+        action.setStatusTip('Test the connection to the trackers and to YesWeHack programs')
         as_signal_instance(action.triggered).connect(
             self._on_test_configuration_triggered,
         )

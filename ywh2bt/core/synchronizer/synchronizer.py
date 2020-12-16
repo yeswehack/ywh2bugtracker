@@ -11,6 +11,7 @@ from ywh2bt.core.api.models.report import (
     Report,
     RewardLog,
     StatusUpdateLog,
+    TrackerUpdateLog,
     TrackingStatusLog,
 )
 from ywh2bt.core.api.tracker import TrackerClient, TrackerClientError, TrackerComments, TrackerIssue, TrackerIssueState
@@ -262,13 +263,13 @@ class Synchronizer(YesWeHackApiClientsMixin, TrackerClientsMixin):  # noqa: WPS2
             )
         logs = report.logs
         if is_existing_issue:
-            last_sync_log = self._get_last_sync_log(
+            last_tracker_update_log = self._get_last_tracker_update_log(
                 report=report,
                 bugtracker_name=bugtracker_name,
             )
-            if last_sync_log:
+            if last_tracker_update_log:
                 logs = report.get_logs_after(
-                    log=last_sync_log,
+                    log=last_tracker_update_log,
                 )
         tracker_comments = self._send_synchronizable_logs(
             bugtracker_name=bugtracker_name,
@@ -279,16 +280,22 @@ class Synchronizer(YesWeHackApiClientsMixin, TrackerClientsMixin):  # noqa: WPS2
             report=report,
         )
         if tracker_comments.added_comments:
-            yeswehack_client.post_comment(
+            yeswehack_client.post_report_tracker_update(
                 report=report,
+                tracker_name=bugtracker_name,
+                issue_id=tracker_issue.issue_id,
+                issue_url=tracker_issue.issue_url,
+                token=StateEncryptor.encrypt(
+                    key=report.report_id,
+                    state=TrackerIssueState(
+                        closed=False,
+                        bugtracker_name=bugtracker_name,
+                    ),
+                ),
                 comment=self._message_formatter.format_synchronization_done_message(
                     tracker_type=tracker_client.tracker_type,
                     report=report,
                     tracker_comments=tracker_comments,
-                    issue_state=TrackerIssueState(
-                        closed=False,
-                        bugtracker_name=bugtracker_name,
-                    ),
                 ),
             )
         self._send_event(
@@ -305,15 +312,15 @@ class Synchronizer(YesWeHackApiClientsMixin, TrackerClientsMixin):  # noqa: WPS2
             ),
         )
 
-    def _get_last_sync_log(
+    def _get_last_tracker_update_log(
         self,
         bugtracker_name: str,
         report: Report,
     ) -> Optional[Log]:
         for log in reversed(report.logs):
-            if log.log_type == 'comment' and log.private:
+            if isinstance(log, TrackerUpdateLog):
                 state = StateDecryptor.decrypt(
-                    encrypted_state=log.message_html,
+                    encrypted_state=log.tracker_token or '',
                     key=report.report_id,
                     state_type=TrackerIssueState,
                 )
@@ -334,7 +341,6 @@ class Synchronizer(YesWeHackApiClientsMixin, TrackerClientsMixin):  # noqa: WPS2
         for log in logs:
             synchronize = self._is_synchronizable_log(
                 synchronize_options=synchronize_options,
-                report=report,
                 log=log,
             )
             if synchronize:
@@ -355,26 +361,15 @@ class Synchronizer(YesWeHackApiClientsMixin, TrackerClientsMixin):  # noqa: WPS2
     def _is_synchronizable_log(
         self,
         synchronize_options: SynchronizeOptions,
-        report: Report,
         log: Log,
     ) -> bool:
-        synchronize = any((
+        return any((
             isinstance(log, CommentLog) and synchronize_options.upload_public_comments and not log.private,
+            isinstance(log, CommentLog) and synchronize_options.upload_private_comments and log.private,
             isinstance(log, DetailsUpdateLog) and synchronize_options.upload_details_updates,
             isinstance(log, RewardLog) and synchronize_options.upload_rewards,
             isinstance(log, StatusUpdateLog) and synchronize_options.upload_status_updates,
         ))
-        if synchronize:
-            return True
-        if isinstance(log, CommentLog) and synchronize_options.upload_private_comments and log.private:
-            state = StateDecryptor.decrypt(
-                encrypted_state=log.message_html,
-                key=report.report_id,
-                state_type=TrackerIssueState,
-            )
-            if not state:
-                return True
-        return False
 
     def _send_logs(
         self,
@@ -466,9 +461,7 @@ class _MessageFormatter:
         + '\n'
         + 'Tracked to [${tracker_type} #${issue_id}](${issue_url}).'
         + '\n'
-        + 'Report comments added to issue: ${comment_count}'
-        + '\n\n'
-        + 'Internal state: ${string_state}',
+        + 'Report comments added to issue: ${comment_count}',
     )
 
     def format_tracking_status_update_message(
@@ -489,13 +482,8 @@ class _MessageFormatter:
         report: Report,
         tracker_type: str,
         tracker_comments: TrackerComments,
-        issue_state: TrackerIssueState,
     ) -> str:
         tracker_issue = tracker_comments.tracker_issue
-        string_state = StateEncryptor.encrypt(
-            key=report.report_id,
-            state=issue_state,
-        )
         return self._synchronization_done_template.substitute(
             tracker_type=tracker_type,
             tracker_url=tracker_issue.tracker_url,
@@ -503,7 +491,6 @@ class _MessageFormatter:
             issue_id=tracker_issue.issue_id,
             issue_url=tracker_issue.issue_url,
             comment_count=len(tracker_comments.added_comments),
-            string_state=string_state,
         )
 
     def _string_state(

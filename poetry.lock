@@ -902,7 +902,7 @@ pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
 name = "testfixtures"
-version = "6.16.0"
+version = "6.17.0"
 description = "A collection of helpers and mock objects for unit tests and doc tests."
 category = "dev"
 optional = false
@@ -1040,7 +1040,7 @@ python-versions = "*"
 
 [[package]]
 name = "yeswehack"
-version = "0.6.3"
+version = "0.6.4"
 description = "YesWeHack API Wrapper"
 category = "main"
 optional = false
@@ -1555,8 +1555,8 @@ stevedore = [
     {file = "stevedore-3.3.0.tar.gz", hash = "sha256:3a5bbd0652bf552748871eaa73a4a8dc2899786bc497a2aa1fcb4dcdb0debeee"},
 ]
 testfixtures = [
-    {file = "testfixtures-6.16.0-py2.py3-none-any.whl", hash = "sha256:017f1924f464189915e67162f530758537175ddd1461b211c666f0587ebc2939"},
-    {file = "testfixtures-6.16.0.tar.gz", hash = "sha256:f3f567f35b3d004b0e19ee7dff61e75e3c05f3ffc1c41580d967b1fe144b3de9"},
+    {file = "testfixtures-6.17.0-py2.py3-none-any.whl", hash = "sha256:ebcc3e024d47bb58a60cdc678604151baa0c920ae2814004c89ac9066de31b2c"},
+    {file = "testfixtures-6.17.0.tar.gz", hash = "sha256:fa7c170df68ca6367eda061e9ec339ae3e6d3679c31e04033f83ef97a7d7d0ce"},
 ]
 toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
@@ -1623,8 +1623,8 @@ wrapt = [
     {file = "wrapt-1.12.1.tar.gz", hash = "sha256:b62ffa81fb85f4332a4f609cab4ac40709470da05643a082ec1eb88e6d9b97d7"},
 ]
 yeswehack = [
-    {file = "yeswehack-0.6.3-py3-none-any.whl", hash = "sha256:81456966b49eee48171124a1c380e38798ef1c0441d7a9afee749689b0682219"},
-    {file = "yeswehack-0.6.3.tar.gz", hash = "sha256:684ce84349dd073b677529344ecd9eb091641d3653e00b56df9fabe12f6a086e"},
+    {file = "yeswehack-0.6.4-py3-none-any.whl", hash = "sha256:e3b18c5437f4df63b721bafb4e0c522f616bac57e68ad6341b049af996981f81"},
+    {file = "yeswehack-0.6.4.tar.gz", hash = "sha256:4f88b631afe9c44757ed7ecef56a03bb6f4d514539268b00e769ee96379e7ef7"},
 ]
 zipp = [
     {file = "zipp-3.4.0-py3-none-any.whl", hash = "sha256:102c24ef8f171fd729d46599845e95c7ab894a4cf45f5de11a44cc7444fb1108"},

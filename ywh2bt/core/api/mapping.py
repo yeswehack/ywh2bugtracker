@@ -25,6 +25,7 @@ from ywh2bt.core.api.models.report import (
     ReportProgram,
     RewardLog,
     StatusUpdateLog,
+    TrackerUpdateLog,
     TrackingStatusLog,
 )
 from ywh2bt.core.html import cleanup_ywh_redirects_from_html, cleanup_ywh_redirects_from_text
@@ -292,6 +293,23 @@ def map_raw_log(  # noqa: WPS210,WPS212
                 text=raw_log.tracker_url,
             ) if raw_log.tracker_url else None,
             tracker_id=raw_log.tracker_id,
+        )
+    if raw_log.type == 'tracker-update':
+        return TrackerUpdateLog(
+            created_at=created_at,
+            log_id=log_id,
+            log_type=log_type,
+            private=private,
+            author=author,
+            message_html=message_html,
+            attachments=attachments,
+            tracker_name=raw_log.tracker_name,
+            tracker_url=cleanup_ywh_redirects_from_text(
+                ywh_domain=context.yeswehack_domain,
+                text=raw_log.tracker_url,
+            ) if raw_log.tracker_url else None,
+            tracker_id=raw_log.tracker_id,
+            tracker_token=raw_log.tracker_token,
         )
     return Log(
         created_at=created_at,

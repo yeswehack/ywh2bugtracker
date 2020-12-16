@@ -3,8 +3,10 @@
 from abc import ABC, abstractmethod
 from string import Template
 from types import MappingProxyType
+from typing import Optional
 
 from singledispatchmethod import singledispatchmethod
+from typing_extensions import Protocol
 
 from ywh2bt.core.api.models.report import CommentLog, DetailsUpdateLog, Log, Report, RewardLog, StatusUpdateLog
 
@@ -39,6 +41,20 @@ STATUS_TRANSLATIONS = MappingProxyType({
 })
 
 
+class _ValueTransformer(Protocol):
+    def __call__(
+        self,
+        value: str,
+    ) -> str:
+        ...  # noqa: WPS428
+
+
+def _identity_transformer(
+    value: str,
+) -> str:
+    return value
+
+
 class ReportMessageFormatter(ABC):
     """A base report formatter."""
 
@@ -50,6 +66,7 @@ class ReportMessageFormatter(ABC):
     _details_update_log_template: Template
     _details_update_log_line_template: Template
     _reward_log_template: Template
+    _value_transformer: _ValueTransformer
 
     def __init__(
         self,
@@ -61,6 +78,7 @@ class ReportMessageFormatter(ABC):
         details_update_log_template: Template,
         details_update_log_line_template: Template,
         reward_log_template: Template,
+        value_transformer: Optional[_ValueTransformer] = None,
     ):
         """
         Initialize self.
@@ -74,6 +92,7 @@ class ReportMessageFormatter(ABC):
             details_update_log_template: a template for a DetailsUpdateLog
             details_update_log_line_template: a template for entries of a DetailsUpdateLog
             reward_log_template: a template for a RewardLog
+            value_transformer: a transformer for values
         """
         self._report_title_template = report_title_template
         self._report_description_template = report_description_template
@@ -83,6 +102,15 @@ class ReportMessageFormatter(ABC):
         self._details_update_log_template = details_update_log_template
         self._details_update_log_line_template = details_update_log_line_template
         self._reward_log_template = reward_log_template
+        self._value_transformer = value_transformer or _identity_transformer
+
+    def _transform_value(
+        self,
+        value: str,
+    ) -> str:
+        return self._value_transformer(
+            value=value,
+        )
 
     def format_report_title(
         self,
@@ -99,7 +127,9 @@ class ReportMessageFormatter(ABC):
         """
         return self._report_title_template.substitute(
             local_id=report.local_id,
-            title=report.title,
+            title=self._transform_value(
+                value=report.title or '',
+            ),
         )
 
     def format_report_description(
@@ -117,26 +147,40 @@ class ReportMessageFormatter(ABC):
         """
         return self._report_description_template.substitute(
             local_id=report.local_id,
-            title=report.title,
+            title=self._transform_value(
+                value=report.title,
+            ),
             priority_name=report.priority.name if report.priority else '',
             bug_type_label=self._get_property_label('bug_type'),
             bug_type_name=report.bug_type.name,
             bug_type_link=report.bug_type.link,
             bug_type_remediation_link=report.bug_type.remediation_link or '/',
             scope_label=self._get_property_label('scope'),
-            scope=report.scope,
+            scope=self._transform_value(
+                value=report.scope,
+            ),
             cvss_criticity=report.cvss.criticity,
             cvss_score=report.cvss.score,
             cvss_vector=report.cvss.vector,
             end_point_label=self._get_property_label('end_point'),
-            end_point=report.end_point,
+            end_point=self._transform_value(
+                value=report.end_point,
+            ),
             vulnerable_part_label=self._get_property_label('vulnerable_part'),
-            vulnerable_part=report.vulnerable_part,
+            vulnerable_part=self._transform_value(
+                value=report.vulnerable_part,
+            ),
             part_name_label=self._get_property_label('part_name'),
-            part_name=report.part_name,
+            part_name=self._transform_value(
+                value=report.part_name,
+            ),
             payload_sample_label=self._get_property_label('payload_sample'),
-            payload_sample=report.payload_sample,
-            technical_information=report.technical_information or '',
+            payload_sample=self._transform_value(
+                value=report.payload_sample or '',
+            ),
+            technical_information=self._transform_value(
+                value=report.technical_information or '',
+            ),
             description=self.transform_report_description_html(
                 description_html=report.description_html,
             ),
@@ -249,8 +293,12 @@ class ReportMessageFormatter(ABC):
                     updated_property=self._get_property_label(
                         property_name=updated_property,
                     ),
-                    old_value=old_value or '',
-                    new_value=new_value or '',
+                    old_value=self._transform_value(
+                        value=old_value or '',
+                    ),
+                    new_value=self._transform_value(
+                        value=new_value or '',
+                    ),
                 ),
             )
         return self._details_update_log_template.substitute(

@@ -23,8 +23,6 @@ REPORT_DESCRIPTION_TEMPLATE = """
 ${description}
 """
 COMMENT_BODY_TEMPLATE = """
-*Author*: ${author}
-
 *Date*: ${date}
 
 ${body}

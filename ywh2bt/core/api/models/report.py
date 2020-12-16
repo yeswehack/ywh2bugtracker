@@ -223,6 +223,16 @@ class TrackingStatusLog(Log):
     tracker_id: Optional[str]
 
 
+@dataclass
+class TrackerUpdateLog(Log):
+    """A tracker-update log."""
+
+    tracker_name: Optional[str]
+    tracker_url: Optional[str]
+    tracker_id: Optional[str]
+    tracker_token: Optional[str]
+
+
 class _LogFilterProtocol(Protocol):
 
     def __call__(

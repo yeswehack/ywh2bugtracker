@@ -12,8 +12,8 @@ from yeswehack.api import (
 from yeswehack.exceptions import APIError as YesWeHackRawAPiError
 
 from ywh2bt.core.api.client import TestableApiClient
-from ywh2bt.core.api.mapping import MappingContext, map_raw_log, map_raw_report
-from ywh2bt.core.api.models.report import Log, Report
+from ywh2bt.core.api.mapping import MappingContext, map_raw_report
+from ywh2bt.core.api.models.report import Report
 from ywh2bt.core.configuration.headers import Headers
 from ywh2bt.core.configuration.yeswehack import OAuthSettings, YesWeHackConfiguration
 from ywh2bt.core.exceptions import CoreException
@@ -231,25 +231,37 @@ class YesWeHackApiClient(TestableApiClient):
                 f'Unable to update report #{report.report_id} tracking status: {comment}',
             )
 
-    def post_comment(
+    def post_report_tracker_update(
         self,
         report: Report,
+        tracker_name: str,
+        issue_id: str,
+        issue_url: str,
+        token: str,
         comment: str,
-    ) -> Log:
+    ) -> None:
         """
-        Post a comment on a report.
+        Send a report tracker update with information about a tracked issue.
 
         Args:
             report: a report
+            tracker_name: a tracker name
+            issue_id: an id of an issue from a tracker
+            issue_url: an URL of an issue from a tracker
+            token: a token containing the state of the issue
             comment: a comment
 
-        Returns:
-            a Log entry
+        Raises:
+            YesWeHackApiClientError: if an error occurred when sending the update
         """
-        return map_raw_log(
-            context=self._get_mapping_context(),
-            raw_log=report.raw_report.post_comment(
-                comment=comment,
-                private=True,
-            ),
-        )
+        self._ensure_login()
+        try:
+            report.raw_report.post_tracker_update(
+                tracker_name=tracker_name,
+                tracker_id=issue_id,
+                tracker_url=issue_url,
+                token=token,
+                message=comment,
+            )
+        except (YesWeHackRawAPiError, RequestException) as api_error:
+            raise YesWeHackApiClientError(f'Unable to send report #{report.report_id} tracker update') from api_error

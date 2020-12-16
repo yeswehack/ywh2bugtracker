@@ -124,6 +124,7 @@ class Log:
     tracker_name: Optional[str]
     tracker_url: Optional[str]
     tracker_id: Optional[str]
+    tracker_token: Optional[str]
 
 
 class Report:
@@ -169,6 +170,15 @@ class Report:
         tracker_url: str,
         tracker_id: Optional[str] = None,
         message: Optional[str] = None,
+    ) -> requests.Response: ...
+
+    def post_tracker_update(
+        self,
+        tracker_name: str,
+        tracker_url: str,
+        tracker_id: Optional[str]=None,
+        token: Optional[str]=None,
+        message: Optional[str]=None,
     ) -> requests.Response: ...
 
     def post_comment(

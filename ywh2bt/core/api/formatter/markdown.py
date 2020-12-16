@@ -1,5 +1,6 @@
 """Models and functions used for formatting reports data into markdown."""
 
+from html import escape as html_escape
 from string import Template
 
 from ywh2bt.core.api.formatter.formatter import ReportMessageFormatter
@@ -58,6 +59,12 @@ ${comment}
 """
 
 
+def _html_transformer(
+    value: str,
+) -> str:
+    return html_escape(value)
+
+
 class ReportMessageMarkdownFormatter(ReportMessageFormatter):
     """A report formatter to markdown."""
 
@@ -72,6 +79,7 @@ class ReportMessageMarkdownFormatter(ReportMessageFormatter):
             details_update_log_template=Template(DETAILS_UPDATE_LOG_TEMPLATE),
             details_update_log_line_template=Template(DETAILS_UPDATE_LOG_LINE_TEMPLATE),
             reward_log_template=Template(REWARD_LOG_TEMPLATE),
+            value_transformer=_html_transformer,
         )
 
     def transform_report_description_html(

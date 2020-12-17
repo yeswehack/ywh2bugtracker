@@ -190,7 +190,7 @@ class MainWindow(QMainWindow):  # noqa: WPS214
         action = QAction('&Save as...', self)
         action.setObjectName('action_save_as')
         action.setEnabled(False)
-        action.setStatusTip('Save the current configuration file in a new file')
+        action.setStatusTip('Save the current configuration in a new file')
         as_signal_instance(action.triggered).connect(
             self._on_save_as_configuration_triggered,
         )

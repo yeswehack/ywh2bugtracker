@@ -56,14 +56,10 @@ class RootConfigurationEntry:
         self._original_raw = original_raw
         self._raw_format = raw_format
         self._file = file
-        self._configuration = None
-        try:
-            self._configuration = self._configuration_from_raw(
-                raw=self._raw,
-                raw_format=self._raw_format,
-            )
-        except CoreException:
-            return
+        self._configuration = self._configuration_from_raw(
+            raw=self._raw,
+            raw_format=self._raw_format,
+        )
 
     def _update_configuration(
         self,

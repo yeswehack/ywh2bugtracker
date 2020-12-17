@@ -383,7 +383,7 @@ class MainWindow(QMainWindow):  # noqa: WPS214
         entry: Optional[RootConfigurationEntry],
     ) -> None:
         enabled = False
-        if entry and entry.has_changed():
+        if entry and not entry.is_empty() and entry.has_changed():
             enabled = True
         self._action_save.setEnabled(enabled)
 
@@ -392,7 +392,7 @@ class MainWindow(QMainWindow):  # noqa: WPS214
         entry: Optional[RootConfigurationEntry],
     ) -> None:
         enabled = False
-        if entry and entry.has_changed():
+        if entry and not entry.is_empty():
             enabled = True
         self._action_save_as.setEnabled(enabled)
 

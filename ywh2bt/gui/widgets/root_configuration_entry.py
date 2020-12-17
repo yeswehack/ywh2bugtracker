@@ -251,6 +251,15 @@ class RootConfigurationEntry:
         """
         return self._raw != self._original_raw
 
+    def is_empty(self) -> bool:
+        """
+        Check if the configuration is empty.
+
+        Returns:
+            True if the configuration is empty, otherwise False.
+        """
+        return self._raw == ''
+
     @classmethod
     def from_file(
         cls,

@@ -38,6 +38,7 @@ class RootConfigurationWidget(QWidget, ErrorDialogMixin):
 
     root_configuration_modified: Signal = Signal(RootConfigurationEntry)
     root_configuration_saved: Signal = Signal(RootConfigurationEntry)
+    root_configuration_saved_as: Signal = Signal(str, str)
 
     _log_entry_available: Signal = Signal(LogEntry)
 
@@ -348,6 +349,36 @@ class RootConfigurationWidget(QWidget, ErrorDialogMixin):
             message=f'{self._entry.name} saved',
         )
 
+    def save_as(
+        self,
+    ) -> None:
+        """Engage the saving process into a new file."""
+        entry = self._entry
+        save_invalid = self._prompt_save_invalid_entry(
+            entry=entry,
+        )
+        if not save_invalid:
+            return
+        path_format = self._prompt_new_file(
+            format_filters=self._file_format_dialog_filters.get_filters_string(),
+        )
+        if not path_format:
+            return
+        file_path, file_format = path_format
+        if entry.configuration is None:
+            entry.configuration = RootConfiguration()
+        saved = self._save_to_file(
+            entry=entry,
+            file_path=file_path,
+            file_format=file_format,
+        )
+        if not saved:
+            return
+        as_signal_instance(self.root_configuration_saved_as).emit(
+            file_path,
+            file_format,
+        )
+
     def _setup_entry_from_saved_file(
         self,
         file_info: QFileInfo,
@@ -457,7 +488,11 @@ class RootConfigurationWidget(QWidget, ErrorDialogMixin):
             file_path = entry.file.info.filePath()
             file_format = entry.file.file_format
         else:
-            new_file = self._prompt_new_file()
+            new_file = self._prompt_new_file(
+                format_filters=self._file_format_dialog_filters.get_filters_string_for(
+                    format_name=self._entry.raw_format,
+                ) or '',
+            )
             if not new_file:
                 return None
             file_path, file_format = new_file
@@ -480,15 +515,14 @@ class RootConfigurationWidget(QWidget, ErrorDialogMixin):
 
     def _prompt_new_file(
         self,
+        format_filters: str,
     ) -> Optional[Tuple[str, str]]:
         last_opened_dir = self._get_last_opened_dir()
         file_path, chosen_filter = QFileDialog.getSaveFileName(
             self,
             'New file',
             last_opened_dir,
-            self._file_format_dialog_filters.get_filters_string_for(
-                format_name=self._entry.raw_format,
-            ) or '',
+            format_filters or '',
         )
         if not file_path or not chosen_filter:
             return None

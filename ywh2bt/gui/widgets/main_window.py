@@ -45,6 +45,7 @@ class MainWindow(QMainWindow):  # noqa: WPS214
     _action_new: QAction
     _action_open: QAction
     _action_save: QAction
+    _action_save_as: QAction
     _action_reload: QAction
     _action_test: QAction
     _action_sync: QAction
@@ -95,6 +96,7 @@ class MainWindow(QMainWindow):  # noqa: WPS214
         self._action_new = self._create_new_action()
         self._action_open = self._create_open_action()
         self._action_save = self._create_save_action()
+        self._action_save_as = self._create_save_as_action()
         self._action_reload = self._create_reload_action()
         self._action_test = self._create_test_action()
         self._action_sync = self._create_sync_action()
@@ -115,6 +117,7 @@ class MainWindow(QMainWindow):  # noqa: WPS214
                 self._action_new,
                 self._action_open,
                 self._action_save,
+                self._action_save_as,
                 self._action_reload,
                 _MENU_SEPARATOR,
                 self._action_exit,
@@ -178,6 +181,18 @@ class MainWindow(QMainWindow):  # noqa: WPS214
         action.setStatusTip('Save the current configuration file')
         as_signal_instance(action.triggered).connect(
             self._on_save_configuration_triggered,
+        )
+        return action
+
+    def _create_save_as_action(
+        self,
+    ) -> QAction:
+        action = QAction('&Save as...', self)
+        action.setObjectName('action_save_as')
+        action.setEnabled(False)
+        action.setStatusTip('Save the current configuration in a new file')
+        as_signal_instance(action.triggered).connect(
+            self._on_save_as_configuration_triggered,
         )
         return action
 
@@ -350,6 +365,9 @@ class MainWindow(QMainWindow):  # noqa: WPS214
         self._update_save_action(
             entry=entry,
         )
+        self._update_save_as_action(
+            entry=entry,
+        )
         self._update_reload_action(
             entry=entry,
         )
@@ -365,9 +383,18 @@ class MainWindow(QMainWindow):  # noqa: WPS214
         entry: Optional[RootConfigurationEntry],
     ) -> None:
         enabled = False
-        if entry and entry.has_changed():
+        if entry and not entry.is_empty() and entry.has_changed():
             enabled = True
         self._action_save.setEnabled(enabled)
+
+    def _update_save_as_action(
+        self,
+        entry: Optional[RootConfigurationEntry],
+    ) -> None:
+        enabled = False
+        if entry and not entry.is_empty():
+            enabled = True
+        self._action_save_as.setEnabled(enabled)
 
     def _update_reload_action(
         self,
@@ -410,6 +437,11 @@ class MainWindow(QMainWindow):  # noqa: WPS214
         self,
     ) -> None:
         self._root_configurations_widget.save_current_entry()
+
+    def _on_save_as_configuration_triggered(
+        self,
+    ) -> None:
+        self._root_configurations_widget.save_as_current_entry()
 
     def _on_reload_configuration_triggered(
         self,

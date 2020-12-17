@@ -287,6 +287,9 @@ class RootConfigurationsWidget(QWidget, ErrorDialogMixin):  # noqa: WPS214
             as_signal_instance(widget.root_configuration_saved).connect(
                 self._on_entry_saved,
             )
+            as_signal_instance(widget.root_configuration_saved_as).connect(
+                self._on_entry_saved_as,
+            )
             self._entries.append(entry)
             tab_index = self._tab_widget.addTab(
                 widget,
@@ -345,6 +348,12 @@ class RootConfigurationsWidget(QWidget, ErrorDialogMixin):  # noqa: WPS214
         """Save the current entry configuration."""
         self._get_current_entry_widget().save()
 
+    def save_as_current_entry(
+        self,
+    ) -> None:
+        """Save the current entry configuration in a new file."""
+        self._get_current_entry_widget().save_as()
+
     def test_current_entry(
         self,
     ) -> None:
@@ -392,6 +401,16 @@ class RootConfigurationsWidget(QWidget, ErrorDialogMixin):  # noqa: WPS214
     ) -> None:
         as_signal_instance(self.entry_saved).emit(
             entry,
+        )
+
+    def _on_entry_saved_as(
+        self,
+        file_path: str,
+        file_format: str,
+    ) -> None:
+        self._try_open_configuration(
+            file_info=QFileInfo(file_path),
+            file_format=file_format,
         )
 
     def _update_tab_text(

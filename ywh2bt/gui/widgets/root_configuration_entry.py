@@ -56,14 +56,10 @@ class RootConfigurationEntry:
         self._original_raw = original_raw
         self._raw_format = raw_format
         self._file = file
-        self._configuration = None
-        try:
-            self._configuration = self._configuration_from_raw(
-                raw=self._raw,
-                raw_format=self._raw_format,
-            )
-        except CoreException:
-            return
+        self._configuration = self._configuration_from_raw(
+            raw=self._raw,
+            raw_format=self._raw_format,
+        )
 
     def _update_configuration(
         self,
@@ -254,6 +250,15 @@ class RootConfigurationEntry:
             True if the file has changed, otherwise False.
         """
         return self._raw != self._original_raw
+
+    def is_empty(self) -> bool:
+        """
+        Check if the configuration is empty.
+
+        Returns:
+            True if the configuration is empty, otherwise False.
+        """
+        return self._raw == ''
 
     @classmethod
     def from_file(

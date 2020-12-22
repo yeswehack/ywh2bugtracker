@@ -1,0 +1,24 @@
+bugtrackers:
+  tracker-jira-my-project:
+    type: jira
+    url: https://my-company.atlassian.net
+    login: bender@my-company.com
+    password: wFs2wr0&i38#gLNI@6BBuIKIDiY4h6gJ
+    project: my-project
+yeswehack:
+  my-project-bug-bounty:
+    apps_headers:
+      X-YesWeHack-Apps: api-token
+    login: bot@my-company.com
+    password: 7IVpwUrDToxH@3$uo090C^Deevq4s8t8
+    oauth_args:
+      client_id: 7a0033b0-9f9e-47fa-b199-d5515f285e48
+      client_secret: azertyuiopsdfghjkl
+      redirect_uri: https://my-company.com/oauth/redirect
+    programs:
+    - slug: my-company-my-project
+      synchronize_options:
+        upload_private_comments: true
+        upload_public_comments: true
+      bugtrackers_name:
+      - tracker-jira-my-project

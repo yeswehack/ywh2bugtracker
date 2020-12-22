@@ -82,3 +82,11 @@ Publish Test PyPi:
   script:
     - poetry publish --repository testpypi
 
+Publish PyPi:
+  stage: publish
+  extends: .base_poetry
+  when: manual
+  only:
+    - tags
+  script:
+    - poetry publish

@@ -56,7 +56,7 @@ Unit tests:
 Bump dev version:
   stage: version
   except:
-    - master
+    - tags
   extends: .base_poetry
   script:
     - poetry version "$(poetry version -s)-beta-$(date +%s)"

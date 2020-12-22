@@ -78,7 +78,7 @@ Publish Test PyPi:
   extends: .base_poetry
   when: manual
   except:
-    - master
+    - tags
   script:
     - poetry publish --repository testpypi
 

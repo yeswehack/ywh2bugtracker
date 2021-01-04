@@ -1,0 +1,92 @@
+image: python:3.8
+
+variables:
+  PIP_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/pip"
+  POETRY_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/poetry"
+
+cache:
+  key: global
+  paths:
+    - .cache/pip
+    - .cache/poetry
+
+stages:
+  - verify
+  - version
+  - build
+  - publish
+
+.base_poetry:
+  before_script:
+    - pip install poetry
+    - poetry install --no-root
+
+Poetry check:
+  stage: verify
+  extends: .base_poetry
+  script:
+    - poetry check
+
+Flake8 code style check:
+  stage: verify
+  extends: .base_poetry
+  script:
+    - make flake8
+  artifacts:
+    paths:
+      - build/flake8
+    expire_in: 1 day
+
+Static type check:
+  stage: verify
+  extends: .base_poetry
+  script:
+    - make mypy
+  artifacts:
+    paths:
+      - build/mypy
+    expire_in: 1 day
+
+Unit tests:
+  stage: verify
+  extends: .base_poetry
+  script:
+    - make tox
+
+Bump dev version:
+  stage: version
+  except:
+    - tags
+  extends: .base_poetry
+  script:
+    - poetry version "$(poetry version -s)-beta-$(date +%s)"
+  artifacts:
+    paths:
+      - pyproject.toml
+
+Build:
+  stage: build
+  extends: .base_poetry
+  script:
+    - make build
+  artifacts:
+    paths:
+      - dist
+
+Publish Test PyPi:
+  stage: publish
+  extends: .base_poetry
+  when: manual
+  except:
+    - tags
+  script:
+    - poetry publish --repository testpypi
+
+Publish PyPi:
+  stage: publish
+  extends: .base_poetry
+  when: manual
+  only:
+    - tags
+  script:
+    - poetry publish

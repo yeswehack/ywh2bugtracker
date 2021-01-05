@@ -199,7 +199,7 @@ class GitHubAttachmentUploader:
                 'Content-Length': str(upload_data.len),
             },
         )
-        if not upload_response:
+        if not upload_response:  # noqa: WPS531
             return False
         return True
 

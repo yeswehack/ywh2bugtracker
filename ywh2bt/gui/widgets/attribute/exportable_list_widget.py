@@ -24,7 +24,7 @@ from ywh2bt.gui.widgets.typing import as_signal_instance
 class ExportableListWidget(QWidget):  # noqa: WPS214
     """Exportable list GUI."""
 
-    dataChanged: Signal = Signal(ExportableList)  # noqa: WPS115
+    dataChanged: Signal = Signal(ExportableList)  # noqa: WPS115, N815
 
     _table: QTableView
     _add_button: QPushButton

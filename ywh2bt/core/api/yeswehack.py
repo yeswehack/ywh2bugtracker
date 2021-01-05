@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional, cast
 from urllib.parse import urlsplit
 
 import requests
-from requests import RequestException
 from yeswehack.api import (
     Report as YesWeHackRawApiReport,
     YesWeHack as YesWeHackRawApiClient,
@@ -74,7 +73,7 @@ class YesWeHackApiClient(TestableApiClient):
                 verify=configuration.verify,
                 lazy=True,
             )
-        except (YesWeHackRawAPiError, RequestException) as e:
+        except (YesWeHackRawAPiError, requests.RequestException) as e:
             raise YesWeHackApiClientError('Unable to initialize YesWeHack API client') from e
         return client
 
@@ -99,7 +98,7 @@ class YesWeHackApiClient(TestableApiClient):
         if not self._logged_in:
             try:
                 success = self._raw_client.login()
-            except (YesWeHackRawAPiError, RequestException) as e:
+            except (YesWeHackRawAPiError, requests.RequestException) as e:
                 raise YesWeHackApiClientError('Unable to log in with YesWeHack API client') from e
             self._logged_in = success
 
@@ -128,7 +127,7 @@ class YesWeHackApiClient(TestableApiClient):
                 filters=filters or {},
                 lazy=True,
             )
-        except (YesWeHackRawAPiError, YesWeHackApiClientError, RequestException) as e:
+        except (YesWeHackRawAPiError, YesWeHackApiClientError, requests.RequestException) as e:
             raise YesWeHackApiClientError(f'Unable to get reports for program {slug}') from e
         return self._get_detailed_reports(
             raw_reports=raw_reports,
@@ -153,7 +152,7 @@ class YesWeHackApiClient(TestableApiClient):
             raw_report = self._raw_client.get_report(
                 report=report_id,
             )
-        except (YesWeHackRawAPiError, RequestException, TypeError) as e:
+        except (YesWeHackRawAPiError, requests.RequestException, TypeError) as e:
             raise YesWeHackApiClientError(f'Unable to get report #{report_id} details') from e
         return self._map_raw_report(
             raw_report=raw_report,
@@ -210,7 +209,7 @@ class YesWeHackApiClient(TestableApiClient):
                 tracker_url=issue_url,
                 message=comment,
             )
-        except (YesWeHackRawAPiError, RequestException) as api_error:
+        except (YesWeHackRawAPiError, requests.RequestException) as api_error:
             raise YesWeHackApiClientError(f'Unable to update report #{report.report_id} tracking status') from api_error
         try:
             data = response.json()
@@ -263,5 +262,5 @@ class YesWeHackApiClient(TestableApiClient):
                 token=token,
                 message=comment,
             )
-        except (YesWeHackRawAPiError, RequestException) as api_error:
+        except (YesWeHackRawAPiError, requests.RequestException) as api_error:
             raise YesWeHackApiClientError(f'Unable to send report #{report.report_id} tracker update') from api_error

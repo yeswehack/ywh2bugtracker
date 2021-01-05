@@ -2,7 +2,6 @@
 import base64
 import json
 import re
-from json import JSONDecodeError
 from typing import Optional, Type, TypeVar
 
 from ywh2bt.core.crypt.decrypt import Decryptor
@@ -59,7 +58,7 @@ class StateDecryptor:
             raise StateError(f'Unable to decrypt state {encrypted_state}') from decrypt_error
         try:
             class_name, data = json.loads(decrypted_data)
-        except (JSONDecodeError, TypeError) as json_error:
+        except (json.JSONDecodeError, TypeError) as json_error:
             raise StateError(f'Unable to deserialize state {encrypted_state}') from json_error
         if class_name != state_type.__name__:
             raise StateError(f'Invalid state type {class_name}')

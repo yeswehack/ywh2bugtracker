@@ -24,7 +24,7 @@ from ywh2bt.gui.widgets.typing import as_signal_instance
 class ExportableDictWidget(QWidget):  # noqa: WPS214
     """Exportable dict GUI."""
 
-    dataChanged: Signal = Signal(ExportableDict)  # noqa: WPS115
+    dataChanged: Signal = Signal(ExportableDict)  # noqa: WPS115, N815
 
     _table: QTableView
     _add_button: QPushButton

@@ -10,7 +10,7 @@ from ywh2bt.gui.widgets.typing import as_signal_instance
 class HintedCheckBoxWidget(QWidget):
     """A widget consisting of a checkbox with a hint."""
 
-    stateChanged: Signal = Signal(Qt.CheckState)  # noqa: WPS115
+    stateChanged: Signal = Signal(Qt.CheckState)  # noqa: WPS115, N815
 
     _check_box: QCheckBox
     _label: QLabel

@@ -5,15 +5,14 @@ from pathlib import Path
 from string import Template
 from typing import Generator
 
-resources_file_template = Template(
-    """<!DOCTYPE RCC>
+resources_file_template_contents = """<!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource>
         ${glued_lines}
     </qresource>
 </RCC>
-""",
-)
+"""
+resources_file_template = Template(resources_file_template_contents)
 
 resources_file_line_template = Template(
     '<file>${path}</file>',

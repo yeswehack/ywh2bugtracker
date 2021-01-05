@@ -1,14 +1,18 @@
-image: python:3.8
+image: python:3.9
 
 variables:
   PIP_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/pip"
   POETRY_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/poetry"
+  PYENV_ROOT: "${CI_PROJECT_DIR}/.cache/pyenv"
+  TOX_WORK_DIR: "${CI_PROJECT_DIR}/.cache/tox"
 
 cache:
   key: global
   paths:
     - .cache/pip
     - .cache/poetry
+    - .cache/pyenv
+    - .cache/tox
 
 stages:
   - verify
@@ -51,6 +55,11 @@ Unit tests:
   stage: verify
   extends: .base_poetry
   script:
+    - if [ ! -d "${PYENV_ROOT}" ]; then curl https://pyenv.run | sh; fi
+    - export PATH="${PYENV_ROOT}/bin:$PATH"
+    - eval "$(pyenv init -)"
+    - pyenv update
+    - cat .python-version | xargs -n1 pyenv install -s
     - make tox
 
 Bump dev version:

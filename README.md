@@ -44,7 +44,7 @@ Both of them can be obtained by e-mailing us at support@yeswehack.com.
 
 ## Requirements
 
-- `python` >= 3.7,<3.9
+- `python` >= 3.7,<=3.9
 - [`pip`](https://pip.pypa.io/en/stable/installing/)
 
 ## Installation

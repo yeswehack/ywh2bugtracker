@@ -182,16 +182,13 @@ class LogsWidget(QWidget):
         )
 
 
-log_html_template = Template(
-    """
+log_html_template_contents = """
 <p style="color: ${type_color}"><b>[${date_time}]</b>: ${context}</p>
 <p style="color: ${type_color}; white-space: pre">${message}</p>
 <p></p>
-""",
-)
-log_html_link_template = Template(
-    """<a href="${url}">${url}</a>""",
-)
+"""
+log_html_template = Template(log_html_template_contents)
+log_html_link_template = Template('<a href="${url}">${url}</a>')
 
 url_re = re.compile(r'(https?://[^\s]+)')
 

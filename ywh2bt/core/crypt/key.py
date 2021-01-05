@@ -39,7 +39,7 @@ class Key:
         """
         idx = 0
         key_size = len(self._key_bytes)
-        while True:
+        while True:  # noqa: WPS457
             yield self._key_bytes[idx % key_size]
             idx += 1
 

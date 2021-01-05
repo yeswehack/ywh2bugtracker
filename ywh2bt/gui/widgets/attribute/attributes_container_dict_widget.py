@@ -402,7 +402,7 @@ def _get_icon(
 def _value_class_to_snake_case(
     value: Any,
 ) -> str:
-    pattern = re.compile(r'(?<!^)(?=[A-Z])')
+    pattern = re.compile('(?<!^)(?=[A-Z])')
     return pattern.sub('_', value.__class__.__name__).lower()
 
 

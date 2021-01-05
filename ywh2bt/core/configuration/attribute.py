@@ -470,7 +470,7 @@ class AttributesContainer(
             The string value
         """
         joined_items = ', '.join([
-            f'{attr.name}={attr.as_repr(value=self.get_attribute_value(attribute=attr))}'
+            f'{attr.name}={attr.as_repr(value=self.get_attribute_value(attribute=attr))}'  # noqa: WPS221
             for attr, value in self._values.items()
         ])
         return f'{self.__class__.__name__}({joined_items})'

@@ -1,15 +1,9 @@
-import os
 import unittest
 
 from ywh2bt.cli.main import run as cli_run
+from ywh2bt.tests.resource import resource
 from ywh2bt.tests.std_redirect import StdRedirect
 from ywh2bt.version import __VERSION__
-
-
-def _resource(
-    path: str,
-) -> str:
-    return os.path.join(os.path.dirname(__file__), 'resources', path)
 
 
 class TestCli(unittest.TestCase):
@@ -39,7 +33,7 @@ class TestCli(unittest.TestCase):
         with self.assertRaises(SystemExit) as se, StdRedirect.redirect() as outputs:
             cli_run(
                 'validate',
-                f'--config-file={_resource("configurations/does-not-exist.json")}',
+                f'--config-file={resource("configurations/does-not-exist.json")}',
             )
         self.assertEqual(1, se.exception.code)
         self.assertEqual('', outputs.get_stdout())
@@ -49,7 +43,7 @@ class TestCli(unittest.TestCase):
         with self.assertRaises(SystemExit) as se, StdRedirect.redirect() as outputs:
             cli_run(
                 'validate',
-                f'--config-file={_resource("configurations/valid.json")}',
+                f'--config-file={resource("configurations/valid.json")}',
                 '--config-format=foo',
             )
         self.assertEqual(2, se.exception.code)
@@ -60,7 +54,7 @@ class TestCli(unittest.TestCase):
         with self.assertRaises(SystemExit) as se, StdRedirect.redirect() as outputs:
             cli_run(
                 'validate',
-                f'--config-file={_resource("configurations/valid.json")}',
+                f'--config-file={resource("configurations/valid.json")}',
                 '--config-format=json',
             )
         self.assertEqual(0, se.exception.code)
@@ -71,7 +65,7 @@ class TestCli(unittest.TestCase):
         with self.assertRaises(SystemExit) as se, StdRedirect.redirect() as outputs:
             cli_run(
                 'validate',
-                f'--config-file={_resource("configurations/invalid.json")}',
+                f'--config-file={resource("configurations/invalid.json")}',
                 '--config-format=json',
             )
         self.assertEqual(1, se.exception.code)
@@ -82,7 +76,7 @@ class TestCli(unittest.TestCase):
         with self.assertRaises(SystemExit) as se, StdRedirect.redirect() as outputs:
             cli_run(
                 'validate',
-                f'--config-file={_resource("configurations/valid.yml")}',
+                f'--config-file={resource("configurations/valid.yml")}',
                 '--config-format=yaml',
             )
         self.assertEqual(0, se.exception.code)
@@ -93,7 +87,7 @@ class TestCli(unittest.TestCase):
         with self.assertRaises(SystemExit) as se, StdRedirect.redirect() as outputs:
             cli_run(
                 'validate',
-                f'--config-file={_resource("configurations/invalid.yml")}',
+                f'--config-file={resource("configurations/invalid.yml")}',
                 '--config-format=yaml',
             )
         self.assertEqual(1, se.exception.code)
@@ -104,7 +98,7 @@ class TestCli(unittest.TestCase):
         with self.assertRaises(SystemExit) as se, StdRedirect.redirect() as outputs:
             cli_run(
                 'validate',
-                f'--config-file={_resource("configurations/invalid.yml")}',
+                f'--config-file={resource("configurations/invalid.yml")}',
                 '--config-format=json',
             )
         self.assertEqual(1, se.exception.code)
@@ -115,7 +109,7 @@ class TestCli(unittest.TestCase):
         with self.assertRaises(SystemExit) as se, StdRedirect.redirect() as outputs:
             cli_run(
                 'validate',
-                f'--config-file={_resource("configurations/not-root.json")}',
+                f'--config-file={resource("configurations/not-root.json")}',
                 '--config-format=json',
             )
         self.assertEqual(1, se.exception.code)

@@ -179,10 +179,11 @@ def _map_raw_author(
     context: MappingContext,
     raw_author: Union[YesWeHackRawApiAuthor, Dict[str, Any]],
 ) -> Author:
+    default_username = 'Anonymous'
     if isinstance(raw_author, YesWeHackRawApiAuthor):
-        username = raw_author.username
+        username = raw_author.username or default_username
     else:
-        username = raw_author['username']
+        username = raw_author.get('username', default_username)
     return Author(
         username=username,
     )

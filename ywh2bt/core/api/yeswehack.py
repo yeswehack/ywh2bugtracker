@@ -1,6 +1,6 @@
 """Models and functions used for YesWeHack platform data access."""
 from json import JSONDecodeError
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, Optional, Type, cast
 from urllib.parse import urlsplit
 
 import requests
@@ -26,6 +26,7 @@ class YesWeHackApiClient(TestableApiClient):
     """A YesWeHack API client."""
 
     _configuration: YesWeHackConfiguration
+    _raw_client_class: Type[YesWeHackRawApiClient]
     _raw_client: YesWeHackRawApiClient
     _yeswehack_domain: str
     _logged_in: bool
@@ -33,14 +34,17 @@ class YesWeHackApiClient(TestableApiClient):
     def __init__(
         self,
         configuration: YesWeHackConfiguration,
+        raw_client_class: Type[YesWeHackRawApiClient] = YesWeHackRawApiClient,
     ):
         """
         Initialize self.
 
         Args:
             configuration: a YesWeHack configuration
+            raw_client_class: class of the raw API client
         """
         self._configuration = configuration
+        self._raw_client_class = raw_client_class
         self._raw_client = self._build_raw_client()
         self._logged_in = False
         self._yeswehack_domain = self._extract_yeswehack_domain(
@@ -61,7 +65,7 @@ class YesWeHackApiClient(TestableApiClient):
         oauth_mode = True if oauth_settings is not None and oauth_settings.export() else False  # noqa: WPS502
         has_headers = configuration.apps_headers is not None
         try:
-            client = YesWeHackRawApiClient(
+            client = self._raw_client_class(
                 username=configuration.login,
                 password=configuration.password,
                 api_url=self._normalize_api_url(
@@ -105,7 +109,7 @@ class YesWeHackApiClient(TestableApiClient):
     def get_program_reports(
         self,
         slug: str,
-        filters: Optional[Dict[str, Any]],
+        filters: Optional[Dict[str, Any]] = None,
     ) -> List[Report]:
         """
         Get reports for the program.

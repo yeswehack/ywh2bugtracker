@@ -138,7 +138,7 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
             description=description,
         )
         return self._build_tracker_issue(
-            issue_id=gitlab_issue.id,
+            issue_id=str(gitlab_issue.id),
             issue_url=gitlab_issue.web_url,
             is_closed=False,
         )
@@ -182,7 +182,7 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
             )
             tracker_comments.added_comments.append(
                 TrackerComment(
-                    comment_id=gitlab_comment.id,
+                    comment_id=str(gitlab_comment.id),
                 ),
             )
         return tracker_comments

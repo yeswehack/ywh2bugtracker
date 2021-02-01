@@ -5,6 +5,9 @@ variables:
   POETRY_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/poetry"
   PYENV_ROOT: "${CI_PROJECT_DIR}/.cache/pyenv"
   TOX_WORK_DIR: "${CI_PROJECT_DIR}/.cache/tox"
+  DOCKER_VERSION: "18.09"
+  CONTAINER_BASE: "${CI_REGISTRY}/${CI_PROJECT_PATH}"
+  DOCKER_HUB_BASE_TAG: "yeswehack/ywh2bugtracker"
 
 cache:
   key: global
@@ -24,6 +27,14 @@ stages:
   before_script:
     - pip install poetry
     - poetry install --no-root
+
+.base_docker:
+  image: "docker:${DOCKER_VERSION}"
+  services:
+    - name: "docker:${DOCKER_VERSION}-dind"
+      alias: docker
+  before_script:
+    - echo "${CI_JOB_TOKEN}" | docker login -u gitlab-ci-token --password-stdin git.clacos.ninja:4567/v2/
 
 Poetry check:
   stage: verify
@@ -68,10 +79,24 @@ Bump dev version:
     - tags
   extends: .base_poetry
   script:
-    - poetry version "$(poetry version -s)-beta-$(date +%s)"
+    - export YWH2BT_VERSION="$(poetry version -s)-beta-$(date +%s)"
+    - poetry version "${YWH2BT_VERSION}"
+    - echo "${YWH2BT_VERSION}" > .ywh2bt-version
   artifacts:
     paths:
       - pyproject.toml
+      - .ywh2bt-version
+
+Save tag version:
+  stage: version
+  only:
+    - tags
+  extends: .base_poetry
+  script:
+    - poetry version -s > .ywh2bt-version
+  artifacts:
+    paths:
+      - .ywh2bt-version
 
 Build:
   stage: build
@@ -81,6 +106,14 @@ Build:
   artifacts:
     paths:
       - dist
+
+Build Docker:
+  stage: build
+  extends: .base_docker
+  script:
+    - export DOCKER_LOCAL_TAG="${CONTAINER_BASE}:${CI_COMMIT_REF_SLUG}-$(cat .ywh2bt-version)"
+    - docker build --tag "${DOCKER_LOCAL_TAG}" .
+    - docker push "${DOCKER_LOCAL_TAG}"
 
 Publish Test PyPi:
   stage: publish
@@ -99,3 +132,34 @@ Publish PyPi:
     - tags
   script:
     - poetry publish
+
+Publish Docker Hub Test:
+  stage: publish
+  extends: .base_docker
+  when: manual
+  except:
+    - tags
+  script:
+    - export DOCKER_LOCAL_TAG="${CONTAINER_BASE}:${CI_COMMIT_REF_SLUG}-$(cat .ywh2bt-version)"
+    - export DOCKER_HUB_TAG="${DOCKER_HUB_BASE_TAG}:${CI_COMMIT_REF_SLUG}-$(cat .ywh2bt-version)"
+    - docker pull "${DOCKER_LOCAL_TAG}"
+    - echo "${DOCKER_HUB_PASSWORD}" | docker login -u "${DOCKER_HUB_LOGIN}" --password-stdin
+    - docker tag "${DOCKER_LOCAL_TAG}" "${DOCKER_HUB_TAG}"
+    - docker push "${DOCKER_HUB_TAG}"
+
+Publish Docker Hub:
+  stage: publish
+  extends: .base_docker
+  when: manual
+  only:
+    - tags
+  script:
+    - export DOCKER_LOCAL_TAG="${CONTAINER_BASE}:$(cat .ywh2bt-version)"
+    - export DOCKER_HUB_TAG="${DOCKER_HUB_BASE_TAG}:$(cat .ywh2bt-version)"
+    - export DOCKER_HUB_TAG_LATEST="${DOCKER_HUB_BASE_TAG}:latest"
+    - docker pull "${DOCKER_LOCAL_TAG}"
+    - echo "${DOCKER_HUB_PASSWORD}" | docker login -u "${DOCKER_HUB_LOGIN}" --password-stdin
+    - docker tag "${DOCKER_LOCAL_TAG}" "${DOCKER_HUB_TAG}"
+    - docker push "${DOCKER_HUB_TAG}"
+    - docker tag "${DOCKER_LOCAL_TAG}" "${DOCKER_HUB_TAG_LATEST}"
+    - docker push "${DOCKER_HUB_TAG_LATEST}"

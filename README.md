@@ -1,24 +1,18 @@
-# ywh2bt
+# YWH2BT
 
-ywh2bt is a tool to integrate your bug tracking system(s) with [YesWeHack platform][YesWeHack-Platform].
-It automatically creates issues in your bug tracking system for all your program's report,
-and add to the concerned reports the link to the issue.
-
-This tool requires you to have "Use Apps API" right on [YesWeHack platform][YesWeHack-Platform],
-and a custom HTTP header value to put in your configuration. 
-Both of them can be obtained by e-mailing us at support@yeswehack.com.
+YesWeHack <-> bug tracker synchronization tool.
 
 - [Features](#features)
-    - [Supported trackers](#supported-trackers)
+- [Architecture](#architecture)
 - [Requirements](#requirements)
 - [Installation](#installation)
-- [GUI](#gui)
-    - [Usage](#usage)
-    - [Screenshots](#screenshots)
-- [Command line](#command-line)
-    - [`ywh2bt`](#ywh2bt-1)
-        - [Commands](#commands)
-        - [Example usages](#example-usages)
+- [Usage](#usage)
+    - [GUI](#gui)
+        - [Screenshots](#screenshots)
+        - [A few tips](#a-few-tips)
+    - [Command line](#command-line)
+        - [Examples](#examples)
+- [Supported trackers](#supported-trackers)
 - [Supported configuration file formats](#supported-configuration-file-formats)
 - [Known limitations and specific behaviours](#known-limitations-and-specific-behaviours)
 - [Changelog](#changelog)
@@ -29,18 +23,20 @@ Both of them can be obtained by e-mailing us at support@yeswehack.com.
 
 ## Features
 
-- synchronization from [YesWeHack platform][YesWeHack-Platform] to trackers:
-    - platform reports to tracker issues
-    - reports logs/comments to issues comments
-- creation, modification, synchronization, validation, conversion of configuration files through a GUI
-- validation of configuration files
-- format conversion of configuration files
+YWH2BT provide synchronization between [YesWeHack platform][YesWeHack-Platform] platform and your organization's bug tracker(s):
+platform reports and related information (comments, attachments...) are automatically copied to your bug tracker(s),
+while completely controlling the information you allow to be copied.
 
-### Supported trackers
+It comes with a handy GUI to set up and test the integration.
 
-- github
-- gitlab
-- jira / jiracloud
+## Architecture
+
+YWH2BT embeds both the GUI to set up the integration,
+and the application to be scheduled on your server to periodically poll and synchronize new reports.  
+You can either run both on a single machine, or prepare the configuration file
+on a computer (with the GUI) and transfer it on the server and use it through a scheduled command.
+
+Since data is pulled from YWH platform to your server, only regular outbound web connections need to be authorized on your server.
 
 ## Requirements
 
@@ -49,18 +45,37 @@ Both of them can be obtained by e-mailing us at support@yeswehack.com.
 
 ## Installation
 
+YWH2BT can be installed with `pip`, through the command:
 ```sh
 pip install ywh2bt
 ```
 
-## GUI
+If you need to deploy only the command line version on a server, a runnable docker image is also available.
+You can install it with:
+```sh
+docker pull yeswehack/ywh2bugtracker:latest
+```
+Then, run it with the same command as described [below](#command-line), prefixed with `docker run yeswehack/ywh2bugtracker`.   
+See `docker run yeswehack/ywh2bugtracker -h` or `docker run yeswehack/ywh2bugtracker [command] -h` for detailed help.
+
+## Usage
+
+### GUI
 
 The GUI provides assistance to create, modify and validate/test configurations. 
 It also allows synchronization with bug trackers.
 
 To run it, simply type `ywh2bt-gui` in a shell.
 
-### Usage
+#### Screenshots
+
+- [example.yml](doc/examples/example.yml) configuration:
+
+![Screenshot of GUI with loaded example file](doc/img/screenshot-gui-example.png)
+
+- [empty configuration](doc/img/screenshot-gui-new.png)
+
+#### A few tips
 
 - Changes to the configuration can be made either in the configuration tab or in the "Raw" tab ; 
   changes made in one tab are automatically reflected in the other tab.
@@ -69,32 +84,22 @@ To run it, simply type `ywh2bt-gui` in a shell.
 - A description of the schema of the configuration files is accessible via the "Help > Schema documentation" menu
   or by clicking on the ![Icon for help button](doc/img/icon-help.png) button in the main toolbar.
 
-### Screenshots
+### Command line
 
-- [example.yml](doc/examples/example.yml) configuration:
+The main script `ywh2bt` is used to execute synchronization, validate and test configurations.
 
-![Screenshot of GUI with loaded example file](doc/img/screenshot-gui-example.png)
+Usage: `ywh2bt [command]`.  
+See `ywh2bt -h` or `ywh2bt [command] -h` for detailed help.
 
-- [empty configuration](doc/img/screenshot-gui-new.png)
-
-## Command line
-
-### `ywh2bt`
-
-Main script used to execute synchronization, validate and test configurations.
-
-Usage: `ywh2bt [command]`. See `ywh2bt -h` or `ywh2bt [command] -h` for detailed help.
-
-#### Commands
-
+Where `[command]` can be:
 - `validate`: validate a configuration file (mandatory fields, data types, ...)
 - `test`: test the connection to the trackers
 - `convert`: convert a configuration file into another format
-- `synchronize` (alias `sync`): synchronize trackers with YesWeHack reports
+- `synchronize` (alias `sync`): synchronize trackers with YesWeHack reports. It should be run everytime you want to synchronize (e.g. schedule execution in a crontab).
 - `schema`: dump a schema of the structure of the configuration files in [Json-Schema][Json-Schema], markdown 
   or plaintext
 
-#### Example usages
+#### Examples
 
 Validation:
 ```sh
@@ -117,12 +122,33 @@ Synchronization:
 ```sh
 $ ywh2bt synchronize --config-file=my-config.json --config-format=json
 [2020-12-21 10:20:58.881315] Starting synchronization:
-[2020-12-21 10:20:58.881608]   Processing YesWeHack "yeswehack1": 
+[2020-12-21 10:20:58.881608]   Processing YesWeHack "yeswehack1":
 [2020-12-21 10:20:58.881627]     Fetching reports for program "my-program": 2 report(s)
 [2020-12-21 10:21:08.341460]     Processing report #123 (CVE-2017-11882 on program) with "my-github": https://github.com/user/project/issues/420 (untouched ; 0 comment(s) added) | tracking status unchanged
 [2020-12-21 10:21:09.656178]     Processing report #96 (I found a bug) with "my-github": https://github.com/user/project/issues/987 (created ; 3 comment(s) added) | tracking status updated
 [2020-12-21 10:21:10.773688] Synchronization done.
 ```
+
+Synchronization through docker:
+```sh
+$ docker run \
+    --volume /home/dave/config/my-config.json:/ywh2bt/config/my-config.json \
+    --network host \
+    yeswehack/ywh2bugtracker:latest \
+    sync --config-file=/ywh2bt/config/my-config.json --config-format=json
+[2020-12-21 11:20:58.881315] Starting synchronization:
+[2020-12-21 11:20:58.881608]   Processing YesWeHack "yeswehack1":
+[2020-12-21 11:20:58.881627]     Fetching reports for program "my-program": 2 report(s)
+[2020-12-21 11:21:08.341460]     Processing report #123 (CVE-2017-11882 on program) with "my-github": https://github.com/user/project/issues/420 (untouched ; 0 comment(s) added) | tracking status unchanged
+[2020-12-21 11:21:09.656178]     Processing report #96 (I found a bug) with "my-github": https://github.com/user/project/issues/987 (created ; 3 comment(s) added) | tracking status updated
+[2020-12-21 11:21:10.773688] Synchronization done.
+```
+
+## Supported trackers
+
+- github
+- gitlab
+- jira / jiracloud
 
 ## Supported configuration file formats
 
@@ -134,6 +160,9 @@ Both `yaml` and `json` configuration files should conform to the schema.
 
 ## Known limitations and specific behaviours
 
+- This tool requires you to have "Use Apps API" right on [YesWeHack platform][YesWeHack-Platform],
+  and a custom HTTP header value to put in your configuration.
+  Both of them can be obtained by e-mailing us at support@yeswehack.com.
 - Apps API doesn't require TOTP authentication, even if corresponding user has TOTP enabled.  
   However, on a secured program, information is limited for user with TOTP disabled, even in apps.  
   As a consequence, to allow proper bug tracking integration on a secured program,
@@ -189,3 +218,4 @@ Same goes for `ywh2bt-gui`, run `poetry run ywh2bt-gui` instead.
 
 [YesWeHack-Platform]: https://www.yeswehack.com/
 [Json-Schema]: https://json-schema.org/specification.html
+[Docker-Repository]: https://hub.docker.com/r/yeswehack/ywh2bugtracker

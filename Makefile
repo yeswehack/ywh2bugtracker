@@ -2,6 +2,7 @@
 
 FLAKE8_SRCS := ywh2bt/core ywh2bt/cli ywh2bt/gui ywh2bt/__init__.py ywh2bt/version.py stubs
 MYPY_SRCS := ywh2bt stubs
+DOCKER_TAG := ywh2bt
 
 .PHONY: help
 help:  ## show this help
@@ -58,3 +59,7 @@ flake8: ## check code violations using flake8
 		--format=html \
 		--htmldir=build/flake8 \
 		$(FLAKE8_SRCS)
+
+.PHONY: build-docker
+build-docker: ## build the docker image
+	@docker build --tag $(DOCKER_TAG) .

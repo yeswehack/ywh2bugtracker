@@ -1,4 +1,8 @@
-"""Models and functions used for tracker clients mixins."""
+"""Models and functions used for tracker clients factories."""
+from abc import (
+    ABC,
+    abstractmethod,
+)
 from typing import (
     Any,
     Dict,
@@ -20,8 +24,24 @@ from ywh2bt.core.configuration.trackers.jira import JiraConfiguration
 from ywh2bt.core.exceptions import CoreException
 
 
-class TrackerClientsMixin:
-    """Mixin for TrackerClients."""
+class TrackerClientsAbstractFactory(ABC):
+    """Abstract factory for TrackerClients."""
+
+    @abstractmethod
+    def get_tracker_client(
+        self,
+        configuration: TrackerConfiguration,
+    ) -> TrackerClient[Any]:
+        """
+        Get the api client for the given configuration.
+
+        Args:
+            configuration: a configuration
+        """
+
+
+class TrackerClientsFactory(TrackerClientsAbstractFactory):
+    """Concrete factory for TrackerClients."""
 
     _tracker_clients: Dict[TrackerConfiguration, TrackerClient[Any]]
 

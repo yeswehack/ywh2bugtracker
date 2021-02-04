@@ -15,9 +15,9 @@ from ywh2bt.core.api.tracker import (
 )
 from ywh2bt.core.configuration.tracker import TrackerConfiguration
 from ywh2bt.core.exceptions import CoreException
-from ywh2bt.core.mixins.tracker_clients import (
+from ywh2bt.core.factories.tracker_clients import (
     TrackerClientClassesRegistry,
-    TrackerClientsMixin,
+    TrackerClientsFactory,
 )
 
 
@@ -60,8 +60,8 @@ class TestTrackerClients(TestCase):
             configuration_class=MyConfiguration,
             client_class=MyTrackerClient,
         )
-        mixin = TrackerClientsMixin()
-        mixin.get_tracker_client(
+        factory = TrackerClientsFactory()
+        factory.get_tracker_client(
             configuration=MyConfiguration(),
         )
 
@@ -70,8 +70,8 @@ class TestTrackerClients(TestCase):
             subtype_name='my',
             subtype_class=MyConfiguration,
         )
-        mixin = TrackerClientsMixin()
+        factory = TrackerClientsFactory()
         with self.assertRaises(CoreException):
-            mixin.get_tracker_client(
+            factory.get_tracker_client(
                 configuration=MyConfiguration(),
             )

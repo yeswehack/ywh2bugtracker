@@ -1,13 +1,26 @@
 """Models and functions used for testing of YesWeHack and tracker clients."""
-from typing import Optional, cast
+from typing import (
+    Optional,
+    cast,
+)
 
 from ywh2bt.core.api.tracker import TrackerClientError
 from ywh2bt.core.api.yeswehack import YesWeHackApiClientError
 from ywh2bt.core.configuration.root import RootConfiguration
-from ywh2bt.core.configuration.tracker import TrackerConfiguration, Trackers
-from ywh2bt.core.configuration.yeswehack import YesWeHackConfiguration, YesWeHackConfigurations
-from ywh2bt.core.mixins.tracker_clients import TrackerClientsMixin
-from ywh2bt.core.mixins.yeswehack_api_clients import YesWeHackApiClientsMixin
+from ywh2bt.core.configuration.tracker import (
+    TrackerConfiguration,
+    Trackers,
+)
+from ywh2bt.core.configuration.yeswehack import (
+    YesWeHackConfiguration,
+    YesWeHackConfigurations,
+)
+from ywh2bt.core.factories.tracker_clients import (
+    TrackerClientsAbstractFactory,
+)
+from ywh2bt.core.factories.yeswehack_api_clients import (
+    YesWeHackApiClientsAbstractFactory,
+)
 from ywh2bt.core.tester.error import TesterError
 from ywh2bt.core.tester.listener import (
     NoOpTesterListener,
@@ -21,15 +34,19 @@ from ywh2bt.core.tester.listener import (
 )
 
 
-class Tester(YesWeHackApiClientsMixin, TrackerClientsMixin):
+class Tester:
     """A class used for testing of YesWeHack and tracker clients."""
 
     _configuration: RootConfiguration
+    _yes_we_hack_api_clients_factory: YesWeHackApiClientsAbstractFactory
+    _tracker_clients_factory: TrackerClientsAbstractFactory
     _listener: TesterListener
 
     def __init__(
         self,
         configuration: RootConfiguration,
+        yes_we_hack_api_clients_factory: YesWeHackApiClientsAbstractFactory,
+        tracker_clients_factory: TrackerClientsAbstractFactory,
         listener: Optional[TesterListener] = None,
     ):
         """
@@ -37,11 +54,13 @@ class Tester(YesWeHackApiClientsMixin, TrackerClientsMixin):
 
         Args:
             configuration: a configuration
+            yes_we_hack_api_clients_factory: a YesWeHackApiClients factory
+            tracker_clients_factory: a TrackerClients factory
             listener: an observer that will receive test events
         """
-        YesWeHackApiClientsMixin.__init__(self)  # noqa: WPS609  # type: ignore
-        TrackerClientsMixin.__init__(self)  # noqa: WPS609  # type: ignore
         self._configuration = configuration
+        self._yes_we_hack_api_clients_factory = yes_we_hack_api_clients_factory
+        self._tracker_clients_factory = tracker_clients_factory
         self._listener = listener or NoOpTesterListener()
 
     def test(
@@ -82,7 +101,7 @@ class Tester(YesWeHackApiClientsMixin, TrackerClientsMixin):
                 yeswehack_configuration=yeswehack_configuration,
             ),
         )
-        yeswehack_client = self.get_yeswehack_api_client(
+        yeswehack_client = self._yes_we_hack_api_clients_factory.get_yeswehack_api_client(
             configuration=yeswehack_configuration,
         )
         try:
@@ -117,7 +136,7 @@ class Tester(YesWeHackApiClientsMixin, TrackerClientsMixin):
                 tracker_configuration=bugtracker_configuration,
             ),
         )
-        tracker_client = self.get_tracker_client(
+        tracker_client = self._tracker_clients_factory.get_tracker_client(
             configuration=bugtracker_configuration,
         )
         try:

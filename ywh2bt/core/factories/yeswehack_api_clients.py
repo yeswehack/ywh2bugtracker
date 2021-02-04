@@ -1,13 +1,36 @@
-"""Models and functions used for YesWeHack api clients mixins."""
+"""Models and functions used for YesWeHack api clients factories."""
+from abc import (
+    ABC,
+    abstractmethod,
+)
 from typing import Dict
 
-from ywh2bt.core.api.yeswehack import YesWeHackApiClient, YesWeHackApiClientError
+from ywh2bt.core.api.yeswehack import (
+    YesWeHackApiClient,
+    YesWeHackApiClientError,
+)
 from ywh2bt.core.configuration.yeswehack import YesWeHackConfiguration
 from ywh2bt.core.exceptions import CoreException
 
 
-class YesWeHackApiClientsMixin:
-    """Mixin for YesWeHackApiClients."""
+class YesWeHackApiClientsAbstractFactory(ABC):
+    """Abstract factory for YesWeHackApiClients."""
+
+    @abstractmethod
+    def get_yeswehack_api_client(
+        self,
+        configuration: YesWeHackConfiguration,
+    ) -> YesWeHackApiClient:
+        """
+        Get the api client for the given configuration.
+
+        Args:
+            configuration: a configuration
+        """
+
+
+class YesWeHackApiClientsFactory(YesWeHackApiClientsAbstractFactory):
+    """Concrete factory for YesWeHackApiClients."""
 
     _yeswehack_api_clients: Dict[YesWeHackConfiguration, YesWeHackApiClient]
 

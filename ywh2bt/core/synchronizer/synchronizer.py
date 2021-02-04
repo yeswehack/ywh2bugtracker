@@ -2,7 +2,13 @@
 from __future__ import annotations
 
 from string import Template
-from typing import Any, List, Optional, Tuple, cast
+from typing import (
+    Any,
+    List,
+    Optional,
+    Tuple,
+    cast,
+)
 
 from ywh2bt.core.api.models.report import (
     CommentLog,
@@ -14,8 +20,17 @@ from ywh2bt.core.api.models.report import (
     TrackerUpdateLog,
     TrackingStatusLog,
 )
-from ywh2bt.core.api.tracker import TrackerClient, TrackerClientError, TrackerComments, TrackerIssue, TrackerIssueState
-from ywh2bt.core.api.yeswehack import YesWeHackApiClient, YesWeHackApiClientError
+from ywh2bt.core.api.tracker import (
+    TrackerClient,
+    TrackerClientError,
+    TrackerComments,
+    TrackerIssue,
+    TrackerIssueState,
+)
+from ywh2bt.core.api.yeswehack import (
+    YesWeHackApiClient,
+    YesWeHackApiClientError,
+)
 from ywh2bt.core.configuration.root import RootConfiguration
 from ywh2bt.core.configuration.tracker import Trackers
 from ywh2bt.core.configuration.yeswehack import (
@@ -25,8 +40,12 @@ from ywh2bt.core.configuration.yeswehack import (
     YesWeHackConfiguration,
     YesWeHackConfigurations,
 )
-from ywh2bt.core.mixins.tracker_clients import TrackerClientsMixin
-from ywh2bt.core.mixins.yeswehack_api_clients import YesWeHackApiClientsMixin
+from ywh2bt.core.factories.tracker_clients import (
+    TrackerClientsAbstractFactory,
+)
+from ywh2bt.core.factories.yeswehack_api_clients import (
+    YesWeHackApiClientsAbstractFactory,
+)
 from ywh2bt.core.state.decrypt import StateDecryptor
 from ywh2bt.core.state.encrypt import StateEncryptor
 from ywh2bt.core.synchronizer.error import SynchronizerError
@@ -43,16 +62,20 @@ from ywh2bt.core.synchronizer.listener import (
 )
 
 
-class Synchronizer(YesWeHackApiClientsMixin, TrackerClientsMixin):  # noqa: WPS214
+class Synchronizer:
     """A class used for data synchronisation between YesWeHack and trackers."""
 
     _configuration: RootConfiguration
+    _yes_we_hack_api_clients_factory: YesWeHackApiClientsAbstractFactory
+    _tracker_clients_factory: TrackerClientsAbstractFactory
     _listener: SynchronizerListener
     _message_formatter: _MessageFormatter
 
     def __init__(
         self,
         configuration: RootConfiguration,
+        yes_we_hack_api_clients_factory: YesWeHackApiClientsAbstractFactory,
+        tracker_clients_factory: TrackerClientsAbstractFactory,
         listener: Optional[SynchronizerListener] = None,
     ):
         """
@@ -60,11 +83,13 @@ class Synchronizer(YesWeHackApiClientsMixin, TrackerClientsMixin):  # noqa: WPS2
 
         Args:
             configuration: a configuration
+            yes_we_hack_api_clients_factory: a YesWeHackApiClients factory
+            tracker_clients_factory: a TrackerClients factory
             listener: an observer that will receive synchronization events
         """
-        YesWeHackApiClientsMixin.__init__(self)  # noqa: WPS609  # type: ignore
-        TrackerClientsMixin.__init__(self)  # noqa: WPS609  # type: ignore
         self._configuration = configuration
+        self._yes_we_hack_api_clients_factory = yes_we_hack_api_clients_factory
+        self._tracker_clients_factory = tracker_clients_factory
         self._listener = listener or NoOpSynchronizerListener()
         self._message_formatter = _MessageFormatter()
 
@@ -104,7 +129,7 @@ class Synchronizer(YesWeHackApiClientsMixin, TrackerClientsMixin):  # noqa: WPS2
         yeswehack_name: str,
         yeswehack_configuration: YesWeHackConfiguration,
     ) -> None:
-        yeswehack_client = self.get_yeswehack_api_client(
+        yeswehack_client = self._yes_we_hack_api_clients_factory.get_yeswehack_api_client(
             configuration=yeswehack_configuration,
         )
         programs = cast(Programs, yeswehack_configuration.programs)
@@ -224,7 +249,7 @@ class Synchronizer(YesWeHackApiClientsMixin, TrackerClientsMixin):  # noqa: WPS2
         report: Report,
     ) -> None:
         bugtracker_configuration = cast(Trackers, self._configuration.bugtrackers)[bugtracker_name]
-        tracker_client = self.get_tracker_client(
+        tracker_client = self._tracker_clients_factory.get_tracker_client(
             configuration=bugtracker_configuration,
         )
         self._send_event(

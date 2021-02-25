@@ -236,10 +236,10 @@ class YesWeHackApiClient(TestableApiClient):
                     + f'got {type(data)}',
                 ),
             )
-        if 'errors' in data:
-            comment = data['message'] if 'message' in data else '[no error message]'
+        if not response.ok or 'errors' in data:
+            message = data['message'] if 'message' in data and data['message'] else '[no error message]'
             raise YesWeHackApiClientError(
-                f'Unable to update report #{report.report_id} tracking status: {comment}',
+                f'Unable to update report #{report.report_id} tracking status: {message}',
             )
 
     def post_report_tracker_update(

@@ -2,6 +2,7 @@
 htmltitle = ywh2bt: flake8 violations
 max-line-length = 120
 max-line-complexity = 15
+max-cognitive-score = 15
 docstring-style = google
 max-imports = 30
 max-import-from-members = 15
@@ -10,7 +11,7 @@ max-module-members = 30
 max-methods = 40
 max-arguments = 10
 max-attributes = 10
-max-local-variables = 6
+max-local-variables = 10
 max-raises = 5
 rst-roles =
     class,
@@ -34,6 +35,7 @@ ignore =
     WPS338,
     WPS432,
     WPS601,
+    WPS615,
 
 exclude =
     ywh2bt/gui/resources.py

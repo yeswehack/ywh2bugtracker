@@ -1,6 +1,10 @@
-# YWH2BT
+# ywh2bt
 
-YesWeHack <-> bug tracker synchronization tool.
+ywh2bt is a tool to integrate your bug tracking system(s) with [YesWeHack platform][YesWeHack-Platform].
+It automatically creates issues in your bug tracking system for all your program's report,
+and add to the concerned reports the link to the issue.
+
+## Table of contents
 
 - [Features](#features)
 - [Architecture](#architecture)
@@ -42,6 +46,13 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 
 - `python` >= 3.7,<=3.9
 - [`pip`](https://pip.pypa.io/en/stable/installing/)
+
+To use it on your program, while maintaining the maximum security, the tool requires:
+- a specific right on the [YesWeHack platform][YesWeHack-Platform] allowing you to use the API,
+  and a custom HTTP header to put in your configuration.
+  Both of them can be obtained by e-mailing us at support@yeswehack.com.
+- creation of a user with role "program consumer" on the desired program.
+  It is the credentials of this user that you must use in the configuration.
 
 ## Installation
 

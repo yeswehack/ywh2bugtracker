@@ -4,6 +4,7 @@ from datetime import datetime
 
 from singledispatchmethod import singledispatchmethod
 
+from ywh2bt.core.api.models.report import REPORT_STATUS_TRANSLATIONS
 from ywh2bt.core.core import write_message
 from ywh2bt.core.synchronizer.listener import (
     SynchronizerEndEvent,
@@ -139,23 +140,33 @@ class CliSynchronizerListener(SynchronizerListener):
         self,
         event: SynchronizerEndSendReportEvent,
     ) -> None:
-        result = event.result
-        tracker_issue = result.tracker_issue
-        comments_count = len(result.added_comments)
+        tracker_issue = event.tracker_issue
+        issue_added_comment_count = len(event.issue_added_comments)
+        issue_details = [
+            tracker_issue.issue_url,
+        ]
         if event.is_existing_issue:
-            if comments_count:
-                issue_action = 'updated'
-            else:
-                issue_action = 'untouched'
+            if issue_added_comment_count:
+                issue_details.append('updated')
         else:
-            issue_action = 'added'
-        comments_details = f'{comments_count} comment(s) added'
-        tracking_status_details = 'updated' if event.tracking_status_updated else 'unchanged'
+            issue_details.append('added')
+        if issue_added_comment_count:
+            issue_details.append(f'{issue_added_comment_count} comment(s) added')
+        report_added_comment_count = len(event.report_added_comments)
+        report_details = []
+        if report_added_comment_count:
+            report_details.append(f'{report_added_comment_count} comment(s) added')
+        report_details.append(f'tracking status {"updated" if event.tracking_status_updated else "unchanged"}')
+        if event.new_report_status:
+            old_status, new_status = event.new_report_status
+            old_status_translation = REPORT_STATUS_TRANSLATIONS.get(old_status, 'Unknown')
+            new_status_translation = REPORT_STATUS_TRANSLATIONS.get(new_status, 'Unknown')
+            report_details.append(f'status "{old_status_translation}" -> "{new_status_translation}"')
         _print(
             message=' | '.join(
                 (
-                    f'{tracker_issue.issue_url} ({issue_action} ; {comments_details})',
-                    f'tracking status {tracking_status_details}',
+                    f'issue => {" ; ".join(issue_details)}',
+                    f'report => {" ; ".join(report_details)}',
                 ),
             ),
         )

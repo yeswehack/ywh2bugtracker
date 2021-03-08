@@ -1,5 +1,12 @@
 """Models used for the configuration of YesWeHack."""
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import (
+    Any,
+    Dict,
+    List,
+    Optional,
+    Union,
+    cast,
+)
 
 from ywh2bt.core.configuration.attribute import (
     Attribute,
@@ -168,6 +175,54 @@ SynchronizeOptionsInitType = Union[
 ]
 
 
+class FeedbackOptions(AttributesContainer):
+    """Feedback option."""
+
+    download_tracker_comments: BoolAttributeType = Attribute.create(
+        value_type=bool,
+        short_description='Download bug trackers comments',
+        description='Download comments from the bug trackers and put them into the report',
+        default=False,
+    )
+    issue_closed_to_report_afv: BoolAttributeType = Attribute.create(
+        value_type=bool,
+        short_description='Issue closed to report AFV',
+        description='Set the report status to "Ask for Fix Verification" when the tracker issue is closed',
+        default=False,
+    )
+
+    def __init__(
+        self,
+        download_tracker_comments: Optional[bool] = None,
+        issue_closed_to_report_afv: Optional[bool] = None,
+        **kwargs: Any,
+    ):
+        """
+        Initialize self.
+
+        Args:
+            download_tracker_comments:
+            a flag indicating whether to download comments from the bug trackers and put them into the report
+            issue_closed_to_report_afv:
+            a flag indicating whether to set report status to "Ask for Fix Verification" when tracker issue is closed
+            kwargs: keyword arguments
+        """
+        super().__init__(**kwargs)
+        self.download_tracker_comments = download_tracker_comments
+        self.issue_closed_to_report_afv = issue_closed_to_report_afv
+
+
+FeedbackOptionsAttributeType = Union[
+    Dict[str, bool],
+    FeedbackOptions,
+    Attribute[FeedbackOptions],
+]
+FeedbackOptionsInitType = Union[
+    Optional[FeedbackOptions],
+    Optional[Dict[str, bool]],
+]
+
+
 class Program(AttributesContainer):
     """A program and its associated bugtrackers."""
 
@@ -183,6 +238,11 @@ class Program(AttributesContainer):
         short_description='Synchronization options',
         required=True,
     )
+    feedback_options: FeedbackOptionsAttributeType = Attribute.create(
+        value_type=FeedbackOptions,
+        short_description='Feedback options',
+        required=True,
+    )
     bugtrackers_name: BugtrackersNameAttributeType = Attribute.create(
         value_type=Bugtrackers,
         short_description='Bug trackers',
@@ -195,6 +255,7 @@ class Program(AttributesContainer):
         self,
         slug: Optional[str] = None,
         synchronize_options: SynchronizeOptionsInitType = None,
+        feedback_options: FeedbackOptionsInitType = None,
         bugtrackers_name: BugtrackersNameInitType = None,
         **kwargs: Any,
     ):
@@ -204,6 +265,7 @@ class Program(AttributesContainer):
         Args:
             slug: a program slug
             synchronize_options: synchronization options
+            feedback_options: feedback options
             bugtrackers_name: a list of bugtrackers
             kwargs: keyword arguments
         """
@@ -212,6 +274,9 @@ class Program(AttributesContainer):
         if not synchronize_options:
             synchronize_options = SynchronizeOptions()
         self.synchronize_options = synchronize_options
+        if not feedback_options:
+            feedback_options = FeedbackOptions()
+        self.feedback_options = feedback_options
         if bugtrackers_name:
             if isinstance(bugtrackers_name, List):
                 self.bugtrackers_name = Bugtrackers(bugtrackers_name)

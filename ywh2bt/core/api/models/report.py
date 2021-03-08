@@ -3,10 +3,40 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import partial
+from types import MappingProxyType
 from typing import Any, Dict, List, Optional
 
 from typing_extensions import Protocol
 from yeswehack.api import Report as YesWeHackRawApiReport
+
+REPORT_PROPERTY_LABELS = MappingProxyType({
+    'bug_type': 'Bug type',
+    'scope': 'Scope',
+    'end_point': 'Endpoint',
+    'vulnerable_part': 'Vulnerable part',
+    'part_name': 'Part name',
+    'payload_sample': 'Payload',
+    'application_finger_print': 'Application fingerprint',
+})
+REPORT_STATUS_TRANSLATIONS = MappingProxyType({
+    'new': 'New',
+    'under_review': 'Under Review',
+    'reopen_under_review': 'Reopen Under Review',
+    'more_info': 'Need More Info',
+    'reopen_more_info': 'Reopen Need More Info',
+    'accepted': 'Accepted',
+    'ask_verif': 'Ask for fix verification',
+    'wont_fix': "Won't fix",
+    'informative': 'Informative',
+    'resolved': 'Resolved',
+    'rtfs': 'RTFS',
+    'spam': 'Spam',
+    'out_of_scope': 'Out Of Scope',
+    'not_applicable': 'Not Applicable',
+    'invalid': 'Invalid',
+    'duplicate': 'Duplicate',
+    'auto_close': 'Auto Close',
+})
 
 
 @dataclass
@@ -24,11 +54,12 @@ class Report:
     vulnerable_part: str
     part_name: str
     payload_sample: str
-    technical_information: str
+    technical_environment: str
     description_html: str
     attachments: List[Attachment]
     hunter: Author
     logs: List[Log]
+    status: str
     tracking_status: str
     program: ReportProgram
     priority: Optional[Priority] = None
@@ -231,6 +262,15 @@ class TrackerUpdateLog(Log):
     tracker_url: Optional[str]
     tracker_id: Optional[str]
     tracker_token: Optional[str]
+
+
+@dataclass
+class TrackerMessageLog(Log):
+    """A tracker-message log."""
+
+    tracker_name: Optional[str]
+    tracker_url: Optional[str]
+    tracker_id: Optional[str]
 
 
 class _LogFilterProtocol(Protocol):

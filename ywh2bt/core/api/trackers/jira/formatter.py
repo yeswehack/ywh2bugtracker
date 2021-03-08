@@ -18,7 +18,7 @@ REPORT_DESCRIPTION_TEMPLATE = """
 | ${vulnerable_part_label} | ${vulnerable_part} |
 | ${part_name_label} | ${part_name} |
 | ${payload_sample_label} | ${payload_sample} |
-| Technical Environment | ${technical_information} |
+| Technical Environment | ${technical_environment} |
 
 ${description}
 """

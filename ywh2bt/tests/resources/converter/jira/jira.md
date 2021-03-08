@@ -77,3 +77,7 @@ Something
 A single paragraph.
 
 A sentence with <span style="color:red" class="text-color-red">color</span>.
+
+An inline image with a size ![stefan-koidl-gopniktown3.jpg](stefan-koidl-gopniktown3.jpg).
+
+An inline image alone ![stefan-koidl-gopniktown3.jpg](stefan-koidl-gopniktown3.jpg).

@@ -48,6 +48,7 @@ Flake8 code style check:
   script:
     - make flake8
   artifacts:
+    when: always
     paths:
       - build/flake8
     expire_in: 1 day
@@ -58,6 +59,7 @@ Static type check:
   script:
     - make mypy
   artifacts:
+    when: always
     paths:
       - build/mypy
     expire_in: 1 day

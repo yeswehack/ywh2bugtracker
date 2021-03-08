@@ -33,6 +33,7 @@ _RE_CITATION = re.compile(pattern=r'(^|\s)\?\?((?:[^?])+)\?\?')
 _RE_COLOR = re.compile(pattern=r'\{color:([^}]+)\}(.*)\{color\}', flags=re.MULTILINE | re.DOTALL)
 _RE_HEADER = re.compile(pattern=r'^h([0-6])\.(.*)', flags=re.MULTILINE)
 _RE_INSERT = re.compile(pattern=r'(^|\s)\+([^+]*)(\S)\+')
+_RE_IMAGE = re.compile(pattern=r'!([^!|]+)(\|[^!]*)?!')
 _RE_ITALIC = re.compile(pattern=r'(^|\s|\*)_(\S.*)(\S)_')
 _RE_LIST = re.compile(pattern=r'^[ \t]*(\*+)\s+', flags=re.MULTILINE)
 _RE_MONOSPACE = re.compile(pattern=r'(^|\s){{([^}]+)}}($|\s)')
@@ -91,6 +92,12 @@ def _replace_insert(
     src: str,
 ) -> str:
     return _RE_INSERT.sub(r'\1<ins>\2\3</ins>', src)
+
+
+def _replace_image(
+    src: str,
+) -> str:
+    return _RE_IMAGE.sub(r'![\1](\1)', src)
 
 
 def _replace_italic(
@@ -243,6 +250,7 @@ class _Jira2Markdown:
             _replace_header,
             _replace_bold,
             _replace_italic,
+            _replace_image,
             _replace_monospace,
             _replace_citation,
             _replace_insert,

@@ -25,6 +25,7 @@ from ywh2bt.core.api.models.report import (
     ReportProgram,
     RewardLog,
     StatusUpdateLog,
+    TrackerMessageLog,
     TrackerUpdateLog,
     TrackingStatusLog,
 )
@@ -72,7 +73,11 @@ def map_raw_report(
         context=context,
         raw_author=raw_report.hunter,
     )
-    logs = _map_raw_logs(
+    status = _map_raw_status(
+        context=context,
+        raw_status=raw_report.status,
+    )
+    logs = map_raw_logs(
         context=context,
         raw_logs=raw_report.logs or [],
     )
@@ -88,13 +93,14 @@ def map_raw_report(
         vulnerable_part=raw_report.vulnerable_part,
         part_name=raw_report.part_name,
         payload_sample=raw_report.payload_sample,
-        technical_information=raw_report.technical_information,
+        technical_environment=raw_report.technical_environment,
         description_html=cleanup_ywh_redirects_from_html(
             ywh_domain=context.yeswehack_domain,
             html=raw_report.description_html,
         ),
         attachments=attachments,
         hunter=hunter,
+        status=status,
         tracking_status=raw_report.tracking_status,
         logs=logs,
         priority=priority,
@@ -151,7 +157,7 @@ def _map_raw_attachments(
     raw_attachments: List[YesWeHackRawApiAttachment],
 ) -> List[Attachment]:
     return [
-        _map_raw_attachment(
+        map_raw_attachment(
             context=context,
             raw_attachment=raw_attachment,
         )
@@ -159,10 +165,20 @@ def _map_raw_attachments(
     ]
 
 
-def _map_raw_attachment(
+def map_raw_attachment(
     context: MappingContext,
     raw_attachment: YesWeHackRawApiAttachment,
 ) -> Attachment:
+    """
+    Map a raw API attachment to a local attachment.
+
+    Args:
+        context: a mapping context
+        raw_attachment: a raw attachment
+
+    Returns:
+        a local attachment
+    """
     raw_attachment.load_data()
     return Attachment(
         attachment_id=raw_attachment.id,
@@ -189,10 +205,27 @@ def _map_raw_author(
     )
 
 
-def _map_raw_logs(
+def _map_raw_status(
+    context: MappingContext,
+    raw_status: Dict[str, Any],
+) -> str:
+    return raw_status.get('workflow_state', '')
+
+
+def map_raw_logs(
     context: MappingContext,
     raw_logs: List[YesWeHackRawApiLog],
 ) -> List[Log]:
+    """
+    Map a list of raw API logs to a list of local logs.
+
+    Args:
+        context: a mapping context
+        raw_logs: a list of raw logs
+
+    Returns:
+        a list of local logs
+    """
     return [
         map_raw_log(
             context=context,
@@ -202,7 +235,7 @@ def _map_raw_logs(
     ]
 
 
-def map_raw_log(  # noqa: WPS210,WPS212
+def map_raw_log(  # noqa: WPS210,WPS212,WPS231
     context: MappingContext,
     raw_log: YesWeHackRawApiLog,
 ) -> Log:
@@ -311,6 +344,22 @@ def map_raw_log(  # noqa: WPS210,WPS212
             ) if raw_log.tracker_url else None,
             tracker_id=raw_log.tracker_id,
             tracker_token=raw_log.tracker_token,
+        )
+    if raw_log.type == 'tracker-message':
+        return TrackerMessageLog(
+            created_at=created_at,
+            log_id=log_id,
+            log_type=log_type,
+            private=private,
+            author=author,
+            message_html=message_html,
+            attachments=attachments,
+            tracker_name=raw_log.tracker_name,
+            tracker_url=cleanup_ywh_redirects_from_text(
+                ywh_domain=context.yeswehack_domain,
+                text=raw_log.tracker_url,
+            ) if raw_log.tracker_url else None,
+            tracker_id=raw_log.tracker_id,
         )
     return Log(
         created_at=created_at,

@@ -1,6 +1,12 @@
 import unittest
-from dataclasses import dataclass
-from typing import Dict
+from dataclasses import (
+    asdict,
+    dataclass,
+)
+from typing import (
+    Any,
+    Dict,
+)
 
 from ywh2bt.core.state.decrypt import StateDecryptor
 from ywh2bt.core.state.encrypt import StateEncryptor
@@ -16,6 +22,9 @@ class TestState(unittest.TestCase):
             bar: int
             baz: Dict[str, str]
             qux: bool
+
+            def as_dict(self) -> Dict[str, Any]:
+                return asdict(self)
 
         state = MyState(
             foo='state-foo',
@@ -45,6 +54,9 @@ class TestState(unittest.TestCase):
             bar: int
             baz: Dict[str, str]
             qux: bool
+
+            def as_dict(self) -> Dict[str, Any]:
+                return asdict(self)
 
         state = MyState(
             foo='state-foo',

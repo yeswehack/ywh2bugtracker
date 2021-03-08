@@ -9,9 +9,10 @@ from ywh2bt.core.api.models.report import (
     Report,
 )
 from ywh2bt.core.api.tracker import (
+    SendLogsResult,
     TrackerClient,
-    TrackerComments,
     TrackerIssue,
+    TrackerIssueComments,
 )
 from ywh2bt.core.configuration.tracker import TrackerConfiguration
 from ywh2bt.core.exceptions import CoreException
@@ -37,10 +38,17 @@ class MyTrackerClient(TrackerClient[MyConfiguration]):
     def send_report(self, report: Report) -> TrackerIssue:
         raise NotImplementedError()
 
-    def send_logs(self, tracker_issue: TrackerIssue, logs: List[Log]) -> TrackerComments:
+    def send_logs(self, tracker_issue: TrackerIssue, logs: List[Log]) -> SendLogsResult:
         raise NotImplementedError()
 
     def test(self) -> None:
+        raise NotImplementedError()
+
+    def get_tracker_issue_comments(
+        self,
+        issue_id: str,
+        exclude_comments: Optional[List[str]] = None,
+    ) -> TrackerIssueComments:
         raise NotImplementedError()
 
 

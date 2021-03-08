@@ -1,13 +1,20 @@
 """Models and functions used for observing synchronisation between YesWeHack and trackers."""
 from abc import ABC
 from dataclasses import dataclass
-from typing import List
+from typing import (
+    List,
+    Optional,
+    Tuple,
+)
 
 from ywh2bt.core.api.models.report import Report
-from ywh2bt.core.api.tracker import TrackerComments
+from ywh2bt.core.api.tracker import TrackerIssue
 from ywh2bt.core.configuration.root import RootConfiguration
 from ywh2bt.core.configuration.yeswehack import YesWeHackConfiguration
-from ywh2bt.core.listener import Event, Listener
+from ywh2bt.core.listener import (
+    Event,
+    Listener,
+)
 
 
 @dataclass
@@ -73,8 +80,11 @@ class SynchronizerEndSendReportEvent(SynchronizerEvent):
     tracker_name: str
     report: Report
     is_existing_issue: bool
+    new_report_status: Optional[Tuple[str, str]]
     tracking_status_updated: bool
-    result: TrackerComments
+    tracker_issue: TrackerIssue
+    issue_added_comments: List[str]
+    report_added_comments: List[str]
 
 
 class SynchronizerListener(Listener[SynchronizerEvent], ABC):

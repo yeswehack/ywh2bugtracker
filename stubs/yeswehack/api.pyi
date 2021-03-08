@@ -1,4 +1,10 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import (
+    Any,
+    Dict,
+    List,
+    Optional,
+    Union,
+)
 
 import requests
 
@@ -155,13 +161,21 @@ class Report:
     rights: List[Any]
     scope: str
     source_ips: List[str]
-    status: Dict[Any, Any]
+    status: Dict[str, Any]
     tags: List[Any]
+    technical_environment: str
     technical_information: str
     technical_information_html: str
     title: str
     tracking_status: str
     vulnerable_part: str
+
+    def __init__(
+        self,
+        ywh_api: YesWeHack,
+        lazy: bool = False,
+        **kwargs: Any,
+    ) -> None: ...
 
     def put_tracking_status(
         self,
@@ -176,16 +190,40 @@ class Report:
         self,
         tracker_name: str,
         tracker_url: str,
-        tracker_id: Optional[str]=None,
-        token: Optional[str]=None,
-        message: Optional[str]=None,
+        tracker_id: Optional[str] = None,
+        token: Optional[str] = None,
+        message: Optional[str] = None,
     ) -> requests.Response: ...
+
+    def post_tracker_message(
+        self,
+        tracker_name: str,
+        tracker_url: str,
+        tracker_id: Optional[str] = None,
+        message: Optional[str] = None,
+        attachments: Optional[List[str]] = None,
+    ) -> Log: ...
 
     def post_comment(
         self,
         comment: str,
-        private: bool = False,
+        private: Optional[bool] = False,
     ) -> Log: ...
+
+    def post_attachment(
+        self,
+        filename: str,
+        file_content: bytes,
+        file_type: Optional[str] = None,
+        lazy: Optional[bool] = False,
+    ) -> Attachment: ...
+
+    def put_status(
+        self,
+        status: str,
+        message: Optional[str] = None,
+        attachments: Optional[List[str]] = None,
+    ) -> List[Log]: ...
 
 
 class Program:

@@ -11,6 +11,8 @@ from urllib.parse import urlsplit
 
 import requests
 from yeswehack.api import (
+    Attachment as YesWeHackRawApiAttachment,
+    Log as YesWeHackRawApiLog,
     Report as YesWeHackRawApiReport,
     YesWeHack as YesWeHackRawApiClient,
 )
@@ -19,9 +21,15 @@ from yeswehack.exceptions import APIError as YesWeHackRawAPiError
 from ywh2bt.core.api.client import TestableApiClient
 from ywh2bt.core.api.mapping import (
     MappingContext,
+    map_raw_logs,
+    map_raw_attachment,
     map_raw_report,
 )
-from ywh2bt.core.api.models.report import Report
+from ywh2bt.core.api.models.report import (
+    Attachment,
+    Log,
+    Report,
+)
 from ywh2bt.core.configuration.headers import Headers
 from ywh2bt.core.configuration.yeswehack import (
     OAuthSettings,
@@ -189,6 +197,30 @@ class YesWeHackApiClient(TestableApiClient):
         except TypeError as e:
             raise YesWeHackApiClientError(f'Unable to map report #{raw_report.id}') from e
 
+    def _map_raw_attachment(
+        self,
+        raw_attachment: YesWeHackRawApiAttachment,
+    ) -> Attachment:
+        try:
+            return map_raw_attachment(
+                context=self._get_mapping_context(),
+                raw_attachment=raw_attachment,
+            )
+        except TypeError as e:
+            raise YesWeHackApiClientError(f'Unable to map attachment #{raw_attachment}') from e
+
+    def _map_raw_logs(
+        self,
+        raw_logs: List[YesWeHackRawApiLog],
+    ) -> List[Log]:
+        try:
+            return map_raw_logs(
+                context=self._get_mapping_context(),
+                raw_logs=raw_logs,
+            )
+        except TypeError as e:
+            raise YesWeHackApiClientError(f'Unable to map logs #{raw_logs}') from e
+
     def put_report_tracking_status(
         self,
         report: Report,
@@ -276,3 +308,110 @@ class YesWeHackApiClient(TestableApiClient):
             )
         except (YesWeHackRawAPiError, requests.RequestException) as api_error:
             raise YesWeHackApiClientError(f'Unable to send report #{report.report_id} tracker update') from api_error
+
+    def post_report_attachment(
+        self,
+        report: Report,
+        filename: str,
+        file_content: bytes,
+        file_type: Optional[str] = None,
+    ) -> Attachment:
+        """
+        Send an attachment to a report.
+
+        Args:
+            report: a report
+            filename: a file name
+            file_content: file content
+            file_type: an optional file type (mime)
+
+        Returns:
+            the attachment
+
+        Raises:
+            YesWeHackApiClientError: if an error occurred when sending the attachment
+        """
+        self._ensure_login()
+        try:
+            attachment = report.raw_report.post_attachment(
+                filename=filename,
+                file_content=file_content,
+                file_type=file_type,
+            )
+        except (YesWeHackRawAPiError, requests.RequestException) as api_error:
+            raise YesWeHackApiClientError(
+                f'Unable to send attachment {filename} to report #{report.report_id}',
+            ) from api_error
+        return self._map_raw_attachment(
+            raw_attachment=attachment,
+        )
+
+    def post_report_tracker_message(
+        self,
+        report: Report,
+        tracker_name: str,
+        issue_id: str,
+        issue_url: str,
+        comment: str,
+        attachments: Optional[List[str]] = None,
+    ) -> None:
+        """
+        Send a report tracker message with information about a tracked issue.
+
+        Args:
+            report: a report
+            tracker_name: a tracker name
+            issue_id: an id of an issue from a tracker
+            issue_url: an URL of an issue from a tracker
+            comment: a comment
+            attachments: a list of attachment identifiers
+
+        Raises:
+            YesWeHackApiClientError: if an error occurred when sending the message
+        """
+        self._ensure_login()
+        try:
+            report.raw_report.post_tracker_message(
+                tracker_name=tracker_name,
+                tracker_id=issue_id,
+                tracker_url=issue_url,
+                message=comment,
+                attachments=attachments,
+            )
+        except (YesWeHackRawAPiError, requests.RequestException) as api_error:
+            raise YesWeHackApiClientError(f'Unable to send report #{report.report_id} tracker message') from api_error
+
+    def put_status(
+        self,
+        report: Report,
+        status: str,
+        comment: str,
+        attachments: Optional[List[str]] = None,
+    ) -> List[Log]:
+        """
+        Update a report status.
+
+        Args:
+            report: a report
+            status: a status
+            comment: a comment
+            attachments: a list of attachment identifiers
+
+        Returns:
+            a list of logs
+
+        Raises:
+            YesWeHackApiClientError: if an error occurred when updating the status
+        """
+        self._ensure_login()
+        try:
+            raw_logs = report.raw_report.put_status(
+                status=status,
+                message=comment,
+                attachments=attachments,
+            )
+        except (YesWeHackRawAPiError, requests.RequestException) as api_error:
+            raise YesWeHackApiClientError(f'Unable to update report #{report.report_id} status') from api_error
+        return self._map_raw_logs(
+            raw_logs=raw_logs,
+        )

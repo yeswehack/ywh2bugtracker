@@ -73,3 +73,7 @@ Something
 A single paragraph.
 
 A sentence with {color:red}color{color}.
+
+An inline image with a size !stefan-koidl-gopniktown3.jpg|width=1920,height=1477!.
+
+An inline image alone !stefan-koidl-gopniktown3.jpg!.

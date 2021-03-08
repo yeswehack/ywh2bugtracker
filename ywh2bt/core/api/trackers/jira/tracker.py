@@ -1,17 +1,48 @@
 """Models and functions used for data synchronisation between YesWeHack and Jira trackers."""
-from typing import Any, List, Optional, Tuple, cast
+import re
+from datetime import datetime
+from typing import (
+    Any,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    cast,
+)
 from urllib.parse import quote
 
-from jira import Comment as JIRAComment, Issue as JIRAIssue, JIRA, JIRAError  # type: ignore
+from jira import (  # type: ignore
+    Comment as JIRAComment,
+    Issue as JIRAIssue,
+    JIRA,
+    JIRAError,
+)
 from jira.utils import CaseInsensitiveDict  # type: ignore
 
-from ywh2bt.core.api.models.report import Attachment, Log, Report
-from ywh2bt.core.api.tracker import TrackerClient, TrackerClientError, TrackerComment, TrackerComments, TrackerIssue
+from ywh2bt.core.api.models.report import (
+    Attachment,
+    Log,
+    Report,
+)
+from ywh2bt.core.api.tracker import (
+    SendLogsResult,
+    TrackerAttachment,
+    TrackerClient,
+    TrackerClientError,
+    TrackerIssue,
+    TrackerIssueComment,
+    TrackerIssueComments,
+)
 from ywh2bt.core.api.trackers.jira.formatter import JiraReportMessageFormatter
 from ywh2bt.core.configuration.trackers.jira import JiraConfiguration
+from ywh2bt.core.converter.jira2markdown import jira2markdown
+
+_RE_IMAGE = re.compile(pattern=r'!([^!|]+)(?:\|[^!]*)?!')
 
 
 # hot patching shenanigans
+
+
 def _case_insensitive_dict_init_hot_patch(
     obj: CaseInsensitiveDict,
     *args: Any,
@@ -69,14 +100,14 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
         self,
         issue_id: str,
         issue_url: str,
-        is_closed: bool,
+        closed: bool,
     ) -> TrackerIssue:
         return TrackerIssue(
             tracker_url=cast(str, self.configuration.url),
             project=cast(str, self.configuration.project),
             issue_id=issue_id,
             issue_url=issue_url,
-            is_closed=is_closed,
+            closed=closed,
         )
 
     def get_tracker_issue(
@@ -101,10 +132,83 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
         return self._build_tracker_issue(
             issue_id=issue_id,
             issue_url=jira_issue.permalink(),
-            is_closed=all((
-                jira_issue.fields.status is not None,
-                jira_issue.fields.status.name == self.configuration.issue_closed_status,
-            )),
+            closed=self._issue_is_closed(
+                jira_issue=jira_issue,
+            ),
+        )
+
+    def _issue_is_closed(
+        self,
+        jira_issue: JIRAIssue,
+    ) -> bool:
+        fields = jira_issue.fields
+        return fields.status is not None and fields.status.name == self.configuration.issue_closed_status
+
+    def get_tracker_issue_comments(
+        self,
+        issue_id: str,
+        exclude_comments: Optional[List[str]] = None,
+    ) -> TrackerIssueComments:
+        """
+        Get a list of comments on an issue.
+
+        Args:
+            issue_id: an issue id
+            exclude_comments: an optional list of comment to exclude
+
+        Returns:
+            The list of comments
+        """
+        try:
+            jira_issue = self._get_issue(
+                issue_id=issue_id,
+            )
+        except JiraTrackerClientError:
+            return []
+        return self._extract_comments(
+            jira_issue=jira_issue,
+            exclude_comments=exclude_comments,
+        )
+
+    def _extract_comments(
+        self,
+        jira_issue: JIRAIssue,
+        exclude_comments: Optional[List[str]] = None,
+    ) -> List[TrackerIssueComment]:
+        return [
+            self._extract_comment(
+                jira_issue=jira_issue,
+                jira_comment=jira_comment,
+            )
+            for jira_comment in jira_issue.fields.comment.comments
+            if exclude_comments is None or str(jira_comment.id) not in exclude_comments
+        ]
+
+    def _extract_comment(
+        self,
+        jira_issue: JIRAIssue,
+        jira_comment: JIRAComment,
+    ) -> TrackerIssueComment:
+        jira_body = jira_comment.body
+        inline_images = _RE_IMAGE.findall(jira_body)
+        comment_attachments: Dict[str, TrackerAttachment] = {}
+        for jira_attachment in jira_issue.fields.attachment:
+            if jira_attachment.filename in inline_images:
+                comment_attachments[jira_attachment.filename] = TrackerAttachment(
+                    filename=jira_attachment.filename,
+                    mime_type=jira_attachment.mimeType,
+                    content=jira_attachment.get(),
+                )
+        return TrackerIssueComment(
+            created_at=self._parse_date(
+                date=jira_comment.created,
+            ),
+            author=jira_comment.author.displayName,
+            comment_id=str(jira_comment.id),
+            body=jira2markdown(
+                src=jira_body,
+            ),
+            attachments=comment_attachments,
         )
 
     def send_report(
@@ -146,14 +250,14 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
         return self._build_tracker_issue(
             issue_id=jira_issue.key,
             issue_url=jira_issue.permalink(),
-            is_closed=False,
+            closed=False,
         )
 
     def send_logs(
         self,
         tracker_issue: TrackerIssue,
         logs: List[Log],
-    ) -> TrackerComments:
+    ) -> SendLogsResult:
         """
         Send logs to the tracker.
 
@@ -167,7 +271,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
         jira_issue = self._get_issue(
             issue_id=tracker_issue.issue_id,
         )
-        tracker_comments = TrackerComments(
+        tracker_comments = SendLogsResult(
             tracker_issue=tracker_issue,
             added_comments=[],
         )
@@ -177,11 +281,28 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
                 log=log,
             )
             tracker_comments.added_comments.append(
-                TrackerComment(
-                    comment_id=jira_comment.id,
+                TrackerIssueComment(
+                    created_at=self._parse_date(
+                        date=jira_comment.created,
+                    ),
+                    author=jira_comment.author.displayName,
+                    comment_id=str(jira_comment.id),
+                    body=jira2markdown(
+                        src=jira_comment.body,
+                    ),
+                    attachments={},
                 ),
             )
         return tracker_comments
+
+    def _parse_date(
+        self,
+        date: str,
+    ) -> datetime:
+        return datetime.strptime(
+            date,
+            '%Y-%m-%dT%H:%M:%S.%f%z',
+        )
 
     def test(
         self,

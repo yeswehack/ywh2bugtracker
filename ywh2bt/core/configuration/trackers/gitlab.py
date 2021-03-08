@@ -13,7 +13,7 @@ class GitLabConfiguration(TrackerConfiguration):
         value_type=str,
         short_description='API URL',
         description='Base URL of the GitLab server',
-        default='http://gitlab.com',
+        default='https://gitlab.com',
         validator=url_validator,
     )
     token: StrAttributeType = Attribute.create(

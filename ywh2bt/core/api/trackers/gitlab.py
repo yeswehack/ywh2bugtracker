@@ -1,22 +1,48 @@
 """Models and functions used for data synchronisation between YesWeHack and GitLab trackers."""
 from __future__ import annotations
 
-from typing import Iterable, List, Optional, Tuple, cast
+import os
+import re
+from datetime import datetime
+from typing import (
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    cast,
+)
 
 import requests
-from gitlab import Gitlab, GitlabError  # type: ignore
-from gitlab.v4.objects import Project, ProjectIssue, ProjectIssueNote  # type: ignore
+from gitlab import (  # type: ignore
+    Gitlab,
+    GitlabError,
+)
+from gitlab.v4.objects import (  # type: ignore
+    Project,
+    ProjectIssue,
+    ProjectIssueNote,
+)
 
 from ywh2bt.core.api.formatter.markdown import ReportMessageMarkdownFormatter
-from ywh2bt.core.api.models.report import Attachment, Log, Report
+from ywh2bt.core.api.models.report import (
+    Attachment,
+    Log,
+    Report,
+)
 from ywh2bt.core.api.tracker import (
+    SendLogsResult,
+    TrackerAttachment,
     TrackerClient,
     TrackerClientError,
-    TrackerComment,
-    TrackerComments,
     TrackerIssue,
+    TrackerIssueComment,
+    TrackerIssueComments,
 )
 from ywh2bt.core.configuration.trackers.gitlab import GitLabConfiguration
+
+_RE_IMAGE = re.compile(pattern=r'!\[([^\]]+)]\(([^)]+)\)')
+_RE_CONTENT_DISPOSITION_FILENAME = re.compile(pattern='filename="([^"]+)";?')
 
 
 class GitLabTrackerClientError(TrackerClientError):
@@ -29,6 +55,7 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
     _session: requests.Session
     _gitlab: Gitlab
     _message_formatter: ReportMessageMarkdownFormatter
+    _default_author_name: str
 
     def __init__(
         self,
@@ -43,6 +70,7 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
         super().__init__(
             configuration=configuration,
         )
+        self._default_author_name = 'Anonymous'
         self._session = requests.Session()
         self._session.verify = configuration.verify
         self._gitlab = Gitlab(
@@ -66,14 +94,14 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
         self,
         issue_id: str,
         issue_url: str,
-        is_closed: bool,
+        closed: bool,
     ) -> TrackerIssue:
         return TrackerIssue(
             tracker_url=cast(str, self.configuration.url),
             project=cast(str, self.configuration.project),
             issue_id=issue_id,
             issue_url=issue_url,
-            is_closed=is_closed,
+            closed=closed,
         )
 
     def get_tracker_issue(
@@ -100,7 +128,35 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
         return self._build_tracker_issue(
             issue_id=issue_id,
             issue_url=gitlab_issue.web_url,
-            is_closed=gitlab_issue.state == 'closed',
+            closed=gitlab_issue.state == 'closed',
+        )
+
+    def get_tracker_issue_comments(
+        self,
+        issue_id: str,
+        exclude_comments: Optional[List[str]] = None,
+    ) -> TrackerIssueComments:
+        """
+        Get a list of comments on an issue.
+
+        Args:
+            issue_id: an issue id
+            exclude_comments: an optional list of comment to exclude
+
+        Returns:
+            The list of comments
+        """
+        try:
+            gitlab_issue = self._get_gitlab_issue(
+                issue_id=issue_id,
+            )
+        except GitLabTrackerClientError:
+            return []
+        if not gitlab_issue:
+            return []
+        return self._extract_comments(
+            gitlab_issue=gitlab_issue,
+            exclude_comments=exclude_comments,
         )
 
     def send_report(
@@ -140,14 +196,75 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
         return self._build_tracker_issue(
             issue_id=str(gitlab_issue.id),
             issue_url=gitlab_issue.web_url,
-            is_closed=False,
+            closed=False,
+        )
+
+    def _extract_comments(
+        self,
+        gitlab_issue: ProjectIssue,
+        exclude_comments: Optional[List[str]] = None,
+    ) -> List[TrackerIssueComment]:
+        return [
+            self._extract_comment(
+                gitlab_note=gitlab_note,
+            )
+            for gitlab_note in reversed(gitlab_issue.notes.list())
+            if exclude_comments is None or str(gitlab_note.id) not in exclude_comments
+        ]
+
+    def _extract_comment(
+        self,
+        gitlab_note: ProjectIssueNote,
+    ) -> TrackerIssueComment:
+        gitlab_body = gitlab_note.body
+        inline_images = _RE_IMAGE.findall(gitlab_body)
+        comment_attachments: Dict[str, TrackerAttachment] = {}
+        for _, inline_path in inline_images:
+            attachment = self._download_attachment(
+                path=inline_path,
+            )
+            if attachment:
+                comment_attachments[inline_path] = attachment
+        return TrackerIssueComment(
+            created_at=self._parse_date(
+                date=gitlab_note.created_at,
+            ),
+            author=gitlab_note.author.get('name', self._default_author_name),
+            comment_id=str(gitlab_note.id),
+            body=gitlab_body,
+            attachments=comment_attachments,
+        )
+
+    def _download_attachment(
+        self,
+        path: str,
+    ) -> Optional[TrackerAttachment]:
+        url = f'{self.configuration.url}/{self.configuration.project}/{path}'
+        try:
+            response = requests.get(url)
+        except requests.RequestException:
+            return None
+        if not response.ok:
+            return None
+        content_disposition = response.headers.get('Content-Disposition')
+        filename = None
+        if content_disposition:
+            match = _RE_CONTENT_DISPOSITION_FILENAME.search(content_disposition)
+            if match:
+                filename = match.group(1)
+        if not content_disposition or not filename:
+            filename = os.path.basename(path)
+        return TrackerAttachment(
+            filename=filename,
+            mime_type=response.headers.get('Content-Type', 'text/plain'),
+            content=response.content,
         )
 
     def send_logs(
         self,
         tracker_issue: TrackerIssue,
         logs: Iterable[Log],
-    ) -> TrackerComments:
+    ) -> SendLogsResult:
         """
         Send logs to the tracker.
 
@@ -162,7 +279,7 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
             information about the sent comments
         """
         self._ensure_auth()
-        tracker_comments = TrackerComments(
+        tracker_comments = SendLogsResult(
             tracker_issue=tracker_issue,
             added_comments=[],
         )
@@ -181,11 +298,26 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
                 log=log,
             )
             tracker_comments.added_comments.append(
-                TrackerComment(
+                TrackerIssueComment(
+                    created_at=self._parse_date(
+                        date=gitlab_comment.created_at,
+                    ),
+                    author=gitlab_comment.author.get('name', self._default_author_name),
                     comment_id=str(gitlab_comment.id),
+                    body=gitlab_comment.body,
+                    attachments={},
                 ),
             )
         return tracker_comments
+
+    def _parse_date(
+        self,
+        date: str,
+    ) -> datetime:
+        return datetime.strptime(
+            date,
+            '%Y-%m-%dT%H:%M:%S.%f%z',
+        )
 
     def test(
         self,

@@ -68,6 +68,12 @@ class TestJira2Markdown(unittest.TestCase):
             expected='<sub>subscript</sub>',
         )
 
+    def test_convert_inline_image(self) -> None:
+        self._convert_and_check(
+            src='!stefan-koidl-gopniktown3.jpg|width=1920,height=1477!',
+            expected='![stefan-koidl-gopniktown3.jpg](stefan-koidl-gopniktown3.jpg)',
+        )
+
     def test_convert_preformatted_blocks(self) -> None:
         self._convert_and_check(
             src='{code}\nso *no* further _formatting_ is done here\n{code}',
@@ -225,4 +231,15 @@ class TestJira2Markdown(unittest.TestCase):
                      '| --- | --- |\n' +
                      '|Col A1|Col A2|\n' +
                      '|Col B1|Col B2|\n',
+        )
+
+    def test_convert_image_in_table(self) -> None:
+        self._convert_and_check(
+            src='||*header*||*header*||\n' +
+                '|cell|cell|\n' +
+                '|cell|!friendly-robot-00-main-01011.jpg|width=2560,height=1070!|',
+            expected='|*header*|*header*|\n' +
+                     '| --- | --- |\n' +
+                     '|cell|cell|\n' +
+                     '|cell|![friendly-robot-00-main-01011.jpg](friendly-robot-00-main-01011.jpg)|',
         )

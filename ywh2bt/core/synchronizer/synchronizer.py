@@ -776,7 +776,7 @@ class SynchronizerMessageFormatter(AbstractSynchronizerMessageFormatter):
         + 'Date: ${date}'
         + '\n'
         + 'Author: ${author}'
-        + '\n'
+        + '\n\n'
         + '${comment}',
     )
     _status_update_comment_template: Template = Template(

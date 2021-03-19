@@ -656,6 +656,7 @@ class SimpleMessageFormatter(AbstractSynchronizerMessageFormatter):
         send_logs_result: SendLogsResult,
         download_comments_result: DownloadCommentsResult,
         new_report_status: Optional[Tuple[str, str]],
+        issue_status: str,
     ) -> str:
         return self.synchronization_done_format.format(
             report=report,

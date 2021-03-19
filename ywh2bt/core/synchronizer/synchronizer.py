@@ -407,6 +407,10 @@ class ReportSynchronizer:
             tracker_issue=tracker_issue,
             tracker_issue_state=tracker_issue_state,
         )
+        issue_status = self._get_issue_status_change(
+            tracker_issue=tracker_issue,
+            tracker_issue_state=tracker_issue_state,
+        )
         tracker_issue_state.closed = tracker_issue.closed
         self._post_report_tracker_update(
             tracker_issue=tracker_issue,
@@ -414,6 +418,7 @@ class ReportSynchronizer:
             send_logs_result=send_logs_result,
             download_comments_result=download_comments_result,
             new_report_status=new_report_status,
+            issue_status=issue_status,
         )
         return SynchronizeReportResult(
             is_existing_issue=is_existing_issue,
@@ -421,6 +426,15 @@ class ReportSynchronizer:
             send_logs_result=send_logs_result,
             download_comments_result=download_comments_result,
         )
+
+    def _get_issue_status_change(
+        self,
+        tracker_issue: TrackerIssue,
+        tracker_issue_state: TrackerIssueState,
+    ) -> str:
+        if tracker_issue.closed:
+            return 'Unchanged (closed)' if tracker_issue_state.closed else 'Opened -> Closed'
+        return 'Closed -> Opened' if tracker_issue_state.closed else 'Unchanged (opened)'
 
     def _get_tracker_issue_from_logs(
         self,
@@ -617,6 +631,7 @@ class ReportSynchronizer:
         send_logs_result: SendLogsResult,
         download_comments_result: DownloadCommentsResult,
         new_report_status: Optional[Tuple[str, str]],
+        issue_status: str,
     ) -> None:
         post_update = any(
             (
@@ -642,6 +657,7 @@ class ReportSynchronizer:
                         send_logs_result=send_logs_result,
                         download_comments_result=download_comments_result,
                         new_report_status=new_report_status,
+                        issue_status=issue_status,
                     ),
                 )
             except YesWeHackApiClientError as tracker_update_error:
@@ -658,7 +674,6 @@ class ReportSynchronizer:
             return None
         status_conditions = [
             (tracker_issue.closed and not tracker_issue_state.closed, 'ask_verif', 'closed'),
-            (not tracker_issue.closed and tracker_issue_state.closed, 'accepted', 'reopened'),
         ]
         for condition, new_status, comment in status_conditions:
             if condition and self._report.status != new_status:
@@ -712,6 +727,7 @@ class AbstractSynchronizerMessageFormatter(ABC):
         send_logs_result: SendLogsResult,
         download_comments_result: DownloadCommentsResult,
         new_report_status: Optional[Tuple[str, str]],
+        issue_status: str,
     ) -> str:
         """
         Format a synchronization done message.
@@ -722,6 +738,7 @@ class AbstractSynchronizerMessageFormatter(ABC):
             send_logs_result: a result of the synchronization of the report logs with the issue
             download_comments_result: a result of the synchronization of the issue comments with the report
             new_report_status: new status of the report, if changed
+            issue_status: status of the issue
         """
 
     @abstractmethod
@@ -768,7 +785,9 @@ class SynchronizerMessageFormatter(AbstractSynchronizerMessageFormatter):
         + '\n'
         + 'Issue comments added to report: ${report_added_comment_count}'
         + '\n'
-        + 'Report status: ${report_status}',
+        + 'Report status: ${report_status}'
+        + '\n'
+        + 'Issue status: ${issue_status}',
     )
     _download_comment_template: Template = Template(
         'Comment from bugtracker:'
@@ -813,6 +832,7 @@ class SynchronizerMessageFormatter(AbstractSynchronizerMessageFormatter):
         send_logs_result: SendLogsResult,
         download_comments_result: DownloadCommentsResult,
         new_report_status: Optional[Tuple[str, str]],
+        issue_status: str,
     ) -> str:
         """
         Format a synchronization done message.
@@ -823,6 +843,7 @@ class SynchronizerMessageFormatter(AbstractSynchronizerMessageFormatter):
             send_logs_result: a result of the synchronization of the report logs with the issue
             download_comments_result: a result of the synchronization of the issue comments with the report
             new_report_status: new status of the report, if changed
+            issue_status: status of the issue
 
         Returns:
             a formatted message
@@ -844,6 +865,7 @@ class SynchronizerMessageFormatter(AbstractSynchronizerMessageFormatter):
             issue_added_comment_count=len(send_logs_result.added_comments),
             report_added_comment_count=len(download_comments_result.downloaded_comments),
             report_status=report_status,
+            issue_status=issue_status,
         )
 
     def format_download_comment(

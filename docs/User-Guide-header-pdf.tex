@@ -1,0 +1,95 @@
+\usepackage{fancyhdr}
+\usepackage{realboxes}
+\usepackage{textpos}
+\usepackage{titlesec}
+\usepackage{xpatch}
+
+\graphicspath{{./img/}}
+\definecolor{YwhRed}{HTML}{FF2424}
+\definecolor{YwhDarkGray}{HTML}{566369}
+\definecolor{YwhLightGray}{HTML}{DDDDDD}
+
+%% fancy header
+\pagestyle{fancy}
+\fancyhf{}
+%\fancyhead[C]{YWH2BT User Guide}
+\fancyhead[R]{\includegraphics{ywh2bt.png}}
+\fancyfoot[C]{YWH2BT User Guide}
+\fancyfoot[R]{\thepage}
+\renewcommand\headrulewidth{0pt}
+\renewcommand\footrulewidth{1pt}
+\fancypagestyle{pagetitlefooter}{
+    \fancyhf{}
+    \renewcommand\footrulewidth{0pt}
+    \renewcommand\headrulewidth{0pt}
+    \fancyfootoffset[L,R]{\marginparsep+\marginparwidth+1in}
+    \fancyfoot[C]{
+        \begin{textblock*}{\textwidth+(\marginparsep+\marginparwidth+1in)*2}(0pt,0pt)
+            \textblockcolor{YwhLightGray}
+            \vspace{0.6cm}
+            \begin{center}
+                \textbf{\textcolor{YwhDarkGray}{\large LAUSANNE  •  MUNICH  •  PARIS  •  SINGAPOUR}}
+            \end{center}
+            \vspace{0.6cm}
+        \end{textblock*}
+    }
+}
+
+%% title page
+\makeatletter
+\def\maketitle{
+    \null
+    \thispagestyle{pagetitlefooter}
+    \vfill
+    \begin{center}
+        \includegraphics{yeswehack.png}
+    \end{center}
+    \vspace{1cm}
+    \begin{center}
+        \textbf{\textcolor{YwhDarkGray}{\Huge \#1 European Bug Bounty Platform}}
+    \end{center}
+    \vspace{2cm}
+    \begin{center}
+        \textbf{\textcolor{YwhRed}{\Huge \@title}}
+    \end{center}
+    \vfill
+    \cleardoublepage
+}
+\makeatother
+
+%% customize toc
+\let\originaltoc\tableofcontents
+\renewcommand{\tableofcontents}{\originaltoc\addtocontents{toc}{~\hfill\textbf{Page}\par} \pagebreak}
+
+%% tabular/tables
+\rowcolors{2}{YwhLightGray}{YwhLightGray!50}
+
+%% section format
+\titleformat{\section}{\normalfont\bfseries\Large}{\textcolor{YwhRed}{/} \thesection}{0.8em}{}
+\titleformat{\subsection}{\normalfont\bfseries\large}{\textcolor{YwhRed}{\thesubsection}}{0.8em}{}
+
+%% code blocks / listings
+\lstset{
+    breaklines=true,
+    basicstyle=\small\ttfamily,
+    backgroundcolor=\color{YwhLightGray},
+    extendedchars=true,
+    tabsize=2,
+    columns=fixed,
+    showstringspaces=false,
+    frame=trbl,
+    frameround=tttt,
+    framesep=3pt,
+    numbers=left,
+    numberstyle=\tiny\ttfamily,
+    postbreak=\raisebox{0pt}[0pt][0pt]{
+        \ensuremath{\color{YwhRed}\hookrightarrow\space}
+    }
+}
+\makeatletter
+\xpretocmd\lstinline{\Colorbox{YwhLightGray}\bgroup\appto\lst@DeInit{\egroup}}{}{}
+\makeatother
+
+%% force horizontal fill after a paragraph to prevent some images to appear inline/floating after some headings
+\let\originalparagraph\paragraph
+\renewcommand{\paragraph}[1]{\originalparagraph{#1} \hfill}

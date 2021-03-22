@@ -14,8 +14,6 @@ cache:
   paths:
     - .cache/pip
     - .cache/poetry
-    - .cache/pyenv
-    - .cache/tox
 
 stages:
   - verify
@@ -75,6 +73,17 @@ Unit tests:
     - cat .python-version | xargs -n1 pyenv install -s
     - make tox
 
+User Guide Check:
+  stage: verify
+  extends: .base_docker
+  script:
+    - apk add make
+    - md5_md=$(make user-guide-md5sum-markdown)
+    - md5_pdf=$(make user-guide-md5sum-pdf)
+    - if [ "${md5_md}" != "${md5_pdf}" ]; then echo 'PDF version of User Guide is outdated, regenerate it via `make user-guide-pdf`'; exit 1; fi
+    - md5_html=$(make user-guide-md5sum-html)
+    - if [ "${md5_md}" != "${md5_html}" ]; then echo 'HTML version of User Guide is outdated, regenerate it via `make user-guide-html`'; exit 1; fi
+
 Bump dev version:
   stage: version
   except:
@@ -116,6 +125,19 @@ Build Docker:
     - export DOCKER_LOCAL_TAG="${CONTAINER_BASE}:${CI_COMMIT_REF_SLUG}-$(cat .ywh2bt-version)"
     - docker build --tag "${DOCKER_LOCAL_TAG}" .
     - docker push "${DOCKER_LOCAL_TAG}"
+
+pages:
+  stage: publish
+  only:
+    - tags
+  script:
+    - mkdir .public
+    - cp docs/user-guide/* .public
+    - cp docs/img/badge-user-guide-*.svg .public
+    - mv .public public
+  artifacts:
+    paths:
+      - public
 
 Publish Test PyPi:
   stage: publish

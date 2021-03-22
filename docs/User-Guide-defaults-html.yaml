@@ -1,0 +1,9 @@
+from: gfm-implicit_figures
+input-files:
+  - User-Guide.md
+defaults:
+  - User-Guide-defaults.yaml
+include-in-header:
+  - User-Guide-header-html.html
+highlight-style: pygments
+section-divs: true

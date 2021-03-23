@@ -672,16 +672,22 @@ class ReportSynchronizer:
     ) -> Optional[Tuple[str, str]]:
         if not self._feedback_options.issue_closed_to_report_afv:
             return None
-        status_conditions = [
-            (tracker_issue.closed and not tracker_issue_state.closed, 'ask_verif', 'closed'),
-        ]
-        for condition, new_status, comment in status_conditions:
-            if condition and self._report.status != new_status:
-                status_updated = self._put_report_status(
-                    status=new_status,
-                    comment=f'Tracker issue marked as {comment}.',
-                )
-                return (self._report.status, new_status) if status_updated else None
+        condition = tracker_issue.closed and not tracker_issue_state.closed
+        ask_verif_status = 'ask_verif'
+        if condition and self._report.status != ask_verif_status:
+            status_updated = self._put_report_status(
+                status=ask_verif_status,
+                comment='\n'.join(
+                    (
+                        'Hello,',
+                        'A fix has been deployed for this vulnerability.',
+                        'Could you please verify that you cannot reproduce the bug nor bypass the fix?',
+                        'Thanks for your help,',
+                        'Regards,',
+                    ),
+                ),
+            )
+            return (self._report.status, ask_verif_status) if status_updated else None
         return None
 
     def _put_report_status(

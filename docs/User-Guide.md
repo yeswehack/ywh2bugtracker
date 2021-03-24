@@ -46,6 +46,23 @@ See `docker run yeswehack/ywh2bugtracker -h` or `docker run yeswehack/ywh2bugtra
 
 # Usage
 
+## Workflow
+
+![Workflow](img/workflow.png)
+
+1. Issue creation is achieved upon first synchronization after "Ask for integration" (AFI) Tracking Status is set
+  * When integrated, Tracking Status is automatically set to "Tracked"
+  * Creation is possible whatever report status.
+    It is however advised to set AFI status only after acceptance, 
+    since the report is from this point considered valid.
+  * Subsequent returns to "Ask for integration" status won’t create another issue.
+2. The types of comments synchronized depends on [configuration](#yes-we-hack-integration):
+  * Updates pushed from reports to issues:  
+    ![Synchronization options](img/ui-yeswehack-synchronization-options.png)
+  * Updates pushed from issues to reports:  
+    ![Feedback options](img/ui-yeswehack-feedback-options.png)
+3. "Ask for fix verification" can only be set from "Accepted" status, otherwise it will fail and not be retried later.
+
 ## GUI
 
 The Graphical User Interface provides assistance to create, modify and validate/test configurations. 

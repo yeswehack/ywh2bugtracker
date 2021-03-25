@@ -48,6 +48,10 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 
 ## Changelog
 
+- v2.1:
+    - added feedback feature (synchronize from bug tracker to report)
+    - added [docker image yeswehack/ywh2bugtracker](https://hub.docker.com/r/yeswehack/ywh2bugtracker)
+    - added User Guide [PDF][User-Guide-pdf] and [HTML][User-Guide-html]
 - v0.* to v2.0.0:
     - behavior changes:
         - reports logs can selectively be synchronized with the trackers:

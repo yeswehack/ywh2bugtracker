@@ -178,7 +178,7 @@ Publish Docker Hub:
   only:
     - tags
   script:
-    - export DOCKER_LOCAL_TAG="${CONTAINER_BASE}:$(cat .ywh2bt-version)"
+    - export DOCKER_LOCAL_TAG="${CONTAINER_BASE}:${CI_COMMIT_REF_SLUG}-$(cat .ywh2bt-version)"
     - export DOCKER_HUB_TAG="${DOCKER_HUB_BASE_TAG}:$(cat .ywh2bt-version)"
     - export DOCKER_HUB_TAG_LATEST="${DOCKER_HUB_BASE_TAG}:latest"
     - docker pull "${DOCKER_LOCAL_TAG}"

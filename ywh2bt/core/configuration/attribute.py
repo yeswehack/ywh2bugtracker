@@ -588,7 +588,7 @@ EKT = TypeVar('EKT')
 EVT = TypeVar('EVT')
 
 
-class ExportableDict(OrderedDictType[KT, VT], Exportable[Dict[EKT, EVT]]):  # type: ignore
+class ExportableDict(OrderedDictType[KT, VT], Exportable[Dict[EKT, EVT]]):
     """A class describing an exportable dict."""
 
     def export(self) -> Dict[EKT, EVT]:
@@ -598,7 +598,7 @@ class ExportableDict(OrderedDictType[KT, VT], Exportable[Dict[EKT, EVT]]):  # ty
         Returns:
             the exported dict
         """
-        return dict(self)
+        return dict(self)  # type: ignore
 
     def swap_key(
         self,

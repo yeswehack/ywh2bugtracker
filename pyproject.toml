@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "ywh2bt"
-version = "2.0.2"
+version = "2.1.0"
 description = "ywh2bt - YesWeHack to Bug Tracker"
 readme = "README.md"
 authors = ["m.honel <m.honel@yeswehack.com>"]
+maintainers = ["YesWeHack <project@yeswehack.com>"]
 repository = "https://github.com/yeswehack/ywh2bugtracker"
 classifiers = [
-    "Development Status :: 3 - Alpha",
     "Environment :: Console",
     "Intended Audience :: Customer Service",
     "Intended Audience :: End Users/Desktop",

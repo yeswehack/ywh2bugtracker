@@ -57,7 +57,7 @@ class TrackerConfiguration(AttributesContainer, Subtypable, metaclass=Subtypable
 # import all defined trackers
 module_name = vars(sys.modules[__name__])['__package__']  # noqa: WPS421
 dirname = os.path.dirname(__file__)
-for (_, name, _) in pkgutil.iter_modules([f'{dirname}/trackers']):
+for (_module_finder, name, _is_pkg) in pkgutil.iter_modules([f'{dirname}/trackers']):
     import_module(f'{module_name}.trackers.{name}')
 
 

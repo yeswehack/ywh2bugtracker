@@ -1,25 +1,47 @@
 """Models and functions used for data synchronisation between YesWeHack and GitHub trackers."""
+import os
 import re
+from datetime import (
+    datetime,
+    timezone,
+)
 from string import Template
-from typing import Iterable, List, Optional, cast
+from typing import (
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    cast,
+)
 
-from github import Github, GithubException
+import requests
+from github import (
+    Github,
+    GithubException,
+)
 from github.Issue import Issue
 from github.IssueComment import IssueComment
 from github.Repository import Repository
-from requests import RequestException
 
 from ywh2bt.core.api.formatter.markdown import ReportMessageMarkdownFormatter
-from ywh2bt.core.api.models.report import Attachment, Log, Report
+from ywh2bt.core.api.models.report import (
+    Attachment,
+    Log,
+    Report,
+)
 from ywh2bt.core.api.tracker import (
+    SendLogsResult,
+    TrackerAttachment,
     TrackerClient,
     TrackerClientError,
-    TrackerComment,
-    TrackerComments,
     TrackerIssue,
+    TrackerIssueComment,
 )
 from ywh2bt.core.api.trackers.github.attachment import GitHubAttachmentUploader
 from ywh2bt.core.configuration.trackers.github import GitHubConfiguration
+
+_RE_IMAGE = re.compile(pattern=r'!\[([^\]]+)]\(([^)]+)\)')
+_RE_CONTENT_DISPOSITION_FILENAME = re.compile(pattern='filename="([^"]+)";?')
 
 
 class GitHubTrackerClientError(TrackerClientError):
@@ -34,6 +56,8 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
     _github: Github
     _attachment_uploader: GitHubAttachmentUploader
     _message_formatter: ReportMessageMarkdownFormatter
+
+    _default_timezone: timezone = timezone.utc
 
     def __init__(
         self,
@@ -72,14 +96,14 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
         self,
         issue_id: str,
         issue_url: str,
-        is_closed: bool,
+        closed: bool,
     ) -> TrackerIssue:
         return TrackerIssue(
             tracker_url=cast(str, self.configuration.url),
             project=cast(str, self.configuration.project),
             issue_id=issue_id,
             issue_url=issue_url,
-            is_closed=is_closed,
+            closed=closed,
         )
 
     def get_tracker_issue(
@@ -95,6 +119,7 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
         Returns:
             The issue if it exists, else None
         """
+        self._ensure_auth()
         try:
             github_issue = self._get_github_issue(
                 issue_id=issue_id,
@@ -106,7 +131,36 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
         return self._build_tracker_issue(
             issue_id=issue_id,
             issue_url=github_issue.html_url,
-            is_closed=github_issue.closed_at is not None,
+            closed=github_issue.closed_at is not None,
+        )
+
+    def get_tracker_issue_comments(
+        self,
+        issue_id: str,
+        exclude_comments: Optional[List[str]] = None,
+    ) -> List[TrackerIssueComment]:
+        """
+        Get a list of comments on an issue.
+
+        Args:
+            issue_id: an issue id
+            exclude_comments: an optional list of comment to exclude
+
+        Returns:
+            The list of comments
+        """
+        self._ensure_auth()
+        try:
+            github_issue = self._get_github_issue(
+                issue_id=issue_id,
+            )
+        except GitHubTrackerClientError:
+            return []
+        if not github_issue:
+            return []
+        return self._extract_comments(
+            github_issue=github_issue,
+            exclude_comments=exclude_comments,
         )
 
     def send_report(
@@ -142,14 +196,14 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
         return self._build_tracker_issue(
             issue_id=str(issue.id),
             issue_url=issue.html_url,
-            is_closed=False,
+            closed=False,
         )
 
     def send_logs(
         self,
         tracker_issue: TrackerIssue,
         logs: Iterable[Log],
-    ) -> TrackerComments:
+    ) -> SendLogsResult:
         """
         Send logs to the tracker.
 
@@ -163,7 +217,8 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
         Returns:
             information about the sent comments
         """
-        tracker_comments = TrackerComments(
+        self._ensure_auth()
+        tracker_comments = SendLogsResult(
             tracker_issue=tracker_issue,
             added_comments=[],
         )
@@ -183,11 +238,27 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
                 attachments=log.attachments,
             )
             tracker_comments.added_comments.append(
-                TrackerComment(
+                TrackerIssueComment(
+                    author=github_comment.user.name or github_comment.user.login,
+                    created_at=self._ensure_timezone(
+                        dt=github_comment.created_at,
+                        tz=self._default_timezone,
+                    ),
                     comment_id=str(github_comment.id),
+                    body=github_comment.body,
+                    attachments={},
                 ),
             )
         return tracker_comments
+
+    def _ensure_timezone(
+        self,
+        dt: datetime,
+        tz: timezone,
+    ) -> datetime:
+        if not dt.tzinfo:
+            dt = dt.replace(tzinfo=tz)
+        return dt
 
     def test(
         self,
@@ -205,6 +276,65 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
         if not login:
             raise GitHubTrackerClientError('Unable to log in with GitHub API client')
 
+    def _extract_comments(
+        self,
+        github_issue: Issue,
+        exclude_comments: Optional[List[str]] = None,
+    ) -> List[TrackerIssueComment]:
+        return [
+            self._extract_comment(
+                github_comment=github_comment,
+            )
+            for github_comment in github_issue.get_comments()
+            if exclude_comments is None or str(github_comment.id) not in exclude_comments
+        ]
+
+    def _extract_comment(
+        self,
+        github_comment: IssueComment,
+    ) -> TrackerIssueComment:
+        github_body = github_comment.body
+        inline_images = _RE_IMAGE.findall(github_body)
+        comment_attachments: Dict[str, TrackerAttachment] = {}
+        for _, inline_url in inline_images:
+            attachment = self._download_attachment(
+                url=inline_url,
+            )
+            if attachment:
+                comment_attachments[inline_url] = attachment
+        return TrackerIssueComment(
+            created_at=self._ensure_timezone(
+                dt=github_comment.created_at,
+                tz=self._default_timezone,
+            ),
+            author=github_comment.user.name or github_comment.user.login,
+            comment_id=str(github_comment.id),
+            body=github_body,
+            attachments=comment_attachments,
+        )
+
+    def _download_attachment(
+        self,
+        url: str,
+    ) -> Optional[TrackerAttachment]:
+        try:
+            response = requests.get(url)
+        except requests.RequestException:
+            return None
+        content_disposition = response.headers.get('Content-Disposition')
+        filename = None
+        if content_disposition:
+            match = _RE_CONTENT_DISPOSITION_FILENAME.search(content_disposition)
+            if match:
+                filename = match.group(1)
+        if not content_disposition or not filename:
+            filename = os.path.basename(url)
+        return TrackerAttachment(
+            filename=filename,
+            mime_type=response.headers.get('Content-Type', 'text/plain'),
+            content=response.content,
+        )
+
     def _get_repository(
         self,
     ) -> Repository:
@@ -212,7 +342,7 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
             return self._github.get_repo(
                 cast(str, self.configuration.project),
             )
-        except (GithubException, RequestException) as e:
+        except (GithubException, requests.RequestException) as e:
             raise GitHubTrackerClientError(
                 f'Unable to get GitHub repository {self.configuration.project}',
             ) from e

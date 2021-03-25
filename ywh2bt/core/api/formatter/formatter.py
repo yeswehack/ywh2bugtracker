@@ -2,43 +2,21 @@
 
 from abc import ABC, abstractmethod
 from string import Template
-from types import MappingProxyType
 from typing import Optional
 
 from singledispatchmethod import singledispatchmethod
 from typing_extensions import Protocol
 
-from ywh2bt.core.api.models.report import CommentLog, DetailsUpdateLog, Log, Report, RewardLog, StatusUpdateLog
-
-PROPERTY_LABELS = MappingProxyType({
-    'bug_type': 'Bug type',
-    'scope': 'Scope',
-    'end_point': 'Endpoint',
-    'vulnerable_part': 'Vulnerable part',
-    'part_name': 'Part name',
-    'payload_sample': 'Payload',
-    'application_finger_print': 'Application fingerprint',
-})
-
-STATUS_TRANSLATIONS = MappingProxyType({
-    'new': 'New',
-    'under_review': 'Under Review',
-    'reopen_under_review': 'Reopen Under Review',
-    'more_info': 'Need More Info',
-    'reopen_more_info': 'Reopen Need More Info',
-    'accepted': 'Accepted',
-    'ask_verif': 'Ask for fix verification',
-    'wont_fix': "Won't fix",
-    'informative': 'Informative',
-    'resolved': 'Resolved',
-    'rtfs': 'RTFS',
-    'spam': 'Spam',
-    'out_of_scope': 'Out Of Scope',
-    'not_applicable': 'Not Applicable',
-    'invalid': 'Invalid',
-    'duplicate': 'Duplicate',
-    'auto_close': 'Auto Close',
-})
+from ywh2bt.core.api.models.report import (
+    CommentLog,
+    DetailsUpdateLog,
+    Log,
+    REPORT_PROPERTY_LABELS,
+    REPORT_STATUS_TRANSLATIONS,
+    Report,
+    RewardLog,
+    StatusUpdateLog,
+)
 
 
 class _ValueTransformer(Protocol):
@@ -178,8 +156,8 @@ class ReportMessageFormatter(ABC):
             payload_sample=self._transform_value(
                 value=report.payload_sample or '',
             ),
-            technical_information=self._transform_value(
-                value=report.technical_information or '',
+            technical_environment=self._transform_value(
+                value=report.technical_environment or '',
             ),
             description=self.transform_report_description_html(
                 description_html=report.description_html,
@@ -190,7 +168,7 @@ class ReportMessageFormatter(ABC):
         self,
         property_name: str,
     ) -> str:
-        return PROPERTY_LABELS.get(property_name, property_name)
+        return REPORT_PROPERTY_LABELS.get(property_name, property_name)
 
     @abstractmethod
     def transform_report_description_html(
@@ -278,7 +256,7 @@ class ReportMessageFormatter(ABC):
         self,
         status: str,
     ) -> str:
-        return STATUS_TRANSLATIONS.get(status, '')
+        return REPORT_STATUS_TRANSLATIONS.get(status, '')
 
     @_transform_log.register
     def _transform_details_update_log(

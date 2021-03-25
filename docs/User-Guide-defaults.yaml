@@ -1,0 +1,8 @@
+standalone: true
+self-contained: true
+table-of-contents: true
+toc-depth: 4
+number-sections: true
+metadata:
+  title: YWH2BT User Guide
+  lang: en-US

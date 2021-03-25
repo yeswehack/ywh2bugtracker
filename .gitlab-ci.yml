@@ -5,14 +5,15 @@ variables:
   POETRY_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/poetry"
   PYENV_ROOT: "${CI_PROJECT_DIR}/.cache/pyenv"
   TOX_WORK_DIR: "${CI_PROJECT_DIR}/.cache/tox"
+  DOCKER_VERSION: "18.09"
+  CONTAINER_BASE: "${CI_REGISTRY}/${CI_PROJECT_PATH}"
+  DOCKER_HUB_BASE_TAG: "yeswehack/ywh2bugtracker"
 
 cache:
   key: global
   paths:
     - .cache/pip
     - .cache/poetry
-    - .cache/pyenv
-    - .cache/tox
 
 stages:
   - verify
@@ -24,6 +25,14 @@ stages:
   before_script:
     - pip install poetry
     - poetry install --no-root
+
+.base_docker:
+  image: "docker:${DOCKER_VERSION}"
+  services:
+    - name: "docker:${DOCKER_VERSION}-dind"
+      alias: docker
+  before_script:
+    - echo "${CI_JOB_TOKEN}" | docker login -u gitlab-ci-token --password-stdin git.clacos.ninja:4567/v2/
 
 Poetry check:
   stage: verify
@@ -37,6 +46,7 @@ Flake8 code style check:
   script:
     - make flake8
   artifacts:
+    when: always
     paths:
       - build/flake8
     expire_in: 1 day
@@ -47,6 +57,7 @@ Static type check:
   script:
     - make mypy
   artifacts:
+    when: always
     paths:
       - build/mypy
     expire_in: 1 day
@@ -62,16 +73,41 @@ Unit tests:
     - cat .python-version | xargs -n1 pyenv install -s
     - make tox
 
+User Guide Check:
+  stage: verify
+  extends: .base_docker
+  script:
+    - apk add make
+    - md5_md=$(make user-guide-md5sum-markdown)
+    - md5_pdf=$(make user-guide-md5sum-pdf)
+    - if [ "${md5_md}" != "${md5_pdf}" ]; then echo 'PDF version of User Guide is outdated, regenerate it via `make user-guide-pdf`'; exit 1; fi
+    - md5_html=$(make user-guide-md5sum-html)
+    - if [ "${md5_md}" != "${md5_html}" ]; then echo 'HTML version of User Guide is outdated, regenerate it via `make user-guide-html`'; exit 1; fi
+
 Bump dev version:
   stage: version
   except:
     - tags
   extends: .base_poetry
   script:
-    - poetry version "$(poetry version -s)-beta-$(date +%s)"
+    - export YWH2BT_VERSION="$(poetry version -s)-beta-$(date +%s)"
+    - poetry version "${YWH2BT_VERSION}"
+    - echo "${YWH2BT_VERSION}" > .ywh2bt-version
   artifacts:
     paths:
       - pyproject.toml
+      - .ywh2bt-version
+
+Save tag version:
+  stage: version
+  only:
+    - tags
+  extends: .base_poetry
+  script:
+    - poetry version -s > .ywh2bt-version
+  artifacts:
+    paths:
+      - .ywh2bt-version
 
 Build:
   stage: build
@@ -81,6 +117,27 @@ Build:
   artifacts:
     paths:
       - dist
+
+Build Docker:
+  stage: build
+  extends: .base_docker
+  script:
+    - export DOCKER_LOCAL_TAG="${CONTAINER_BASE}:${CI_COMMIT_REF_SLUG}-$(cat .ywh2bt-version)"
+    - docker build --tag "${DOCKER_LOCAL_TAG}" .
+    - docker push "${DOCKER_LOCAL_TAG}"
+
+pages:
+  stage: publish
+  only:
+    - tags
+  script:
+    - mkdir .public
+    - cp docs/user-guide/* .public
+    - cp docs/img/badge-user-guide-*.svg .public
+    - mv .public public
+  artifacts:
+    paths:
+      - public
 
 Publish Test PyPi:
   stage: publish
@@ -99,3 +156,34 @@ Publish PyPi:
     - tags
   script:
     - poetry publish
+
+Publish Docker Hub Test:
+  stage: publish
+  extends: .base_docker
+  when: manual
+  except:
+    - tags
+  script:
+    - export DOCKER_LOCAL_TAG="${CONTAINER_BASE}:${CI_COMMIT_REF_SLUG}-$(cat .ywh2bt-version)"
+    - export DOCKER_HUB_TAG="${DOCKER_HUB_BASE_TAG}:${CI_COMMIT_REF_SLUG}-$(cat .ywh2bt-version)"
+    - docker pull "${DOCKER_LOCAL_TAG}"
+    - echo "${DOCKER_HUB_PASSWORD}" | docker login -u "${DOCKER_HUB_LOGIN}" --password-stdin
+    - docker tag "${DOCKER_LOCAL_TAG}" "${DOCKER_HUB_TAG}"
+    - docker push "${DOCKER_HUB_TAG}"
+
+Publish Docker Hub:
+  stage: publish
+  extends: .base_docker
+  when: manual
+  only:
+    - tags
+  script:
+    - export DOCKER_LOCAL_TAG="${CONTAINER_BASE}:$(cat .ywh2bt-version)"
+    - export DOCKER_HUB_TAG="${DOCKER_HUB_BASE_TAG}:$(cat .ywh2bt-version)"
+    - export DOCKER_HUB_TAG_LATEST="${DOCKER_HUB_BASE_TAG}:latest"
+    - docker pull "${DOCKER_LOCAL_TAG}"
+    - echo "${DOCKER_HUB_PASSWORD}" | docker login -u "${DOCKER_HUB_LOGIN}" --password-stdin
+    - docker tag "${DOCKER_LOCAL_TAG}" "${DOCKER_HUB_TAG}"
+    - docker push "${DOCKER_HUB_TAG}"
+    - docker tag "${DOCKER_LOCAL_TAG}" "${DOCKER_HUB_TAG_LATEST}"
+    - docker push "${DOCKER_HUB_TAG_LATEST}"

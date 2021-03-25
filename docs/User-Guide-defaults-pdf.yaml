@@ -1,0 +1,24 @@
+from: gfm-implicit_figures
+input-files:
+  - User-Guide.md
+defaults:
+  - User-Guide-defaults.yaml
+include-in-header:
+  - User-Guide-header-pdf.tex
+pdf-engine: xelatex
+listings: true
+metadata:
+  geometry: margin=1in
+  colorlinks: true
+  mainfont: InriaSans
+  fontsize: 11pt
+  mainfontoptions:
+    - Extension=.ttf
+    - UprightFont=*-Regular
+    - BoldFont=*-Bold
+    - ItalicFont=*-Italic
+variables:
+  documentclass: article
+  classoption:
+    - titlepage
+    - table

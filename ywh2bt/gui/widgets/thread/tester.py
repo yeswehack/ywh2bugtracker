@@ -2,12 +2,19 @@
 from datetime import datetime
 from typing import cast
 
-from PySide2.QtCore import QObject, QThread, Signal, SignalInstance
+from PySide2.QtCore import (
+    QObject,
+    QThread,
+    Signal,
+    SignalInstance,
+)
 from singledispatchmethod import singledispatchmethod
 
 from ywh2bt.core.configuration.root import RootConfiguration
 from ywh2bt.core.error import error_to_string
 from ywh2bt.core.exceptions import CoreException
+from ywh2bt.core.factories.tracker_clients import TrackerClientsFactory
+from ywh2bt.core.factories.yeswehack_api_clients import YesWeHackApiClientsFactory
 from ywh2bt.core.tester.listener import (
     TesterEndEvent,
     TesterEndTrackerEvent,
@@ -19,7 +26,10 @@ from ywh2bt.core.tester.listener import (
     TesterStartYesWeHackEvent,
 )
 from ywh2bt.core.tester.tester import Tester
-from ywh2bt.gui.widgets.logs_widget import LogEntry, LogType
+from ywh2bt.gui.widgets.logs_widget import (
+    LogEntry,
+    LogType,
+)
 from ywh2bt.gui.widgets.root_configuration_entry import RootConfigurationEntry
 from ywh2bt.gui.widgets.typing import as_signal_instance
 
@@ -59,6 +69,8 @@ class TesterThread(QThread):
         )
         self._tester = Tester(
             configuration=cast(RootConfiguration, entry.configuration),
+            yes_we_hack_api_clients_factory=YesWeHackApiClientsFactory(),
+            tracker_clients_factory=TrackerClientsFactory(),
             listener=observer,
         )
 

@@ -5,7 +5,7 @@ from typing import Dict, Tuple, cast
 from bs4 import BeautifulSoup, Tag  # type: ignore
 
 from ywh2bt.core.api.formatter.formatter import ReportMessageFormatter
-from ywh2bt.core.html2jira import html2jira
+from ywh2bt.core.converter.html2jira import html2jira
 
 REPORT_TITLE_TEMPLATE = '${local_id} : ${title}'
 REPORT_DESCRIPTION_TEMPLATE = """
@@ -18,7 +18,7 @@ REPORT_DESCRIPTION_TEMPLATE = """
 | ${vulnerable_part_label} | ${vulnerable_part} |
 | ${part_name_label} | ${part_name} |
 | ${payload_sample_label} | ${payload_sample} |
-| Technical Environment | ${technical_information} |
+| Technical Environment | ${technical_environment} |
 
 ${description}
 """

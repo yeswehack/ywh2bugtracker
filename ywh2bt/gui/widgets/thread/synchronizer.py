@@ -2,12 +2,20 @@
 from datetime import datetime
 from typing import cast
 
-from PySide2.QtCore import QObject, QThread, Signal, SignalInstance
+from PySide2.QtCore import (
+    QObject,
+    QThread,
+    Signal,
+    SignalInstance,
+)
 from singledispatchmethod import singledispatchmethod
 
+from ywh2bt.core.api.models.report import REPORT_STATUS_TRANSLATIONS
 from ywh2bt.core.configuration.root import RootConfiguration
 from ywh2bt.core.error import error_to_string
 from ywh2bt.core.exceptions import CoreException
+from ywh2bt.core.factories.tracker_clients import TrackerClientsFactory
+from ywh2bt.core.factories.yeswehack_api_clients import YesWeHackApiClientsFactory
 from ywh2bt.core.synchronizer.listener import (
     SynchronizerEndEvent,
     SynchronizerEndFetchReportsEvent,
@@ -19,7 +27,10 @@ from ywh2bt.core.synchronizer.listener import (
     SynchronizerStartSendReportEvent,
 )
 from ywh2bt.core.synchronizer.synchronizer import Synchronizer
-from ywh2bt.gui.widgets.logs_widget import LogEntry, LogType
+from ywh2bt.gui.widgets.logs_widget import (
+    LogEntry,
+    LogType,
+)
 from ywh2bt.gui.widgets.root_configuration_entry import RootConfigurationEntry
 from ywh2bt.gui.widgets.typing import as_signal_instance
 
@@ -59,6 +70,8 @@ class SynchronizerThread(QThread):
         )
         self._synchronizer = Synchronizer(
             configuration=cast(RootConfiguration, entry.configuration),
+            yes_we_hack_api_clients_factory=YesWeHackApiClientsFactory(),
+            tracker_clients_factory=TrackerClientsFactory(),
             listener=observer,
         )
 
@@ -184,24 +197,36 @@ class _SynchronizerListener(SynchronizerListener):
         self,
         event: SynchronizerEndSendReportEvent,
     ) -> None:
-        result = event.result
+        tracker_issue = event.tracker_issue
+        issue_added_comment_count = len(event.issue_added_comments)
+        issue_details = [
+            tracker_issue.issue_url,
+        ]
         if event.is_existing_issue:
-            if result.added_comments:
-                issue_action = 'updated'
-            else:
-                issue_action = 'untouched'
+            if issue_added_comment_count:
+                issue_details.append('updated')
         else:
-            issue_action = 'added'
-        report_details = f'#{event.report.report_id} ({event.report.title})'
-        comments_details = f'{len(result.added_comments)} comment(s) added'
-        tracking_status_action = 'updated' if event.tracking_status_updated else 'unchanged'
+            issue_details.append('added')
+        if issue_added_comment_count:
+            issue_details.append(f'{issue_added_comment_count} comment(s) added')
+        report_added_comment_count = len(event.report_added_comments)
+        report_details = []
+        if report_added_comment_count:
+            report_details.append(f'{report_added_comment_count} comment(s) added')
+        report_details.append(f'tracking status {"updated" if event.tracking_status_updated else "unchanged"}')
+        if event.new_report_status:
+            old_status, new_status = event.new_report_status
+            old_status_translation = REPORT_STATUS_TRANSLATIONS.get(old_status, 'Unknown')
+            new_status_translation = REPORT_STATUS_TRANSLATIONS.get(new_status, 'Unknown')
+            report_details.append(f'status "{old_status_translation}" -> "{new_status_translation}"')
         message = ' | '.join(
             (
-                f'{result.tracker_issue.issue_url} ({issue_action} ; {comments_details})',
-                f'tracking status {tracking_status_action}',
+                f'issue => {" ; ".join(issue_details)}',
+                f'report => {" ; ".join(report_details)}',
             ),
         )
+        report_description = f'#{event.report.report_id} ({event.report.title})'
         self._log_message(
             log_type=LogType.success,
-            message=f'Processed report {report_details} with "{event.tracker_name}": {message}.',
+            message=f'Processed report {report_description} with "{event.tracker_name}": {message}.',
         )

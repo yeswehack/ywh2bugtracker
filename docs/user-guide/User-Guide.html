@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="keywords" content="md5sum=bbe3953af0c23f45ab4a4efddc4fb93f" />
+  <meta name="keywords" content="md5sum=265e6c3596dcf5e14ae85d3899702cda" />
   <title>YWH2BT User Guide</title>
   <style>
     html {
@@ -433,8 +433,10 @@ You can either run both on a single machine, or prepare the configuration file o
 <h1 data-number="3"><span class="header-section-number">3</span> Installation</h1>
 <p>YWH2BT can be installed with <code>pip</code>, through the command:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install ywh2bt</span></code></pre></div>
+<p>Or upgraded from a previously installed version:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install ywh2bt <span class="at">--upgrade</span></span></code></pre></div>
 <p>If you need to deploy only the command line version on a server, a runnable docker image is also available. You can install it with:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> pull yeswehack/ywh2bugtracker:latest</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> pull yeswehack/ywh2bugtracker:latest</span></code></pre></div>
 <p>Then, run it with the same command as described <a href="#command-line">below</a>, prefixed with <code>docker run yeswehack/ywh2bugtracker</code>.<br />
 See <code>docker run yeswehack/ywh2bugtracker -h</code> or <code>docker run yeswehack/ywh2bugtracker [command] -h</code> for detailed help.</p>
 </section>
@@ -685,36 +687,36 @@ See <code>ywh2bt -h</code> or <code>ywh2bt [command] -h</code> for detailed help
 <section id="examples" class="level3" data-number="4.3.2">
 <h3 data-number="4.3.2"><span class="header-section-number">4.3.2</span> Examples</h3>
 <p>Validation:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ywh2bt validate <span class="dt">\</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">--config-file</span><span class="op">=</span>my-config.yml <span class="dt">\</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--config-format</span><span class="op">=</span>yaml <span class="kw">&amp;&amp;</span> <span class="bu">echo</span> OK</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">OK</span></span></code></pre></div>
-<p>Conversion (<code>yaml</code> to <code>json</code>):</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ywh2bt convert <span class="dt">\</span></span>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ywh2bt validate <span class="dt">\</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">--config-file</span><span class="op">=</span>my-config.yml <span class="dt">\</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--config-format</span><span class="op">=</span>yaml <span class="dt">\</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">--destination-file</span><span class="op">=</span>/tmp/cfg.json <span class="dt">\</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">--destination-format</span><span class="op">=</span>json</span></code></pre></div>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--config-format</span><span class="op">=</span>yaml <span class="kw">&amp;&amp;</span> <span class="bu">echo</span> OK</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">OK</span></span></code></pre></div>
+<p>Conversion (<code>yaml</code> to <code>json</code>):</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ywh2bt convert <span class="dt">\</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">--config-file</span><span class="op">=</span>my-config.yml <span class="dt">\</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--config-format</span><span class="op">=</span>yaml <span class="dt">\</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">--destination-file</span><span class="op">=</span>/tmp/cfg.json <span class="dt">\</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">--destination-format</span><span class="op">=</span>json</span></code></pre></div>
 <p>Synchronization:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ywh2bt synchronize <span class="at">--config-file</span><span class="op">=</span>my-config.json <span class="at">--config-format</span><span class="op">=</span>json</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 10:20:58.881315] Starting synchronization:</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 10:20:58.881608]   Processing YesWeHack <span class="st">&quot;yeswehack1&quot;</span>:</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 10:20:58.881627]     Fetching reports for program <span class="st">&quot;my-program&quot;</span>: 2 report<span class="er">(</span><span class="ex">s</span><span class="kw">)</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 10:21:08.341460]     Processing report <span class="co">#123 (CVE-2017-11882 on program) with &quot;my-github&quot;: https://github.com/user/project/issues/420 (untouched ; 0 comment(s) added) | tracking status unchanged</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 10:21:09.656178]     Processing report <span class="co">#96 (I found a bug) with &quot;my-github&quot;: https://github.com/user/project/issues/987 (created ; 3 comment(s) added) | tracking status updated</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 10:21:10.773688] Synchronization done.</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ywh2bt synchronize <span class="at">--config-file</span><span class="op">=</span>my-config.json <span class="at">--config-format</span><span class="op">=</span>json</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 10:20:58.881315] Starting synchronization:</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 10:20:58.881608]   Processing YesWeHack <span class="st">&quot;yeswehack1&quot;</span>:</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 10:20:58.881627]     Fetching reports for program <span class="st">&quot;my-program&quot;</span>: 2 report<span class="er">(</span><span class="ex">s</span><span class="kw">)</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 10:21:08.341460]     Processing report <span class="co">#123 (CVE-2017-11882 on program) with &quot;my-github&quot;: https://github.com/user/project/issues/420 (untouched ; 0 comment(s) added) | tracking status unchanged</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 10:21:09.656178]     Processing report <span class="co">#96 (I found a bug) with &quot;my-github&quot;: https://github.com/user/project/issues/987 (created ; 3 comment(s) added) | tracking status updated</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 10:21:10.773688] Synchronization done.</span></code></pre></div>
 <p>Synchronization through docker:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> docker run <span class="dt">\</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">--volume</span> /home/dave/config/my-config.json:/ywh2bt/config/my-config.json <span class="dt">\</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--network</span> host <span class="dt">\</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    yeswehack/ywh2bugtracker:latest <span class="dt">\</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    sync <span class="at">--config-file</span><span class="op">=</span>/ywh2bt/config/my-config.json <span class="at">--config-format</span><span class="op">=</span>json</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 11:20:58.881315] Starting synchronization:</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 11:20:58.881608]   Processing YesWeHack <span class="st">&quot;yeswehack1&quot;</span>:</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 11:20:58.881627]     Fetching reports for program <span class="st">&quot;my-program&quot;</span>: 2 report<span class="er">(</span><span class="ex">s</span><span class="kw">)</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 11:21:08.341460]     Processing report <span class="co">#123 (CVE-2017-11882 on program) with &quot;my-github&quot;: https://github.com/user/project/issues/420 (untouched ; 0 comment(s) added) | tracking status unchanged</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 11:21:09.656178]     Processing report <span class="co">#96 (I found a bug) with &quot;my-github&quot;: https://github.com/user/project/issues/987 (created ; 3 comment(s) added) | tracking status updated</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 11:21:10.773688] Synchronization done.</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> docker run <span class="dt">\</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">--volume</span> /home/dave/config/my-config.json:/ywh2bt/config/my-config.json <span class="dt">\</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--network</span> host <span class="dt">\</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    yeswehack/ywh2bugtracker:latest <span class="dt">\</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    sync <span class="at">--config-file</span><span class="op">=</span>/ywh2bt/config/my-config.json <span class="at">--config-format</span><span class="op">=</span>json</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 11:20:58.881315] Starting synchronization:</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 11:20:58.881608]   Processing YesWeHack <span class="st">&quot;yeswehack1&quot;</span>:</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 11:20:58.881627]     Fetching reports for program <span class="st">&quot;my-program&quot;</span>: 2 report<span class="er">(</span><span class="ex">s</span><span class="kw">)</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 11:21:08.341460]     Processing report <span class="co">#123 (CVE-2017-11882 on program) with &quot;my-github&quot;: https://github.com/user/project/issues/420 (untouched ; 0 comment(s) added) | tracking status unchanged</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 11:21:09.656178]     Processing report <span class="co">#96 (I found a bug) with &quot;my-github&quot;: https://github.com/user/project/issues/987 (created ; 3 comment(s) added) | tracking status updated</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="ex">[2020-12-21</span> 11:21:10.773688] Synchronization done.</span></code></pre></div>
 </section>
 </section>
 </section>

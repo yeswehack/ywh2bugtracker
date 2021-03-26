@@ -338,9 +338,12 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
     def _get_repository(
         self,
     ) -> Repository:
+        project = cast(str, self.configuration.project)
+        if project[0] == '/':
+            project = project[1:]
         try:
             return self._github.get_repo(
-                cast(str, self.configuration.project),
+                project,
             )
         except (GithubException, requests.RequestException) as e:
             raise GitHubTrackerClientError(

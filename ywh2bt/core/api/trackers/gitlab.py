@@ -192,6 +192,7 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
                 report=report,
             ),
             description=description,
+            confidential=self.configuration.confidential or False,
         )
         return self._build_tracker_issue(
             issue_id=str(gitlab_issue.id),
@@ -385,10 +386,12 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
         gitlab_project: Project,
         title: str,
         description: str,
+        confidential: bool,
     ) -> ProjectIssue:
         issue_data = {
             'title': title,
             'description': description,
+            'confidential': confidential,
         }
         try:
             return gitlab_project.issues.create(issue_data)

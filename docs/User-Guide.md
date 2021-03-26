@@ -171,6 +171,7 @@ Legend:
 - **Project path**: path of the project on gitlab.com.  
   e.g. for the project located at `https://gitlab.com/yeswehack/ywh2bugtracker`, the path is `yeswehack/ywh2bugtracker`.
 - **Verify TLS**: whether to verify if the API server's TLS certificate is valid.
+- **Confidential issues**: whether to mark created issues as confidential.
 
 #### Jira integration
 

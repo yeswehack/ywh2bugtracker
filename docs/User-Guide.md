@@ -36,6 +36,11 @@ YWH2BT can be installed with `pip`, through the command:
 pip install ywh2bt
 ```
 
+Or upgraded from a previously installed version:
+```sh
+pip install ywh2bt --upgrade
+```
+
 If you need to deploy only the command line version on a server, a runnable docker image is also available.
 You can install it with:
 ```sh
@@ -166,6 +171,7 @@ Legend:
 - **Project path**: path of the project on gitlab.com.  
   e.g. for the project located at `https://gitlab.com/yeswehack/ywh2bugtracker`, the path is `yeswehack/ywh2bugtracker`.
 - **Verify TLS**: whether to verify if the API server's TLS certificate is valid.
+- **Confidential issues**: whether to mark created issues as confidential.
 
 #### Jira integration
 

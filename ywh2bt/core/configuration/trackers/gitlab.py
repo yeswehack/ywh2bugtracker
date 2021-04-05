@@ -37,6 +37,12 @@ class GitLabConfiguration(TrackerConfiguration):
         description="Verify server's TLS certificate",
         default=True,
     )
+    confidential: BoolAttributeType = Attribute.create(
+        value_type=bool,
+        short_description='Confidential issues',
+        description='Mark created issues as confidential',
+        default=False,
+    )
 
     def __init__(
         self,
@@ -44,6 +50,7 @@ class GitLabConfiguration(TrackerConfiguration):
         token: Optional[Text] = None,
         project: Optional[Text] = None,
         verify: Optional[bool] = None,
+        confidential: Optional[bool] = None,
         **kwargs: Any,
     ):
         """
@@ -54,6 +61,7 @@ class GitLabConfiguration(TrackerConfiguration):
             token: a GitLab API token
             project: a GitLab project name
             verify: a flag indicating whether to check SSL/TLS connection
+            confidential: a flag indicating whether to mark created issues as confidential
             kwargs: keyword arguments
         """
         super().__init__(**kwargs)
@@ -61,6 +69,7 @@ class GitLabConfiguration(TrackerConfiguration):
         self.token = token
         self.project = project
         self.verify = verify
+        self.confidential = confidential
 
 
 TrackerConfiguration.register_subtype(

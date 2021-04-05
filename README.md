@@ -48,6 +48,8 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 
 ## Changelog
 
+- v2.2:
+    - added GitLab option for confidential issues
 - v2.1:
     - added feedback feature (synchronize from bug tracker to report)
     - added [docker image yeswehack/ywh2bugtracker](https://hub.docker.com/r/yeswehack/ywh2bugtracker)

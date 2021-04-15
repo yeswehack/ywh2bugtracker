@@ -4,7 +4,7 @@ creates the related issue, and syncs further updates between issues and reports.
 It comes with a handy GUI to set up and test the integration,
 while completely controlling the information you allow to be synchronized from both side.
 
-It supports github, gitlab and jira/jiracloud.
+It supports github, gitlab, jira/jiracloud and servicenow.
 
 # Architecture
 
@@ -115,7 +115,8 @@ Legend:
 - 6: Add a new [GitHub tracker integration](#github-integration)
 - 7: Add a new [GitLab tracker integration](#gitlab-integration)
 - 8: Add a new [Jira tracker integration](#jira-integration)
-- 9: Add a new [Yes We Hack integration](#yes-we-hack-integration)
+- 9: Add a new [ServiceNow tracker integration](#servicenow-integration)
+- 10: Add a new [Yes We Hack integration](#yes-we-hack-integration)
 
 ### Integrations
 
@@ -200,6 +201,49 @@ Legend:
   for a list of valid types). **This value is sensitive to the Jira account language.**
 - **Issue closed status**: name of the workflow status for which the issue is considered closed/done. **This value is
   sensitive to the Jira account language.**
+
+#### ServiceNow integration
+
+![ServiceNow integration screen](img/ui-servicenow-empty.png)
+
+##### Requirements
+
+- Create a new user in your ServiceNow instance:
+  - In _User Administration > Users_, click the _New_ button.
+  - Fill in the details about the new user, providing **at least**:
+    - _User ID_
+    - _Password_  
+    **It is strongly recommended** to check _Web service access only_ in order
+    to prevent the user from accessing the ServiceNow UI.
+  - Click the _Submit_ button to create the user.
+- In order to read and modify the Additional Comments on the ServiceNow incidents,
+  users must be granted a specific role that allows access controls on the `sys_journal_field` table:
+  - In _System Definition > Tables_, open "Journal Entry" / `sys_journal_field`.
+  - Select the _Controls_ tab.
+  - Check _Create access controls_.
+  - In the _User role_ field, enter `u_journal_entry_user` or leave the default value.
+  - Click the _Update_ button.
+- Apply the user roles to the user:
+  - In _User Administration > Users_, open the user you created earlier.
+  - Select the _Roles_ tab.
+  - Click the _Edit_ button.
+  - Move the following items from the list on the left to the list on the right:
+    - `snc_platform_rest_api_access`: allows access to Platform Rest APIs
+    - `sn_incident_read`: read access to the Incident Management Application and related functions
+    - `sn_incident_write`: write access to the Incident Management Application and related functions
+    - `u_journal_entry_user` (or the role you defined earlier): allows access to the `sys_journal_field` table
+  - Click the _Save_ button to save the roles.
+  - Click the _Update_ button to update the user.
+
+##### Configuration
+
+- **Key**: a unique name identifying this integration.  
+  This will be used when configuring [Yes We Hack integration](#yes-we-hack-integration)
+- **Instance host**: ServiceNow instance host (e.g. `my-instance.service-now.com`).
+- **Login**: ServiceNow user login.
+- **Password**: ServiceNow user password.
+- **Use SSL**: whether to use SSL connection with the server.
+- **Verify TLS**: whether to verify if the API server's TLS certificate is valid.
 
 #### Yes We Hack integration
 

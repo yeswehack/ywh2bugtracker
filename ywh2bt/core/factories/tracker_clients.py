@@ -17,10 +17,12 @@ from ywh2bt.core.api.tracker import (
 from ywh2bt.core.api.trackers.github.tracker import GitHubTrackerClient
 from ywh2bt.core.api.trackers.gitlab import GitLabTrackerClient
 from ywh2bt.core.api.trackers.jira.tracker import JiraTrackerClient
+from ywh2bt.core.api.trackers.servicenow.tracker import ServiceNowTrackerClient
 from ywh2bt.core.configuration.tracker import TrackerConfiguration
 from ywh2bt.core.configuration.trackers.github import GitHubConfiguration
 from ywh2bt.core.configuration.trackers.gitlab import GitLabConfiguration
 from ywh2bt.core.configuration.trackers.jira import JiraConfiguration
+from ywh2bt.core.configuration.trackers.servicenow import ServiceNowConfiguration
 from ywh2bt.core.exceptions import CoreException
 
 
@@ -163,4 +165,8 @@ TrackerClientClassesRegistry.register_tracker_client_class(
 TrackerClientClassesRegistry.register_tracker_client_class(
     configuration_class=JiraConfiguration,
     client_class=JiraTrackerClient,
+)
+TrackerClientClassesRegistry.register_tracker_client_class(
+    configuration_class=ServiceNowConfiguration,
+    client_class=ServiceNowTrackerClient,
 )

@@ -78,9 +78,9 @@ def cleanup_ywh_redirects_from_html(
     Returns:
         the cleaned html
     """
-    redirect_base_re = re.escape(f'https://{ywh_domain}/redirect?url=')
+    redirect_base_re = re.escape(f'{ywh_domain}/redirect?url=')
 
-    pattern = re.compile(f'"({redirect_base_re})([^ "]*)"')
+    pattern = re.compile(f'"(https?://{redirect_base_re})([^ "]*)"')
     redirect_urls = pattern.findall(html)
     for base_url, redirect_url in redirect_urls:
         html = _cleanup_ywh_redirect_from_text(
@@ -105,9 +105,9 @@ def cleanup_ywh_redirects_from_text(
     Returns:
         the cleaned text
     """
-    redirect_base_re = re.escape(f'https://{ywh_domain}/redirect?url=')
+    redirect_base_re = re.escape(f'{ywh_domain}/redirect?url=')
 
-    pattern = re.compile(fr'({redirect_base_re})(\S*)')
+    pattern = re.compile(fr'(https?://{redirect_base_re})(\S*)')
     redirect_urls = pattern.findall(text)
     for base_url, redirect_url in redirect_urls:
         text = _cleanup_ywh_redirect_from_text(

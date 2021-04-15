@@ -1,7 +1,11 @@
 """Functions and models used in validators."""
 import re
 from collections.abc import Sized
-from typing import Any, Dict, TypeVar
+from typing import (
+    Any,
+    Dict,
+    TypeVar,
+)
 
 from typing_extensions import Protocol
 
@@ -39,6 +43,14 @@ url_validator_regex = re.compile(
     re.IGNORECASE,
 )
 
+host_validator_regex = re.compile(
+    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' +  # domain...
+    'localhost|' +  # localhost...
+    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' +  # ...or ip
+    r'(?::\d+)?$', +  # optional port
+    re.IGNORECASE,
+)
+
 
 def url_validator(
     value: str,
@@ -58,6 +70,26 @@ def url_validator(
     )
     if not matches:
         raise ValidatorError(f'{repr(value)} is not a valid url')
+
+
+def host_validator(
+    value: str,
+) -> None:
+    """
+    Validate a Host.
+
+    Args:
+        value: the Host to be validated
+
+    Raises:
+        ValidatorError: if the Host is invalid
+    """
+    matches = re.match(
+        pattern=host_validator_regex,
+        string=value,
+    )
+    if not matches:
+        raise ValidatorError(f'{repr(value)} is not a valid host')
 
 
 def not_empty_validator(

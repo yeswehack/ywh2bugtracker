@@ -42,7 +42,7 @@ requests-toolbelt = "^0.9.1"
 singledispatchmethod = "^1.0"
 typing-extensions = "*"
 tomlkit = "^0.7.0"
-yeswehack = "0.*"
+yeswehack = ">=0.6.6,<1"
 
 [tool.poetry.dev-dependencies]
 mypy = "*"

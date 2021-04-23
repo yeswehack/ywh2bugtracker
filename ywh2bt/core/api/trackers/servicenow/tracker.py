@@ -469,7 +469,11 @@ class ServiceNowAsyncTrackerClient:
         ) as journal_model:
             condition = JournalModel.element_id.equals(incident_id)
             condition &= JournalModel.element.equals('comments')
-            condition &= JournalModel.value.equals(comment)
+            condition &= JournalModel.value.equals(
+                self._escape_query_term_separator(
+                    term=comment,
+                ),
+            )
             try:
                 journal_response = await journal_model.get_one(condition)
             except AiosnowException as journal_comment_exception:
@@ -497,6 +501,12 @@ class ServiceNowAsyncTrackerClient:
                 await user_model.get_one(UserModel.user_name == self._configuration.login)
             except AiosnowException as user_exception:
                 raise ServiceNowTrackerClientError('User not found') from user_exception
+
+    def _escape_query_term_separator(
+        self,
+        term: str,
+    ) -> str:
+        return term.replace('^', '^^')
 
 
 class ServiceNowTrackerClient(TrackerClient[ServiceNowConfiguration]):

@@ -24,6 +24,7 @@ Technical Environment: ${technical_environment}
 ${description}
 """
 COMMENT_BODY_TEMPLATE = """
+Log: #${log_id}
 Date: ${date}
 
 ${body}

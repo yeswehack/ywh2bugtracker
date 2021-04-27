@@ -196,6 +196,7 @@ class ReportMessageFormatter(ABC):
             a formatted log
         """
         return self._comment_body_template.substitute(
+            log_id=log.log_id,
             author=log.author.username,
             date=log.created_at,
             body=self._transform_log(

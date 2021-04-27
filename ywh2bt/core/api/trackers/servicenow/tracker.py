@@ -9,6 +9,7 @@ from typing import (
     Iterable,
     List,
     Optional,
+    Set,
     Tuple,
     Union,
     cast,
@@ -47,6 +48,8 @@ from ywh2bt.core.api.trackers.servicenow.model import (
 from ywh2bt.core.configuration.trackers.servicenow import ServiceNowConfiguration
 
 _RE_IMAGE = re.compile(pattern=r'(!\[([^\]]+)]\(([^)]+)\))')
+
+_MODEL_NOT_EQUALS_LIMIT = 100
 
 
 class ServiceNowTrackerClientError(TrackerClientError):
@@ -169,26 +172,47 @@ class ServiceNowAsyncTrackerClient:
             return []
         incident_sys_id = cast(str, incident_data['sys_id'])
         wrapped_items: List[RecordWrapper] = []
-        wrapped_items += map(CommentRecordWrapper, await self._get_incident_journal_comments(
-            incident_sys_id=incident_sys_id,
-            exclude_comments=exclude_comments,
-        ))
-        wrapped_items += map(AttachmentRecordWrapper, await self._get_incident_attachments(
-            incident_sys_id=incident_sys_id,
-            exclude_comments=exclude_comments,
-        ))
+        wrapped_items += map(
+            CommentRecordWrapper, await self._get_incident_journal_comments(
+                incident_sys_id=incident_sys_id,
+                exclude_comments=exclude_comments,
+            ),
+        )
+        wrapped_items += map(
+            AttachmentRecordWrapper, await self._get_incident_attachments(
+                incident_sys_id=incident_sys_id,
+                exclude_comments=exclude_comments,
+            ),
+        )
         wrapped_items = sorted(wrapped_items, key=_sort_key_wrapped_sys_created_on)
         comments = []
         for wrapped_item in wrapped_items:
             if isinstance(wrapped_item, CommentRecordWrapper):
-                comments.append(self._extract_comment(
-                    comment_data=wrapped_item.data,
-                ))
+                comments.append(
+                    self._extract_comment(
+                        comment_data=wrapped_item.data,
+                    ),
+                )
             elif isinstance(wrapped_item, AttachmentRecordWrapper):
-                comments.append(await self._extract_attachment(
-                    attachment_data=wrapped_item.data,
-                ))
+                comments.append(
+                    await self._extract_attachment(
+                        attachment_data=wrapped_item.data,
+                    ),
+                )
         return comments
+
+    def _exclude_from_list(
+        self,
+        records: List[Record],
+        record_property: str,
+        exclude: Set[str],
+    ) -> List[Record]:
+        return list(
+            filter(
+                lambda record: record[record_property] not in exclude,
+                records,
+            ),
+        )
 
     async def _get_incident_journal_comments(
         self,
@@ -197,7 +221,8 @@ class ServiceNowAsyncTrackerClient:
     ) -> List[Record]:
         journal_condition = JournalModel.element_id.equals(incident_sys_id)
         journal_condition &= JournalModel.element.equals('comments')
-        for exclude_comment in (exclude_comments or []):
+        # limited pre-filter on query because API url might be too long
+        for exclude_comment in (exclude_comments or [])[:_MODEL_NOT_EQUALS_LIMIT]:
             journal_condition &= JournalModel.sys_id.not_equals(exclude_comment)
         journal_query = select(journal_condition).order_asc(JournalModel.sys_created_on)
         async with JournalModel(
@@ -205,11 +230,16 @@ class ServiceNowAsyncTrackerClient:
             table_name='sys_journal_field',
         ) as journal_model:
             try:
-                return list(cast(Iterable[Record], await journal_model.get(journal_query)))
+                records = list(cast(Iterable[Record], await journal_model.get(journal_query)))
             except AiosnowException as journal_exception:
                 raise ServiceNowTrackerClientError(
                     f'Unable to get journal comments for incident {incident_sys_id}',
                 ) from journal_exception
+        return self._exclude_from_list(
+            records=records,
+            record_property='sys_id',
+            exclude=set(exclude_comments or []),
+        )
 
     async def _get_incident_attachments(
         self,
@@ -218,7 +248,8 @@ class ServiceNowAsyncTrackerClient:
     ) -> List[Record]:
         attachment_condition = InMemoryAttachmentModel.table_name.equals('incident')
         attachment_condition &= InMemoryAttachmentModel.table_sys_id.equals(incident_sys_id)
-        for exclude_comment in (exclude_comments or []):
+        # limited pre-filter on query because API url might be too long
+        for exclude_comment in (exclude_comments or [])[:_MODEL_NOT_EQUALS_LIMIT]:
             attachment_condition &= JournalModel.sys_id.not_equals(exclude_comment)
         attachment_query = select(attachment_condition).order_asc(InMemoryAttachmentModel.sys_created_on)
         async with InMemoryAttachmentModel(
@@ -226,11 +257,16 @@ class ServiceNowAsyncTrackerClient:
             table_name='incident',
         ) as attachment_model:
             try:
-                return list(cast(Iterable[Record], await attachment_model.get(attachment_query)))
+                records = list(cast(Iterable[Record], await attachment_model.get(attachment_query)))
             except AiosnowException as attachment_exception:
                 raise ServiceNowTrackerClientError(
                     f'Unable to get attachments for incident {incident_sys_id}',
                 ) from attachment_exception
+        return self._exclude_from_list(
+            records=records,
+            record_property='sys_id',
+            exclude=set(exclude_comments or []),
+        )
 
     def _extract_comment(
         self,
@@ -298,6 +334,7 @@ class ServiceNowAsyncTrackerClient:
             file_name_prefix=self._incident_attachment_prefix,
         )
         incident_data = await self._create_incident(
+            incident_number=report.local_id.replace('#', ''),
             short_description=short_description,
             description=description,
         )
@@ -319,6 +356,7 @@ class ServiceNowAsyncTrackerClient:
 
     async def _create_incident(
         self,
+        incident_number: str,
         short_description: str,
         description: str,
     ) -> Record:
@@ -329,6 +367,7 @@ class ServiceNowAsyncTrackerClient:
             try:
                 incident_response = await incident_model.create(
                     {
+                        'number': incident_number,
                         'description': description,
                         'short_description': short_description,
                     },
@@ -391,9 +430,11 @@ class ServiceNowAsyncTrackerClient:
         Returns:
             information about the sent comments
         """
-        data = _as_optional_dict(await self._get_servicenow_incident(
-            incident_number=tracker_issue.issue_id,
-        ))
+        data = _as_optional_dict(
+            await self._get_servicenow_incident(
+                incident_number=tracker_issue.issue_id,
+            ),
+        )
         if data is None:
             raise ServiceNowTrackerClientError(
                 f'ServiceNow incident {tracker_issue.issue_id} not found',
@@ -556,9 +597,11 @@ class ServiceNowTrackerClient(TrackerClient[ServiceNowConfiguration]):
         Returns:
             The issue if it exists, else None
         """
-        return asyncio.run(self._async_client.get_tracker_issue(
-            issue_id=issue_id,
-        ))
+        return asyncio.run(
+            self._async_client.get_tracker_issue(
+                issue_id=issue_id,
+            ),
+        )
 
     def get_tracker_issue_comments(
         self,
@@ -575,10 +618,12 @@ class ServiceNowTrackerClient(TrackerClient[ServiceNowConfiguration]):
         Returns:
             The list of comments
         """
-        return asyncio.run(self._async_client.get_tracker_issue_comments(
-            issue_id=issue_id,
-            exclude_comments=exclude_comments,
-        ))
+        return asyncio.run(
+            self._async_client.get_tracker_issue_comments(
+                issue_id=issue_id,
+                exclude_comments=exclude_comments,
+            ),
+        )
 
     def send_report(
         self,
@@ -593,9 +638,11 @@ class ServiceNowTrackerClient(TrackerClient[ServiceNowConfiguration]):
         Returns:
             information about the sent report
         """
-        return asyncio.run(self._async_client.send_report(
-            report=report,
-        ))
+        return asyncio.run(
+            self._async_client.send_report(
+                report=report,
+            ),
+        )
 
     def send_logs(
         self,
@@ -612,10 +659,12 @@ class ServiceNowTrackerClient(TrackerClient[ServiceNowConfiguration]):
         Returns:
             information about the sent comments
         """
-        return asyncio.run(self._async_client.send_logs(
-            tracker_issue=tracker_issue,
-            logs=logs,
-        ))
+        return asyncio.run(
+            self._async_client.send_logs(
+                tracker_issue=tracker_issue,
+                logs=logs,
+            ),
+        )
 
     def test(
         self,

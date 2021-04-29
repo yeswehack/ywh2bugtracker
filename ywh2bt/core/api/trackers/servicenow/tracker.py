@@ -47,7 +47,7 @@ from ywh2bt.core.api.trackers.servicenow.model import (
 )
 from ywh2bt.core.configuration.trackers.servicenow import ServiceNowConfiguration
 
-_RE_IMAGE = re.compile(pattern=r'(!\[([^\]]+)]\(([^)]+)\))')
+_RE_INLINE_ATTACHMENT = re.compile(pattern=r'(!?\[([^\]]+)]\(([^)]+)\))')
 
 _MODEL_NOT_EQUALS_LIMIT = 100
 
@@ -327,7 +327,7 @@ class ServiceNowAsyncTrackerClient:
         short_description = self._message_formatter.format_report_title(
             report=report,
         )
-        description = self._replace_inline_image_attachments(
+        description = self._replace_inline_attachments(
             content=self._message_formatter.format_report_description(
                 report=report,
             ),
@@ -446,7 +446,7 @@ class ServiceNowAsyncTrackerClient:
             comment = self._message_formatter.format_log(
                 log=log,
             )
-            comment = self._replace_inline_image_attachments(
+            comment = self._replace_inline_attachments(
                 content=comment,
                 file_name_prefix=self._comment_attachment_prefix,
             )
@@ -486,14 +486,14 @@ class ServiceNowAsyncTrackerClient:
             )
         return tracker_comments
 
-    def _replace_inline_image_attachments(
+    def _replace_inline_attachments(
         self,
         content: str,
         file_name_prefix: str,
     ) -> str:
-        inline_images = _RE_IMAGE.findall(content)
-        for match, image_name, _ in inline_images:
-            content = content.replace(match, f'[See attachment "{file_name_prefix}{image_name}"]')
+        inline_attachments = _RE_INLINE_ATTACHMENT.findall(content)
+        for match, attachment_name, _ in inline_attachments:
+            content = content.replace(match, f'[See attachment "{file_name_prefix}{attachment_name}"]')
         return content
 
     async def _get_incident_comment_id(

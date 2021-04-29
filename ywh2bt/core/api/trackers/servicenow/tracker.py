@@ -123,7 +123,7 @@ class ServiceNowAsyncTrackerClient:
             The issue if it exists, else None
         """
         incident_data = await self._get_servicenow_incident(
-            incident_number=issue_id,
+            incident_id=issue_id,
         )
         if incident_data is None:
             return None
@@ -138,14 +138,14 @@ class ServiceNowAsyncTrackerClient:
 
     async def _get_servicenow_incident(
         self,
-        incident_number: str,
+        incident_id: str,
     ) -> Optional[Record]:
         async with IncidentModel(
             self._servicenow_client,
             table_name='incident',
         ) as incident_model:
             try:
-                incident_response = await incident_model.get_one(IncidentModel.number == incident_number)
+                incident_response = await incident_model.get_one(IncidentModel.sys_id == incident_id)
             except AiosnowException:
                 return None
         return _as_dict(incident_response.data)
@@ -166,7 +166,7 @@ class ServiceNowAsyncTrackerClient:
             The list of comments
         """
         incident_data = await self._get_servicenow_incident(
-            incident_number=issue_id,
+            incident_id=issue_id,
         )
         if incident_data is None:
             return []
@@ -334,7 +334,6 @@ class ServiceNowAsyncTrackerClient:
             file_name_prefix=self._incident_attachment_prefix,
         )
         incident_data = await self._create_incident(
-            incident_number=report.local_id.replace('#', ''),
             short_description=short_description,
             description=description,
         )
@@ -349,14 +348,13 @@ class ServiceNowAsyncTrackerClient:
             sys_id=sys_id,
         )
         return self._build_tracker_issue(
-            issue_id=incident_data['number'],
+            issue_id=sys_id,
             issue_url=issue_url,
             closed=False,
         )
 
     async def _create_incident(
         self,
-        incident_number: str,
         short_description: str,
         description: str,
     ) -> Record:
@@ -367,7 +365,6 @@ class ServiceNowAsyncTrackerClient:
             try:
                 incident_response = await incident_model.create(
                     {
-                        'number': incident_number,
                         'description': description,
                         'short_description': short_description,
                     },
@@ -432,7 +429,7 @@ class ServiceNowAsyncTrackerClient:
         """
         data = _as_optional_dict(
             await self._get_servicenow_incident(
-                incident_number=tracker_issue.issue_id,
+                incident_id=tracker_issue.issue_id,
             ),
         )
         if data is None:

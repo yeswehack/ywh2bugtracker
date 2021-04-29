@@ -213,7 +213,7 @@ class TestServiceNowTrackerClient(TestCase):
             report=report,
         )
         self.assertIsInstance(issue, TrackerIssue)
-        self.assertEqual('INC0123', issue.issue_id)
+        self.assertEqual('456', issue.issue_id)
         self.assertEqual(
             'https://my-instance.servicenow.local/nav_to.do?uri=%2Fincident.do%3Fsys_id%3D456',
             issue.issue_url,

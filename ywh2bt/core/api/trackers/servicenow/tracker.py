@@ -441,6 +441,8 @@ class ServiceNowAsyncTrackerClient:
             tracker_issue=tracker_issue,
             added_comments=[],
         )
+        if incident_data['state'].value.lower() == 'closed':
+            return tracker_comments
         incident_id = cast(str, incident_data['sys_id'])
         for log in logs:
             comment = self._message_formatter.format_log(

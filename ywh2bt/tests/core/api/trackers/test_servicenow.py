@@ -9,10 +9,12 @@ from unittest import (
 from unittest.mock import (
     ANY,
     MagicMock,
+    create_autospec,
     patch,
 )
 
 from aiosnow.exceptions import AiosnowException
+from aiosnow.models._schema.fields.mapped import IntegerMapping
 from aiosnow.request import Response
 from yeswehack.api import (
     Report as YesWeHackRawApiReport,
@@ -57,7 +59,6 @@ def skip_before_py38(func):
 
 
 def patch_servicenow(func):
-    @patch('aiosnow.request.response.Response', autospec=ResponseSpec, spec_set=True)
     @patch('aiohttp.ClientSession', autospec=True, spec_set=True)
     @patch('ywh2bt.core.api.trackers.servicenow.tracker.IncidentModel', autospec=True, spec_set=True)
     @patch('ywh2bt.core.api.trackers.servicenow.tracker.Client', autospec=True, spec_set=True)
@@ -83,9 +84,8 @@ class TestServiceNowTrackerClient(TestCase):
         client_mock_class: MagicMock,
         incident_model_mock_class: MagicMock,
         session_mock_class: MagicMock,
-        response_mock_class: MagicMock,
     ) -> None:
-        response = response_mock_class()
+        response = create_autospec(ResponseSpec, spec_set=True)
         response.data = {
             'sys_id': '456',
             'state': namedtuple('State', 'value')('opened'),
@@ -122,7 +122,6 @@ class TestServiceNowTrackerClient(TestCase):
         client_mock_class: MagicMock,
         incident_model_mock_class: MagicMock,
         session_mock_class: MagicMock,
-        response_mock_class: MagicMock,
     ) -> None:
         client = client_mock_class(
             address=ANY,
@@ -149,9 +148,8 @@ class TestServiceNowTrackerClient(TestCase):
         client_mock_class: MagicMock,
         incident_model_mock_class: MagicMock,
         session_mock_class: MagicMock,
-        response_mock_class: MagicMock,
     ) -> None:
-        response = response_mock_class()
+        response = create_autospec(ResponseSpec, spec_set=True)
         response.data = {
             'sys_id': '456',
             'number': 'INC0123',
@@ -228,9 +226,8 @@ class TestServiceNowTrackerClient(TestCase):
         client_mock_class: MagicMock,
         incident_model_mock_class: MagicMock,
         session_mock_class: MagicMock,
-        response_mock_class: MagicMock,
     ) -> None:
-        response = response_mock_class()
+        response = create_autospec(ResponseSpec, spec_set=True)
         response.data = {
             'sys_id': '456',
             'number': 'INC0123',
@@ -301,15 +298,18 @@ class TestServiceNowTrackerClient(TestCase):
         client_mock_class: MagicMock,
         incident_model_mock_class: MagicMock,
         session_mock_class: MagicMock,
-        response_mock_class: MagicMock,
         journal_model_mock_class: MagicMock,
     ) -> None:
-        incident_response = response_mock_class()
+        incident_response = create_autospec(ResponseSpec, spec_set=True)
         incident_response.data = {
             'sys_id': '456',
             'number': 'INC0123',
+            'state': IntegerMapping(
+                key=1,
+                value='New',
+            ),
         }
-        journal_response = response_mock_class()
+        journal_response = create_autospec(ResponseSpec, spec_set=True)
         journal_response.data = {
             'sys_id': '147',
             'sys_created_on': datetime.datetime(
@@ -323,6 +323,7 @@ class TestServiceNowTrackerClient(TestCase):
                 tzinfo=datetime.timezone.utc,
             ),
             'sys_created_by': 'user1',
+            'goo': 'ga'
         }
         client = client_mock_class(
             address=ANY,
@@ -336,7 +337,7 @@ class TestServiceNowTrackerClient(TestCase):
         journal_model = journal_model_mock_class(
             client=client,
         )
-        journal_model.__aenter__.return_value = incident_model
+        journal_model.__aenter__.return_value = journal_model
         journal_model.get_one.return_value = journal_response
         tracker_client = ServiceNowTrackerClient(
             configuration=ServiceNowConfiguration(
@@ -395,12 +396,11 @@ class TestServiceNowTrackerClient(TestCase):
         client_mock_class: MagicMock,
         incident_model_mock_class: MagicMock,
         session_mock_class: MagicMock,
-        response_mock_class: MagicMock,
         journal_model_mock_class: MagicMock,
         attachment_model_mock_class: MagicMock,
         select_mock: MagicMock,
     ) -> None:
-        incident_response = response_mock_class()
+        incident_response = create_autospec(ResponseSpec, spec_set=True)
         incident_response.data = {
             'sys_id': '456',
             'number': 'INC0123',

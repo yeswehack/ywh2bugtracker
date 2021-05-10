@@ -328,6 +328,7 @@ class ServiceNowAsyncTrackerClient:
             report=report,
         )
         description = self._replace_inline_attachments(
+            attachments=report.attachments,
             content=self._message_formatter.format_report_description(
                 report=report,
             ),
@@ -449,6 +450,7 @@ class ServiceNowAsyncTrackerClient:
                 log=log,
             )
             comment = self._replace_inline_attachments(
+                attachments=log.attachments,
                 content=comment,
                 file_name_prefix=self._comment_attachment_prefix,
             )
@@ -490,12 +492,15 @@ class ServiceNowAsyncTrackerClient:
 
     def _replace_inline_attachments(
         self,
+        attachments: List[Attachment],
         content: str,
         file_name_prefix: str,
     ) -> str:
+        attachment_urls = {attachment.url for attachment in attachments}
         inline_attachments = _RE_INLINE_ATTACHMENT.findall(content)
-        for match, attachment_name, _ in inline_attachments:
-            content = content.replace(match, f'[See attachment "{file_name_prefix}{attachment_name}"]')
+        for match, attachment_name, url in inline_attachments:
+            if url in attachment_urls:
+                content = content.replace(match, f'[See attachment "{file_name_prefix}{attachment_name}"]')
         return content
 
     async def _get_incident_comment_id(

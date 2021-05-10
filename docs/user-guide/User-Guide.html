@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="keywords" content="md5sum=51fb7043407d74c058ebb29b661ea38f" />
+  <meta name="keywords" content="md5sum=63d145fa1bf65ac91af6b53e3a3e972e" />
   <title>YWH2BT User Guide</title>
   <style>
     html {
@@ -664,6 +664,12 @@ This will be used when configuring <a href="#yes-we-hack-integration">Yes We Hac
 <li><strong>Password</strong>: ServiceNow user password.</li>
 <li><strong>Use SSL</strong>: whether to use SSL connection with the server.</li>
 <li><strong>Verify TLS</strong>: whether to verify if the API server&#39;s TLS certificate is valid.</li>
+</ul>
+</section>
+<section id="specific-behaviours" class="level5" data-number="4.2.4.4.3">
+<h5 data-number="4.2.4.4.3"><span class="header-section-number">4.2.4.4.3</span> Specific behaviours</h5>
+<ul>
+<li>When the feedback option <em>Issue closed to report AFV</em> of <a href="#yes-we-hack-integration">Yes We Hack integration</a> is activated, the report status will be set to <em>AFV</em> only if the ServiceNow incident is set to <em>Closed</em>, not <em>Resolved</em>.</li>
 </ul>
 </section>
 </section>

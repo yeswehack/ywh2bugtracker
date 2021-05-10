@@ -245,6 +245,11 @@ Legend:
 - **Use SSL**: whether to use SSL connection with the server.
 - **Verify TLS**: whether to verify if the API server's TLS certificate is valid.
 
+##### Specific behaviours
+
+- When the feedback option _Issue closed to report AFV_ of [Yes We Hack integration](#yes-we-hack-integration) is activated,
+the report status will be set to _AFV_ only if the ServiceNow incident is set to _Closed_, not _Resolved_.
+
 #### Yes We Hack integration
 
 ![Yes We Hack integration screen](img/ui-yeswehack-empty.png)

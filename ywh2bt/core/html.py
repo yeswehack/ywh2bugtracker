@@ -1,7 +1,20 @@
 """Models and functions used for manipulating html data."""
 import re
-from typing import Iterator
-from urllib.parse import parse_qs, unquote, urlencode, urlsplit, urlunsplit
+from html import (
+    escape as html_escape,
+    unescape as html_unescape,
+)
+from typing import (
+    Iterator,
+    List,
+    Optional,
+    cast,
+)
+from urllib.parse import (
+    parse_qs,
+    unquote,
+    urlsplit,
+)
 
 import html2text
 from bs4 import BeautifulSoup  # type: ignore
@@ -80,13 +93,15 @@ def cleanup_ywh_redirects_from_html(
     """
     redirect_base_re = re.escape(f'{ywh_domain}/redirect?url=')
 
-    pattern = re.compile(f'"(https?://{redirect_base_re})([^ "]*)"')
+    pattern = re.compile(f'"(https?://{redirect_base_re}[^ "]*)"')
     redirect_urls = pattern.findall(html)
-    for base_url, redirect_url in redirect_urls:
-        html = _cleanup_ywh_redirect_from_text(
-            text=html,
-            base_url=base_url,
-            redirect_url=redirect_url,
+    for redirect_url in redirect_urls:
+        real_url = _extract_real_url_from_redirect(
+            redirect_url=html_unescape(redirect_url),
+        )
+        html = html.replace(
+            redirect_url,
+            html_escape(real_url or ''),
         )
     return html
 
@@ -107,39 +122,24 @@ def cleanup_ywh_redirects_from_text(
     """
     redirect_base_re = re.escape(f'{ywh_domain}/redirect?url=')
 
-    pattern = re.compile(fr'(https?://{redirect_base_re})(\S*)')
+    pattern = re.compile(fr'(https?://{redirect_base_re}\S*)\b')
     redirect_urls = pattern.findall(text)
-    for base_url, redirect_url in redirect_urls:
-        text = _cleanup_ywh_redirect_from_text(
-            text=text,
-            base_url=base_url,
+    for redirect_url in redirect_urls:
+        real_url = _extract_real_url_from_redirect(
             redirect_url=redirect_url,
+        )
+        text = text.replace(
+            redirect_url,
+            real_url or '',
         )
     return text
 
 
-def _cleanup_ywh_redirect_from_text(
-    text: str,
-    base_url: str,
+def _extract_real_url_from_redirect(
     redirect_url: str,
-) -> str:
-    parse_result = urlsplit(unquote(unquote(redirect_url)))
+) -> Optional[str]:
+    parse_result = urlsplit(unquote(redirect_url))
     params = parse_qs(parse_result.query)
-    clean_params = {
-        name: value
-        for name, value in params.items()
-        if name not in {'expires', 'token'}
-    }
-    clean_url = urlunsplit(
-        (
-            parse_result.scheme,
-            parse_result.netloc,
-            parse_result.path,
-            urlencode(clean_params, doseq=True),
-            parse_result.fragment,
-        ),
-    )
-    return text.replace(
-        f'{base_url}{redirect_url}',
-        clean_url,
-    )
+    if 'url' in params:
+        return cast(List[str], params.get('url'))[0]
+    return None

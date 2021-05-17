@@ -239,6 +239,14 @@ class CommentLog(Log):
 
 
 @dataclass
+class CvssUpdateLog(Log):
+    """A cvss-update log."""
+
+    old_cvss: Cvss
+    new_cvss: Cvss
+
+
+@dataclass
 class DetailsUpdateLog(Log):
     """A details-update log."""
 

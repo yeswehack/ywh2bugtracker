@@ -18,6 +18,7 @@ from ywh2bt.core.api.models.report import (  # noqa: WPS235
     BugType,
     CommentLog,
     Cvss,
+    CvssUpdateLog,
     DetailsUpdateLog,
     Log,
     Priority,
@@ -276,6 +277,24 @@ def map_raw_log(  # noqa: WPS210,WPS212,WPS231
             author=author,
             message_html=message_html,
             attachments=attachments,
+        )
+    if raw_log.type == 'cvss-update':
+        return CvssUpdateLog(
+            created_at=created_at,
+            log_id=log_id,
+            log_type=log_type,
+            private=private,
+            author=author,
+            message_html=message_html,
+            attachments=attachments,
+            old_cvss=_map_raw_cvss(
+                context=context,
+                raw_cvss=raw_log.old_cvss,
+            ),
+            new_cvss=_map_raw_cvss(
+                context=context,
+                raw_cvss=raw_log.new_cvss,
+            ),
         )
     if raw_log.type == 'details-update':
         return DetailsUpdateLog(

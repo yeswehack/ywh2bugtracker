@@ -285,6 +285,7 @@ that can be downloaded from the [Yes We Hack platform][YesWeHack-Platform].
   - **Synchronization options**: options for synchronizing a Yes We Hack report with the bug trackers.
     - **Upload private comments**: whether to upload the reports private comments into the bug trackers.
     - **Upload public comments**: whether to upload the reports public comments into the bug trackers.
+    - **Upload CVSS updates**: whether to upload the reports CVSS updates into the bug trackers.
     - **Upload details updates**: whether to upload the reports details updates into the bug trackers.
     - **Upload priority updates**: whether to upload the reports priority updates into the bug trackers.
     - **Upload rewards**: whether to upload the reports rewards into the bug trackers.

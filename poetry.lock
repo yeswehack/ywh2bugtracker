@@ -1146,7 +1146,7 @@ typing-extensions = {version = ">=3.7.4", markers = "python_version < \"3.8\""}
 
 [[package]]
 name = "yeswehack"
-version = "0.6.6"
+version = "0.6.7"
 description = "yeswehack - YesWeHack API Wrapper"
 category = "main"
 optional = false
@@ -1170,7 +1170,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7.0,<3.10"
-content-hash = "598cebf69ec94eb9b02321376590037146cef30e30ac4ee4e873151c522a1cbf"
+content-hash = "19fcfe0889c3209bd1c1258bb229f78f0f6a3c917c87c3357b9f21353181168a"
 
 [metadata.files]
 aiohttp = [
@@ -1897,8 +1897,8 @@ yarl = [
     {file = "yarl-1.6.3.tar.gz", hash = "sha256:8a9066529240171b68893d60dca86a763eae2139dd42f42106b03cf4b426bf10"},
 ]
 yeswehack = [
-    {file = "yeswehack-0.6.6-py3-none-any.whl", hash = "sha256:80539749151f968ef7f7727b514d8dd5af8ac9278e8e80e2d1da70cf4062bf71"},
-    {file = "yeswehack-0.6.6.tar.gz", hash = "sha256:af8eb7a9be61ca43cbf9d67c118820daf75a90ad9c2d55fee602ad2dadabf254"},
+    {file = "yeswehack-0.6.7-py3-none-any.whl", hash = "sha256:7704a4516a63c6c87733c0558451fac7f9b3d79aca21f55733fd6fec4b56a880"},
+    {file = "yeswehack-0.6.7.tar.gz", hash = "sha256:f93dbfe33019feaf2abee4c1792a18f51386d6bf04a120902f907a0a7ccc3934"},
 ]
 zipp = [
     {file = "zipp-3.4.1-py3-none-any.whl", hash = "sha256:51cb66cc54621609dd593d1787f286ee42a5c0adbb4b29abea5a63edc3e03098"},

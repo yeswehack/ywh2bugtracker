@@ -171,6 +171,7 @@ class YesWeHackApiClient(TestableApiClient):
         try:
             raw_report = self._raw_client.get_report(
                 report=report_id,
+                lazy=True,
             )
         except (YesWeHackRawAPiError, requests.RequestException, TypeError) as e:
             raise YesWeHackApiClientError(f'Unable to get report #{report_id} details') from e

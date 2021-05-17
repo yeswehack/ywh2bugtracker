@@ -179,7 +179,6 @@ def map_raw_attachment(
     Returns:
         a local attachment
     """
-    raw_attachment.load_data()
     return Attachment(
         attachment_id=raw_attachment.id,
         name=raw_attachment.name,
@@ -187,7 +186,7 @@ def map_raw_attachment(
         mime_type=raw_attachment.mime_type,
         size=raw_attachment.size,
         url=raw_attachment.url,
-        data=raw_attachment.data,
+        data_loader=lambda: raw_attachment.data,
     )
 
 

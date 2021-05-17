@@ -48,6 +48,10 @@ DETAILS_UPDATE_LOG_LINE_TEMPLATE = """${updated_property}:
     - Old value: ${old_value}
     - New Value: ${new_value}
 """
+PRIORITY_UPDATE_LOG_TEMPLATE = """
+Priority updated:
+${new_priority}
+"""
 REWARD_LOG_TEMPLATE = """
 Comment from reward:
 ${comment}
@@ -67,6 +71,7 @@ class ServiceNowReportMessageFormatter(ReportMessageFormatter):
             status_update_log_template=Template(STATUS_UPDATE_LOG_TEMPLATE),
             details_update_log_template=Template(DETAILS_UPDATE_LOG_TEMPLATE),
             details_update_log_line_template=Template(DETAILS_UPDATE_LOG_LINE_TEMPLATE),
+            priority_update_log_template=Template(PRIORITY_UPDATE_LOG_TEMPLATE),
             reward_log_template=Template(REWARD_LOG_TEMPLATE),
         )
 

@@ -123,6 +123,12 @@ class SynchronizeOptions(AttributesContainer):
         description='Upload the report details updates into the bug trackers',
         default=False,
     )
+    upload_priority_updates: BoolAttributeType = Attribute.create(
+        value_type=bool,
+        short_description='Upload priority updates',
+        description='Upload the report priority updates into the bug trackers',
+        default=False,
+    )
     upload_rewards: BoolAttributeType = Attribute.create(
         value_type=bool,
         short_description='Upload rewards',
@@ -141,6 +147,7 @@ class SynchronizeOptions(AttributesContainer):
         upload_private_comments: Optional[bool] = None,
         upload_public_comments: Optional[bool] = None,
         upload_details_updates: Optional[bool] = None,
+        upload_priority_updates: Optional[bool] = None,
         upload_rewards: Optional[bool] = None,
         upload_status_updates: Optional[bool] = None,
         **kwargs: Any,
@@ -152,6 +159,7 @@ class SynchronizeOptions(AttributesContainer):
             upload_private_comments: a flag indicating whether to upload private comments to the bugtrackers
             upload_public_comments: a flag indicating whether to upload public comments to the bugtrackers
             upload_details_updates: a flag indicating whether to upload details updates to the bugtrackers
+            upload_priority_updates: a flag indicating whether to upload priority updates into the bug trackers
             upload_rewards: a flag indicating whether to upload rewards to the bugtrackers
             upload_status_updates: a flag indicating whether to upload status updates to the bugtrackers
             kwargs: keyword arguments
@@ -160,6 +168,7 @@ class SynchronizeOptions(AttributesContainer):
         self.upload_private_comments = upload_private_comments
         self.upload_public_comments = upload_public_comments
         self.upload_details_updates = upload_details_updates
+        self.upload_priority_updates = upload_priority_updates
         self.upload_rewards = upload_rewards
         self.upload_status_updates = upload_status_updates
 

@@ -21,6 +21,7 @@ from ywh2bt.core.api.models.report import (
     CommentLog,
     DetailsUpdateLog,
     Log,
+    PriorityUpdateLog,
     REPORT_STATUS_TRANSLATIONS,
     Report,
     RewardLog,
@@ -196,6 +197,7 @@ class Synchronizer:
                 synchronize_options.upload_private_comments,
                 synchronize_options.upload_public_comments,
                 synchronize_options.upload_details_updates,
+                synchronize_options.upload_priority_updates,
                 synchronize_options.upload_rewards,
                 synchronize_options.upload_status_updates,
                 feedback_options.download_tracker_comments,
@@ -528,6 +530,7 @@ class ReportSynchronizer:
             isinstance(log, CommentLog) and synchronize_options.upload_public_comments and not log.private,
             isinstance(log, CommentLog) and synchronize_options.upload_private_comments and log.private,
             isinstance(log, DetailsUpdateLog) and synchronize_options.upload_details_updates,
+            isinstance(log, PriorityUpdateLog) and synchronize_options.upload_priority_updates,
             isinstance(log, RewardLog) and synchronize_options.upload_rewards,
             isinstance(log, StatusUpdateLog) and synchronize_options.upload_status_updates,
         ))

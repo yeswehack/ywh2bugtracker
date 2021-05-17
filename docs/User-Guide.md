@@ -286,6 +286,7 @@ that can be downloaded from the [Yes We Hack platform][YesWeHack-Platform].
     - **Upload private comments**: whether to upload the reports private comments into the bug trackers.
     - **Upload public comments**: whether to upload the reports public comments into the bug trackers.
     - **Upload details updates**: whether to upload the reports details updates into the bug trackers.
+    - **Upload priority updates**: whether to upload the reports priority updates into the bug trackers.
     - **Upload rewards**: whether to upload the reports rewards into the bug trackers.
     - **Upload status updates**: whether to upload the reports status updates into the bug trackers.
   - **Feedback options**: options for synchronizing bug trackers issues with Yes We Hack reports.

@@ -12,7 +12,7 @@ from yeswehack.api import (  # noqa: N811
     Report as YesWeHackRawApiReport,
 )
 
-from ywh2bt.core.api.models.report import (
+from ywh2bt.core.api.models.report import (  # noqa: WPS235
     Attachment,
     Author,
     BugType,
@@ -21,6 +21,7 @@ from ywh2bt.core.api.models.report import (
     DetailsUpdateLog,
     Log,
     Priority,
+    PriorityUpdateLog,
     Report,
     ReportProgram,
     RewardLog,
@@ -287,6 +288,20 @@ def map_raw_log(  # noqa: WPS210,WPS212,WPS231
             attachments=attachments,
             old_details=raw_log.old_details,
             new_details=raw_log.new_details,
+        )
+    if raw_log.type == 'priority-update':
+        return PriorityUpdateLog(
+            created_at=created_at,
+            log_id=log_id,
+            log_type=log_type,
+            private=private,
+            author=author,
+            message_html=message_html,
+            attachments=attachments,
+            new_priority=_map_raw_priority(
+                context=context,
+                raw_priority=raw_log.priority,
+            ) if raw_log.priority else None,
         )
     if raw_log.type == 'reward':
         return RewardLog(

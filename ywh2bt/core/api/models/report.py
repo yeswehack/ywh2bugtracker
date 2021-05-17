@@ -247,6 +247,13 @@ class DetailsUpdateLog(Log):
 
 
 @dataclass
+class PriorityUpdateLog(Log):
+    """A priority-update log."""
+
+    new_priority: Optional[Priority]
+
+
+@dataclass
 class RewardLog(Log):
     """A reward log."""
 

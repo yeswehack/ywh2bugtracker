@@ -11,6 +11,7 @@ from ywh2bt.core.api.models.report import (
     CommentLog,
     DetailsUpdateLog,
     Log,
+    PriorityUpdateLog,
     REPORT_PROPERTY_LABELS,
     REPORT_STATUS_TRANSLATIONS,
     Report,
@@ -43,10 +44,11 @@ class ReportMessageFormatter(ABC):
     _status_update_log_template: Template
     _details_update_log_template: Template
     _details_update_log_line_template: Template
+    _priority_update_log_template: Template
     _reward_log_template: Template
     _value_transformer: _ValueTransformer
 
-    def __init__(
+    def __init__(  # noqa: WPS211
         self,
         report_title_template: Template,
         report_description_template: Template,
@@ -55,6 +57,7 @@ class ReportMessageFormatter(ABC):
         status_update_log_template: Template,
         details_update_log_template: Template,
         details_update_log_line_template: Template,
+        priority_update_log_template: Template,
         reward_log_template: Template,
         value_transformer: Optional[_ValueTransformer] = None,
     ):
@@ -69,6 +72,7 @@ class ReportMessageFormatter(ABC):
             status_update_log_template: a template for a StatusUpdateLog
             details_update_log_template: a template for a DetailsUpdateLog
             details_update_log_line_template: a template for entries of a DetailsUpdateLog
+            priority_update_log_template: a template for a PriorityUpdateLog
             reward_log_template: a template for a RewardLog
             value_transformer: a transformer for values
         """
@@ -79,6 +83,7 @@ class ReportMessageFormatter(ABC):
         self._status_update_log_template = status_update_log_template
         self._details_update_log_template = details_update_log_template
         self._details_update_log_line_template = details_update_log_line_template
+        self._priority_update_log_template = priority_update_log_template
         self._reward_log_template = reward_log_template
         self._value_transformer = value_transformer or _identity_transformer
 
@@ -282,6 +287,15 @@ class ReportMessageFormatter(ABC):
             )
         return self._details_update_log_template.substitute(
             details_lines=''.join(details_lines),
+        )
+
+    @_transform_log.register
+    def _transform_priority_update_log(
+        self,
+        log: PriorityUpdateLog,
+    ) -> str:
+        return self._priority_update_log_template.substitute(
+            new_priority=log.new_priority.name if log.new_priority else 'Undefined',
         )
 
     @_transform_log.register

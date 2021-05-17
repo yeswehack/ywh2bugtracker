@@ -19,6 +19,7 @@ from typing import (
 from ywh2bt.core.api.models.report import (
     Attachment,
     CommentLog,
+    CvssUpdateLog,
     DetailsUpdateLog,
     Log,
     PriorityUpdateLog,
@@ -196,6 +197,7 @@ class Synchronizer:
             (
                 synchronize_options.upload_private_comments,
                 synchronize_options.upload_public_comments,
+                synchronize_options.upload_cvss_updates,
                 synchronize_options.upload_details_updates,
                 synchronize_options.upload_priority_updates,
                 synchronize_options.upload_rewards,
@@ -529,6 +531,7 @@ class ReportSynchronizer:
         return any((
             isinstance(log, CommentLog) and synchronize_options.upload_public_comments and not log.private,
             isinstance(log, CommentLog) and synchronize_options.upload_private_comments and log.private,
+            isinstance(log, CvssUpdateLog) and synchronize_options.upload_cvss_updates,
             isinstance(log, DetailsUpdateLog) and synchronize_options.upload_details_updates,
             isinstance(log, PriorityUpdateLog) and synchronize_options.upload_priority_updates,
             isinstance(log, RewardLog) and synchronize_options.upload_rewards,

@@ -33,6 +33,15 @@ COMMENT_LOG_TEMPLATE = """
 Comment:
 ${comment}
 """
+CVSS_UPDATE_LOG_TEMPLATE = """
+CVSS updated:
+Severity:
+    - Old value: ${old_cvss_criticity}
+    - New Value: ${new_cvss_criticity}
+Score:
+    - Old value: ${old_cvss_score}
+    - New Value: ${new_cvss_score}
+"""
 STATUS_UPDATE_LOG_TEMPLATE = """
 Status updated:
 ${old_status} -> ${new_status}
@@ -68,6 +77,7 @@ class ServiceNowReportMessageFormatter(ReportMessageFormatter):
             report_description_template=Template(REPORT_DESCRIPTION_TEMPLATE),
             comment_body_template=Template(COMMENT_BODY_TEMPLATE),
             comment_log_template=Template(COMMENT_LOG_TEMPLATE),
+            cvss_update_log_template=Template(CVSS_UPDATE_LOG_TEMPLATE),
             status_update_log_template=Template(STATUS_UPDATE_LOG_TEMPLATE),
             details_update_log_template=Template(DETAILS_UPDATE_LOG_TEMPLATE),
             details_update_log_line_template=Template(DETAILS_UPDATE_LOG_LINE_TEMPLATE),

@@ -72,7 +72,7 @@ class TestYesWeHackApiClient(TestCase):
 
     @patch('ywh2bt.core.api.yeswehack.YesWeHackRawApiReport')
     @patch('ywh2bt.core.api.yeswehack.YesWeHackRawApiClient')
-    def test_post_report_tracker_update_error(
+    def test_post_report_tracker_update_raise_error(
         self,
         YesWeHackRawApiClientMock: MagicMock,
         YesWeHackRawApiReportMock: MagicMock,
@@ -130,6 +130,267 @@ class TestYesWeHackApiClient(TestCase):
                 token='abcde',
                 comment='Tracker synchronized.',
             )
+
+    @patch('ywh2bt.core.api.yeswehack.YesWeHackRawApiReport')
+    @patch('ywh2bt.core.api.yeswehack.YesWeHackRawApiClient')
+    def test_post_report_tracker_update_json_decode_error(
+        self,
+        YesWeHackRawApiClientMock: MagicMock,
+        YesWeHackRawApiReportMock: MagicMock,
+    ) -> None:
+        YesWeHackRawApiClientMock.return_value.login.return_value = True
+        RequestsResponseMock = create_autospec(requests.models.Response)
+        RequestsResponseMock.return_value.json.side_effect = JSONDecodeError(
+            'Error',
+            '{}',
+            0,
+        )
+        YesWeHackRawApiReportMock.return_value.post_tracker_update.return_value = RequestsResponseMock()
+        client = YesWeHackApiClient(
+            configuration=YesWeHackConfiguration(),
+        )
+        raw_report = YesWeHackRawApiReportMock(
+            ywh_api=None,
+            lazy=True,
+            id=123,
+        )
+        report = Report(
+            raw_report=raw_report,
+            report_id='123',
+            title='A bug report',
+            local_id='YWH-123',
+            bug_type=BugType(
+                name='bug-type',
+                link='http://bug.example.com/type',
+                remediation_link='http://bug.example.com/type/remediation',
+            ),
+            scope='',
+            cvss=Cvss(
+                criticity='critical',
+                score=9.0,
+                vector='vector',
+            ),
+            end_point='/',
+            vulnerable_part='post',
+            part_name='param',
+            payload_sample='abcde',
+            technical_environment='',
+            description_html='This is a bug',
+            attachments=[],
+            hunter=Author(
+                username='a-hunter',
+            ),
+            logs=[],
+            status='accepted',
+            tracking_status='AFI',
+            program=ReportProgram(
+                title='My program',
+                slug='my-program',
+            ),
+        )
+        with self.assertRaises(YesWeHackApiClientError):
+            client.post_report_tracker_update(
+                report=report,
+                tracker_name='tracker',
+                issue_id='foo',
+                issue_url='https://tracker.example.com/issues/foo',
+                token='abcde',
+                comment='Tracker synchronized.',
+            )
+
+    @patch('ywh2bt.core.api.yeswehack.YesWeHackRawApiReport')
+    @patch('ywh2bt.core.api.yeswehack.YesWeHackRawApiClient')
+    def test_post_report_tracker_update_json_not_dict_error(
+        self,
+        YesWeHackRawApiClientMock: MagicMock,
+        YesWeHackRawApiReportMock: MagicMock,
+    ) -> None:
+        YesWeHackRawApiClientMock.return_value.login.return_value = True
+        RequestsResponseMock = create_autospec(requests.models.Response)
+        RequestsResponseMock.return_value.json.return_value = 'I am an API response'
+        YesWeHackRawApiReportMock.return_value.post_tracker_update.return_value = RequestsResponseMock()
+        client = YesWeHackApiClient(
+            configuration=YesWeHackConfiguration(),
+        )
+        raw_report = YesWeHackRawApiReportMock(
+            ywh_api=None,
+            lazy=True,
+            id=123,
+        )
+        report = Report(
+            raw_report=raw_report,
+            report_id='123',
+            title='A bug report',
+            local_id='YWH-123',
+            bug_type=BugType(
+                name='bug-type',
+                link='http://bug.example.com/type',
+                remediation_link='http://bug.example.com/type/remediation',
+            ),
+            scope='',
+            cvss=Cvss(
+                criticity='critical',
+                score=9.0,
+                vector='vector',
+            ),
+            end_point='/',
+            vulnerable_part='post',
+            part_name='param',
+            payload_sample='abcde',
+            technical_environment='',
+            description_html='This is a bug',
+            attachments=[],
+            hunter=Author(
+                username='a-hunter',
+            ),
+            logs=[],
+            status='accepted',
+            tracking_status='AFI',
+            program=ReportProgram(
+                title='My program',
+                slug='my-program',
+            ),
+        )
+        with self.assertRaises(YesWeHackApiClientError):
+            client.post_report_tracker_update(
+                report=report,
+                tracker_name='tracker',
+                issue_id='foo',
+                issue_url='https://tracker.example.com/issues/foo',
+                token='abcde',
+                comment='Tracker synchronized.',
+            )
+
+    @patch('ywh2bt.core.api.yeswehack.YesWeHackRawApiReport')
+    @patch('ywh2bt.core.api.yeswehack.YesWeHackRawApiClient')
+    def test_post_report_tracker_update_response_error(
+        self,
+        YesWeHackRawApiClientMock: MagicMock,
+        YesWeHackRawApiReportMock: MagicMock,
+    ) -> None:
+        YesWeHackRawApiClientMock.return_value.login.return_value = True
+        RequestsResponseMock = create_autospec(requests.models.Response)
+        RequestsResponseMock.return_value.json.return_value = {
+            'errors': [
+                'Some error',
+            ],
+        }
+        YesWeHackRawApiReportMock.return_value.post_tracker_update.return_value = RequestsResponseMock()
+        client = YesWeHackApiClient(
+            configuration=YesWeHackConfiguration(),
+        )
+        raw_report = YesWeHackRawApiReportMock(
+            ywh_api=None,
+            lazy=True,
+            id=123,
+        )
+        report = Report(
+            raw_report=raw_report,
+            report_id='123',
+            title='A bug report',
+            local_id='YWH-123',
+            bug_type=BugType(
+                name='bug-type',
+                link='http://bug.example.com/type',
+                remediation_link='http://bug.example.com/type/remediation',
+            ),
+            scope='',
+            cvss=Cvss(
+                criticity='critical',
+                score=9.0,
+                vector='vector',
+            ),
+            end_point='/',
+            vulnerable_part='post',
+            part_name='param',
+            payload_sample='abcde',
+            technical_environment='',
+            description_html='This is a bug',
+            attachments=[],
+            hunter=Author(
+                username='a-hunter',
+            ),
+            logs=[],
+            status='accepted',
+            tracking_status='AFI',
+            program=ReportProgram(
+                title='My program',
+                slug='my-program',
+            ),
+        )
+        with self.assertRaises(YesWeHackApiClientError):
+            client.post_report_tracker_update(
+                report=report,
+                tracker_name='tracker',
+                issue_id='foo',
+                issue_url='https://tracker.example.com/issues/foo',
+                token='abcde',
+                comment='Tracker synchronized.',
+            )
+
+    @patch('ywh2bt.core.api.yeswehack.YesWeHackRawApiReport')
+    @patch('ywh2bt.core.api.yeswehack.YesWeHackRawApiClient')
+    def test_post_report_tracker_update(
+        self,
+        YesWeHackRawApiClientMock: MagicMock,
+        YesWeHackRawApiReportMock: MagicMock,
+    ) -> None:
+        YesWeHackRawApiClientMock.return_value.login.return_value = True
+        RequestsResponseMock = create_autospec(requests.models.Response)
+        RequestsResponseMock.return_value.json.return_value = {
+            'status': 'success',
+        }
+        YesWeHackRawApiReportMock.return_value.post_tracker_update.return_value = RequestsResponseMock()
+        client = YesWeHackApiClient(
+            configuration=YesWeHackConfiguration(),
+        )
+        raw_report = YesWeHackRawApiReportMock(
+            ywh_api=None,
+            lazy=True,
+            id=123,
+        )
+        report = Report(
+            raw_report=raw_report,
+            report_id='123',
+            title='A bug report',
+            local_id='YWH-123',
+            bug_type=BugType(
+                name='bug-type',
+                link='http://bug.example.com/type',
+                remediation_link='http://bug.example.com/type/remediation',
+            ),
+            scope='',
+            cvss=Cvss(
+                criticity='critical',
+                score=9.0,
+                vector='vector',
+            ),
+            end_point='/',
+            vulnerable_part='post',
+            part_name='param',
+            payload_sample='abcde',
+            technical_environment='',
+            description_html='This is a bug',
+            attachments=[],
+            hunter=Author(
+                username='a-hunter',
+            ),
+            logs=[],
+            status='accepted',
+            tracking_status='AFI',
+            program=ReportProgram(
+                title='My program',
+                slug='my-program',
+            ),
+        )
+        client.post_report_tracker_update(
+            report=report,
+            tracker_name='tracker',
+            issue_id='foo',
+            issue_url='https://tracker.example.com/issues/foo',
+            token='abcde',
+            comment='Tracker synchronized.',
+        )
 
     @patch('ywh2bt.core.api.yeswehack.YesWeHackRawApiReport')
     @patch('ywh2bt.core.api.yeswehack.YesWeHackRawApiClient')

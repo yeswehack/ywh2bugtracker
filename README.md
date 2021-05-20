@@ -45,6 +45,7 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 - github
 - gitlab
 - jira / jiracloud
+- servicenow
 
 ## Changelog
 

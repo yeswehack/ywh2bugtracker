@@ -9,8 +9,10 @@ from typing_extensions import Protocol
 
 from ywh2bt.core.api.models.report import (
     CommentLog,
+    CvssUpdateLog,
     DetailsUpdateLog,
     Log,
+    PriorityUpdateLog,
     REPORT_PROPERTY_LABELS,
     REPORT_STATUS_TRANSLATIONS,
     Report,
@@ -40,21 +42,25 @@ class ReportMessageFormatter(ABC):
     _report_description_template: Template
     _comment_body_template: Template
     _comment_log_template: Template
+    _cvss_update_log_template: Template
     _status_update_log_template: Template
     _details_update_log_template: Template
     _details_update_log_line_template: Template
+    _priority_update_log_template: Template
     _reward_log_template: Template
     _value_transformer: _ValueTransformer
 
-    def __init__(
+    def __init__(  # noqa: WPS211
         self,
         report_title_template: Template,
         report_description_template: Template,
         comment_body_template: Template,
         comment_log_template: Template,
+        cvss_update_log_template: Template,
         status_update_log_template: Template,
         details_update_log_template: Template,
         details_update_log_line_template: Template,
+        priority_update_log_template: Template,
         reward_log_template: Template,
         value_transformer: Optional[_ValueTransformer] = None,
     ):
@@ -66,9 +72,11 @@ class ReportMessageFormatter(ABC):
             report_description_template: a template for a report description
             comment_body_template: a template for an issue comment
             comment_log_template: a template for a template for a CommentLog
+            cvss_update_log_template: a template for a CvssUpdateLog
             status_update_log_template: a template for a StatusUpdateLog
             details_update_log_template: a template for a DetailsUpdateLog
             details_update_log_line_template: a template for entries of a DetailsUpdateLog
+            priority_update_log_template: a template for a PriorityUpdateLog
             reward_log_template: a template for a RewardLog
             value_transformer: a transformer for values
         """
@@ -76,9 +84,11 @@ class ReportMessageFormatter(ABC):
         self._report_description_template = report_description_template
         self._comment_body_template = comment_body_template
         self._comment_log_template = comment_log_template
+        self._cvss_update_log_template = cvss_update_log_template
         self._status_update_log_template = status_update_log_template
         self._details_update_log_template = details_update_log_template
         self._details_update_log_line_template = details_update_log_line_template
+        self._priority_update_log_template = priority_update_log_template
         self._reward_log_template = reward_log_template
         self._value_transformer = value_transformer or _identity_transformer
 
@@ -196,6 +206,7 @@ class ReportMessageFormatter(ABC):
             a formatted log
         """
         return self._comment_body_template.substitute(
+            log_id=log.log_id,
             author=log.author.username,
             date=log.created_at,
             body=self._transform_log(
@@ -233,6 +244,18 @@ class ReportMessageFormatter(ABC):
             comment=self.transform_html(
                 html=log.message_html,
             ),
+        )
+
+    @_transform_log.register
+    def _transform_cvss_update_log(
+        self,
+        log: CvssUpdateLog,
+    ) -> str:
+        return self._cvss_update_log_template.substitute(
+            old_cvss_criticity=log.old_cvss.criticity,
+            old_cvss_score=log.old_cvss.score,
+            new_cvss_criticity=log.new_cvss.criticity,
+            new_cvss_score=log.new_cvss.score,
         )
 
     @_transform_log.register
@@ -281,6 +304,15 @@ class ReportMessageFormatter(ABC):
             )
         return self._details_update_log_template.substitute(
             details_lines=''.join(details_lines),
+        )
+
+    @_transform_log.register
+    def _transform_priority_update_log(
+        self,
+        log: PriorityUpdateLog,
+    ) -> str:
+        return self._priority_update_log_template.substitute(
+            new_priority=log.new_priority.name if log.new_priority else 'Undefined',
         )
 
     @_transform_log.register

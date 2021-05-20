@@ -4,7 +4,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import partial
 from types import MappingProxyType
-from typing import Any, Dict, List, Optional
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+)
 
 from typing_extensions import Protocol
 from yeswehack.api import Report as YesWeHackRawApiReport
@@ -161,7 +167,17 @@ class Attachment:
     mime_type: str
     size: int
     url: str
-    data: bytes
+    data_loader: Callable[[], bytes]
+
+    @property
+    def data(self) -> bytes:
+        """
+        Get the data from the attachment.
+
+        Returns:
+            the data
+        """
+        return self.data_loader()  # type: ignore
 
 
 @dataclass
@@ -223,11 +239,26 @@ class CommentLog(Log):
 
 
 @dataclass
+class CvssUpdateLog(Log):
+    """A cvss-update log."""
+
+    old_cvss: Cvss
+    new_cvss: Cvss
+
+
+@dataclass
 class DetailsUpdateLog(Log):
     """A details-update log."""
 
     old_details: Optional[Dict[str, Any]]
     new_details: Optional[Dict[str, Any]]
+
+
+@dataclass
+class PriorityUpdateLog(Log):
+    """A priority-update log."""
+
+    new_priority: Optional[Priority]
 
 
 @dataclass

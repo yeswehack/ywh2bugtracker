@@ -32,6 +32,14 @@ COMMENT_LOG_TEMPLATE = """
 
 ${comment}
 """
+CVSS_UPDATE_LOG_TEMPLATE = """
+**CVSS updated**:
+
+| Detail | Old value | New value |
+|--------|-----------|-----------|
+| **Severity** | ${old_cvss_criticity} | ${new_cvss_criticity} |
+| **Score** | ${old_cvss_score} | ${new_cvss_score} |
+"""
 STATUS_UPDATE_LOG_TEMPLATE = """
 **Status updated**:
 
@@ -49,6 +57,11 @@ DETAILS_UPDATE_LOG_TEMPLATE = """
 ${details_lines}
 """
 DETAILS_UPDATE_LOG_LINE_TEMPLATE = """| **${updated_property}** | ${old_value} | ${new_value} |
+"""
+PRIORITY_UPDATE_LOG_TEMPLATE = """
+**Priority updated**:
+
+${new_priority}
 """
 REWARD_LOG_TEMPLATE = """
 **Comment from reward**:
@@ -73,9 +86,11 @@ class ReportMessageMarkdownFormatter(ReportMessageFormatter):
             report_description_template=Template(REPORT_DESCRIPTION_TEMPLATE),
             comment_body_template=Template(COMMENT_BODY_TEMPLATE),
             comment_log_template=Template(COMMENT_LOG_TEMPLATE),
+            cvss_update_log_template=Template(CVSS_UPDATE_LOG_TEMPLATE),
             status_update_log_template=Template(STATUS_UPDATE_LOG_TEMPLATE),
             details_update_log_template=Template(DETAILS_UPDATE_LOG_TEMPLATE),
             details_update_log_line_template=Template(DETAILS_UPDATE_LOG_LINE_TEMPLATE),
+            priority_update_log_template=Template(PRIORITY_UPDATE_LOG_TEMPLATE),
             reward_log_template=Template(REWARD_LOG_TEMPLATE),
             value_transformer=_html_transformer,
         )

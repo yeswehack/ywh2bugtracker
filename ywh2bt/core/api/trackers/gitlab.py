@@ -181,11 +181,10 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
             gitlab_project=gitlab_project,
             attachments=report.attachments,
         )
-        for attachment_url, uploaded_url in uploads:
-            description = description.replace(
-                attachment_url,
-                uploaded_url,
-            )
+        description = self._replace_description_attachments(
+            description=description,
+            uploads=uploads,
+        )
         gitlab_issue = self._create_issue(
             gitlab_project=gitlab_project,
             title=self._message_formatter.format_report_title(
@@ -367,11 +366,11 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
         self,
         gitlab_project: Project,
         attachments: List[Attachment],
-    ) -> List[Tuple[str, str]]:
+    ) -> List[Tuple[Attachment, str]]:
         try:
             return [
                 (
-                    attachment.url,
+                    attachment,
                     gitlab_project.upload(attachment.original_name, attachment.data)['url'],
                 )
                 for attachment in attachments
@@ -380,6 +379,29 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
             raise GitLabTrackerClientError(
                 f'Unable to upload attachments for project {self.configuration.project} to GitLab',
             ) from e
+
+    def _replace_description_attachments(
+        self,
+        description: str,
+        uploads: List[Tuple[Attachment, str]],
+    ) -> str:
+        if uploads:
+            attachments_lines = [
+                '',
+                'Attachments:',
+            ]
+            for attachment, uploaded_url in uploads:
+                description = description.replace(
+                    attachment.url,
+                    uploaded_url,
+                )
+                attachments_lines.append(
+                    f'- [{attachment.original_name}]({uploaded_url})',
+                )
+            attachments_lines.append('')
+            joined_attachments_lines = '\n'.join(attachments_lines)
+            description = f'{description}{joined_attachments_lines}'
+        return description
 
     def _create_issue(
         self,
@@ -413,11 +435,10 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
             gitlab_project=gitlab_project,
             attachments=log.attachments,
         )
-        for attachment_url, uploaded_url in uploads:
-            comment_body = comment_body.replace(
-                attachment_url,
-                uploaded_url,
-            )
+        comment_body = self._replace_description_attachments(
+            description=comment_body,
+            uploads=uploads,
+        )
         try:
             return gitlab_issue.notes.create({
                 'body': comment_body,

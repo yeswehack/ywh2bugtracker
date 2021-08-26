@@ -365,7 +365,7 @@ class TestReportSynchronizer(TestCase):
         ).when_synchronize_report(
         ).then_assert_no_error(
         ).then_assert_has_result(
-        ).then_assert_is_existing_issue(
+        ).then_assert_is_created_issue(
         ).then_assert_tracker_client_send_report_not_called(
         ).then_assert_tracker_client_send_logs_called_once_with(
             tracker_issue=issue,
@@ -444,7 +444,7 @@ class TestReportSynchronizer(TestCase):
         ).when_synchronize_report(
         ).then_assert_no_error(
         ).then_assert_has_result(
-        ).then_assert_is_existing_issue(
+        ).then_assert_is_created_issue(
         ).then_assert_tracker_client_send_report_not_called(
         ).then_assert_tracker_client_send_logs_not_called(
         ).then_assert_yeswehack_client_put_report_tracking_status_not_called()
@@ -788,18 +788,18 @@ class Assert:
         self.case.assertIsNone(self.result)
         return self
 
-    def then_assert_is_existing_issue_is(
+    def then_assert_is_created_issue_is(
         self,
-        is_existing_issue: bool,
+        is_created_issue: bool,
     ) -> Assert:
-        self.case.assertIs(is_existing_issue, cast(SynchronizeReportResult, self.result).is_existing_issue)
+        self.case.assertIs(is_created_issue, cast(SynchronizeReportResult, self.result).is_created_issue)
         return self
 
-    def then_assert_is_existing_issue(self) -> Assert:
-        return self.then_assert_is_existing_issue_is(is_existing_issue=True)
+    def then_assert_is_created_issue(self) -> Assert:
+        return self.then_assert_is_created_issue_is(is_created_issue=True)
 
     def then_assert_is_not_existing_issue(self) -> Assert:
-        return self.then_assert_is_existing_issue_is(is_existing_issue=False)
+        return self.then_assert_is_created_issue_is(is_created_issue=False)
 
     def then_assert_no_error(self) -> Assert:
         self.case.assertIsNone(self.error, msg=self._serialize_error(error=self.error))

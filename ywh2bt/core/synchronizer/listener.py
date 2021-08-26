@@ -79,10 +79,11 @@ class SynchronizerEndSendReportEvent(SynchronizerEvent):
     program_slug: str
     tracker_name: str
     report: Report
+    is_created_issue: bool
     is_existing_issue: bool
     new_report_status: Optional[Tuple[str, str]]
     tracking_status_updated: bool
-    tracker_issue: TrackerIssue
+    tracker_issue: Optional[TrackerIssue]
     issue_added_comments: List[str]
     report_added_comments: List[str]
 

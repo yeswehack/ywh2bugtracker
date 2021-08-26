@@ -147,6 +147,15 @@ class SynchronizeOptions(AttributesContainer):
         description='Upload the report status updates into the bug trackers',
         default=False,
     )
+    recreate_missing_issues: BoolAttributeType = Attribute.create(
+        value_type=bool,
+        short_description='Recreate missing issues',
+        description=(
+            'Recreate issues that were created by a previous synchronization '
+            + 'but are not found into the bug trackers anymore'
+        ),
+        default=True,
+    )
 
     def __init__(
         self,
@@ -157,6 +166,7 @@ class SynchronizeOptions(AttributesContainer):
         upload_priority_updates: Optional[bool] = None,
         upload_rewards: Optional[bool] = None,
         upload_status_updates: Optional[bool] = None,
+        recreate_missing_issues: Optional[bool] = None,
         **kwargs: Any,
     ):
         """
@@ -170,6 +180,7 @@ class SynchronizeOptions(AttributesContainer):
             upload_priority_updates: a flag indicating whether to upload priority updates into the bug trackers
             upload_rewards: a flag indicating whether to upload rewards to the bugtrackers
             upload_status_updates: a flag indicating whether to upload status updates to the bugtrackers
+            recreate_missing_issues: a flag indicating whether to recreate missing issues
             kwargs: keyword arguments
         """
         super().__init__(**kwargs)
@@ -180,6 +191,7 @@ class SynchronizeOptions(AttributesContainer):
         self.upload_priority_updates = upload_priority_updates
         self.upload_rewards = upload_rewards
         self.upload_status_updates = upload_status_updates
+        self.recreate_missing_issues = recreate_missing_issues
 
 
 SynchronizeOptionsAttributeType = Union[

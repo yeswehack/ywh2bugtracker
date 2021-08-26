@@ -295,7 +295,7 @@ class Synchronizer:
             message_formatter=self._message_formatter,
         )
         synchronize_report_result = report_synchronizer.synchronize_report()
-        is_existing_issue = synchronize_report_result.is_existing_issue
+        is_created_issue = synchronize_report_result.is_created_issue
         self._send_event(
             event=SynchronizerEndSendReportEvent(
                 configuration=configuration,
@@ -304,9 +304,10 @@ class Synchronizer:
                 program_slug=report.program.slug,
                 tracker_name=tracker_name,
                 report=report,
-                is_existing_issue=is_existing_issue,
+                is_created_issue=is_created_issue,
+                is_existing_issue=synchronize_report_result.is_existing_issue,
                 new_report_status=synchronize_report_result.new_report_status,
-                tracking_status_updated=report.tracking_status != 'T' or not is_existing_issue,
+                tracking_status_updated=report.tracking_status != 'T' or not is_created_issue,
                 tracker_issue=synchronize_report_result.send_logs_result.tracker_issue,
                 issue_added_comments=[
                     comment.comment_id
@@ -370,15 +371,37 @@ class ReportSynchronizer:
         Returns:
             the result of the synchronization
         """
-        tracker_issue = self._get_tracker_issue_from_logs()
-        is_existing_issue = tracker_issue is not None
-        if not is_existing_issue:
+        log = self._report.get_last_tracking_status_update_log(
+            tracker_name=self._tracker_name,
+        )
+        is_created_issue = False
+        tracker_issue = None
+        if log and isinstance(log, TrackingStatusLog):
+            is_created_issue = True
+            tracker_issue = self._get_tracker_issue_from_logs(
+                log=log,
+            )
+        if tracker_issue is None:
+            if not self._synchronize_options.recreate_missing_issues:
+                return SynchronizeReportResult(
+                    is_created_issue=is_created_issue,
+                    is_existing_issue=False,
+                    new_report_status=None,
+                    send_logs_result=SendLogsResult(
+                        tracker_issue=None,
+                        added_comments=[],
+                    ),
+                    download_comments_result=DownloadCommentsResult(
+                        downloaded_comments=[],
+                    ),
+                )
+            is_created_issue = False
             tracker_issue = self._create_tracker_issue()
         if not isinstance(tracker_issue, TrackerIssue):
             raise SynchronizerError(
                 f'Unable to create new or get existing issue for #{self._report.report_id} in {self._tracker_name}',
             )
-        if self._report.tracking_status != 'T' or not is_existing_issue:
+        if self._report.tracking_status != 'T' or not is_created_issue:
             self._update_tracking_status(
                 tracker_issue=tracker_issue,
             )
@@ -387,7 +410,7 @@ class ReportSynchronizer:
             bugtracker_name=self._tracker_name,
         )
         logs = self._report.logs
-        if is_existing_issue:
+        if is_created_issue:
             log_state = self._get_last_tracker_update_log()
             if log_state:
                 last_tracker_update_log, tracker_issue_state = log_state
@@ -425,7 +448,8 @@ class ReportSynchronizer:
             issue_status=issue_status,
         )
         return SynchronizeReportResult(
-            is_existing_issue=is_existing_issue,
+            is_created_issue=is_created_issue,
+            is_existing_issue=True,
             new_report_status=new_report_status,
             send_logs_result=send_logs_result,
             download_comments_result=download_comments_result,
@@ -442,11 +466,9 @@ class ReportSynchronizer:
 
     def _get_tracker_issue_from_logs(
         self,
+        log: TrackingStatusLog,
     ) -> Optional[TrackerIssue]:
-        log = self._report.get_last_tracking_status_update_log(
-            tracker_name=self._tracker_name,
-        )
-        if log and isinstance(log, TrackingStatusLog) and all((log.tracker_id, log.tracker_url)):
+        if all((log.tracker_id, log.tracker_url)):
             return self._tracker_client.get_tracker_issue(
                 issue_id=cast(str, log.tracker_id),
             )
@@ -870,10 +892,10 @@ class SynchronizerMessageFormatter(AbstractSynchronizerMessageFormatter):
             report_status = f'{old_status_translation} -> {new_status_translation}'
         return self._synchronization_done_template.substitute(
             tracker_type=tracker_type,
-            tracker_url=tracker_issue.tracker_url,
-            project=tracker_issue.project,
-            issue_id=tracker_issue.issue_id,
-            issue_url=tracker_issue.issue_url,
+            tracker_url=tracker_issue.tracker_url if tracker_issue else '',
+            project=tracker_issue.project if tracker_issue else '',
+            issue_id=tracker_issue.issue_id if tracker_issue else '',
+            issue_url=tracker_issue.issue_url if tracker_issue else '',
             issue_added_comment_count=len(send_logs_result.added_comments),
             report_added_comment_count=len(download_comments_result.downloaded_comments),
             report_status=report_status,
@@ -923,11 +945,11 @@ class SynchronizerMessageFormatter(AbstractSynchronizerMessageFormatter):
 
     def _string_state(
         self,
-        is_existing_issue: bool,
+        is_created_issue: bool,
         issue_state: TrackerIssueState,
         last_state: Optional[TrackerIssueState],
     ) -> str:
-        if is_existing_issue:
+        if is_created_issue:
             return self._string_state_for_update(
                 issue_state=issue_state,
                 last_state=last_state,
@@ -961,6 +983,7 @@ class DownloadCommentsResult:
 class SynchronizeReportResult:
     """A result of synchronizing a report with a tracker."""
 
+    is_created_issue: bool
     is_existing_issue: bool
     new_report_status: Optional[Tuple[str, str]]
     send_logs_result: SendLogsResult

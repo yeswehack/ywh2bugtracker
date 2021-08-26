@@ -290,6 +290,7 @@ that can be downloaded from the [Yes We Hack platform][YesWeHack-Platform].
     - **Upload priority updates**: whether to upload the reports priority updates into the bug trackers.
     - **Upload rewards**: whether to upload the reports rewards into the bug trackers.
     - **Upload status updates**: whether to upload the reports status updates into the bug trackers.
+    - **Recreate missing issues**: whether to recreate issues that were created by a previous synchronization but are not found into the bug trackers anymore.
   - **Feedback options**: options for synchronizing bug trackers issues with Yes We Hack reports.
     - **Download bug trackers comments**: whether to download comments from the bug trackers
       and put them into the reports.

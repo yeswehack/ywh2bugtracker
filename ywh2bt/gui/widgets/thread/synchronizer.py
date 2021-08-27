@@ -199,16 +199,21 @@ class _SynchronizerListener(SynchronizerListener):
     ) -> None:
         tracker_issue = event.tracker_issue
         issue_added_comment_count = len(event.issue_added_comments)
-        issue_details = [
-            tracker_issue.issue_url,
-        ]
-        if event.is_existing_issue:
-            if issue_added_comment_count:
-                issue_details.append('updated')
+        if not tracker_issue or not event.is_existing_issue:
+            issue_details = [
+                'does not exist anymore',
+            ]
         else:
-            issue_details.append('added')
-        if issue_added_comment_count:
-            issue_details.append(f'{issue_added_comment_count} comment(s) added')
+            issue_details = [
+                tracker_issue.issue_url,
+            ]
+            if event.is_created_issue:
+                if issue_added_comment_count:
+                    issue_details.append('updated')
+            else:
+                issue_details.append('added')
+            if issue_added_comment_count:
+                issue_details.append(f'{issue_added_comment_count} comment(s) added')
         report_added_comment_count = len(event.report_added_comments)
         report_details = []
         if report_added_comment_count:

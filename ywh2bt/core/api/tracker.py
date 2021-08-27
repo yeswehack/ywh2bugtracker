@@ -233,7 +233,7 @@ class TrackerAttachment:
 class SendLogsResult:
     """A result of sending logs to a tracker."""
 
-    tracker_issue: TrackerIssue
+    tracker_issue: Optional[TrackerIssue]
     added_comments: TrackerIssueComments
 
 

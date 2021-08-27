@@ -2,7 +2,7 @@
 htmltitle = ywh2bt: flake8 violations
 max-line-length = 120
 max-line-complexity = 15
-max-cognitive-score = 15
+max-cognitive-score = 20
 docstring-style = google
 max-imported-names = 60
 max-imports = 30
@@ -12,7 +12,7 @@ max-module-members = 30
 max-methods = 40
 max-arguments = 10
 max-attributes = 10
-max-local-variables = 12
+max-local-variables = 15
 max-raises = 5
 rst-roles =
     class,

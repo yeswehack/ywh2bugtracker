@@ -282,17 +282,17 @@ that can be downloaded from the [Yes We Hack platform][YesWeHack-Platform].
 - **Verify TLS**: whether to verify if the API server's TLS certificate is valid.
 - **Programs**: a list of programs to be synchronized.
   - **Program slug**: a program slug.
-  - **Synchronization options**: options for synchronizing a Yes We Hack report with the bug trackers.
-    - **Upload private comments**: whether to upload the reports private comments into the bug trackers.
-    - **Upload public comments**: whether to upload the reports public comments into the bug trackers.
-    - **Upload CVSS updates**: whether to upload the reports CVSS updates into the bug trackers.
-    - **Upload details updates**: whether to upload the reports details updates into the bug trackers.
-    - **Upload priority updates**: whether to upload the reports priority updates into the bug trackers.
-    - **Upload rewards**: whether to upload the reports rewards into the bug trackers.
-    - **Upload status updates**: whether to upload the reports status updates into the bug trackers.
-    - **Recreate missing issues**: whether to recreate issues that were created by a previous synchronization but are not found into the bug trackers anymore.
+  - **Synchronization options**: options for synchronizing a Yes We Hack report with the bug tracker.
+    - **Upload private comments**: whether to upload the reports private comments into the bug tracker.
+    - **Upload public comments**: whether to upload the reports public comments into the bug tracker.
+    - **Upload CVSS updates**: whether to upload the reports CVSS updates into the bug tracker.
+    - **Upload details updates**: whether to upload the reports details updates into the bug tracker.
+    - **Upload priority updates**: whether to upload the reports priority updates into the bug tracker.
+    - **Upload rewards**: whether to upload the reports rewards into the bug tracker.
+    - **Upload status updates**: whether to upload the reports status updates into the bug tracker.
+    - **Recreate missing issues**: whether to recreate issues that were created by a previous synchronization but are not found into the bug tracker anymore.
   - **Feedback options**: options for synchronizing bug trackers issues with Yes We Hack reports.
-    - **Download bug trackers comments**: whether to download comments from the bug trackers
+    - **Download bug trackers comments**: whether to download comments from the bug tracker
       and put them into the reports.
     - **Issue closed to report AFV**: whether to set the reports status to "Ask for Fix Verification" 
       when the tracker issues are closed.

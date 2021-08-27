@@ -108,43 +108,43 @@ class SynchronizeOptions(AttributesContainer):
     upload_private_comments: BoolAttributeType = Attribute.create(
         value_type=bool,
         short_description='Upload private comments',
-        description='Upload the report private comments into the bug trackers',
+        description='Upload the report private comments into the bug tracker',
         default=False,
     )
     upload_public_comments: BoolAttributeType = Attribute.create(
         value_type=bool,
         short_description='Upload public comments',
-        description='Upload the report public comments into the bug trackers',
+        description='Upload the report public comments into the bug tracker',
         default=False,
     )
     upload_cvss_updates: BoolAttributeType = Attribute.create(
         value_type=bool,
         short_description='Upload CVSS updates',
-        description='Upload the report CVSS updates into the bug trackers',
+        description='Upload the report CVSS updates into the bug tracker',
         default=False,
     )
     upload_details_updates: BoolAttributeType = Attribute.create(
         value_type=bool,
         short_description='Upload details updates',
-        description='Upload the report details updates into the bug trackers',
+        description='Upload the report details updates into the bug tracker',
         default=False,
     )
     upload_priority_updates: BoolAttributeType = Attribute.create(
         value_type=bool,
         short_description='Upload priority updates',
-        description='Upload the report priority updates into the bug trackers',
+        description='Upload the report priority updates into the bug tracker',
         default=False,
     )
     upload_rewards: BoolAttributeType = Attribute.create(
         value_type=bool,
         short_description='Upload rewards',
-        description='Upload the report rewards into the bug trackers',
+        description='Upload the report rewards into the bug tracker',
         default=False,
     )
     upload_status_updates: BoolAttributeType = Attribute.create(
         value_type=bool,
         short_description='Upload status updates',
-        description='Upload the report status updates into the bug trackers',
+        description='Upload the report status updates into the bug tracker',
         default=False,
     )
     recreate_missing_issues: BoolAttributeType = Attribute.create(
@@ -152,7 +152,7 @@ class SynchronizeOptions(AttributesContainer):
         short_description='Recreate missing issues',
         description=(
             'Recreate issues that were created by a previous synchronization '
-            + 'but are not found into the bug trackers anymore'
+            + 'but are not found into the bug tracker anymore'
         ),
         default=True,
     )
@@ -173,13 +173,13 @@ class SynchronizeOptions(AttributesContainer):
         Initialize self.
 
         Args:
-            upload_private_comments: a flag indicating whether to upload private comments to the bugtrackers
-            upload_public_comments: a flag indicating whether to upload public comments to the bugtrackers
-            upload_cvss_updates: a flag indicating whether to upload CVSS updates to the bugtrackers
-            upload_details_updates: a flag indicating whether to upload details updates to the bugtrackers
-            upload_priority_updates: a flag indicating whether to upload priority updates into the bug trackers
-            upload_rewards: a flag indicating whether to upload rewards to the bugtrackers
-            upload_status_updates: a flag indicating whether to upload status updates to the bugtrackers
+            upload_private_comments: a flag indicating whether to upload private comments to the bug tracker
+            upload_public_comments: a flag indicating whether to upload public comments to the bug tracker
+            upload_cvss_updates: a flag indicating whether to upload CVSS updates to the bug tracker
+            upload_details_updates: a flag indicating whether to upload details updates to the bug tracker
+            upload_priority_updates: a flag indicating whether to upload priority updates into the bug tracker
+            upload_rewards: a flag indicating whether to upload rewards to the bug tracker
+            upload_status_updates: a flag indicating whether to upload status updates to the bug tracker
             recreate_missing_issues: a flag indicating whether to recreate missing issues
             kwargs: keyword arguments
         """
@@ -211,7 +211,7 @@ class FeedbackOptions(AttributesContainer):
     download_tracker_comments: BoolAttributeType = Attribute.create(
         value_type=bool,
         short_description='Download bug trackers comments',
-        description='Download comments from the bug trackers and put them into the report',
+        description='Download comments from the bug tracker and put them into the report',
         default=False,
     )
     issue_closed_to_report_afv: BoolAttributeType = Attribute.create(
@@ -232,7 +232,7 @@ class FeedbackOptions(AttributesContainer):
 
         Args:
             download_tracker_comments:
-            a flag indicating whether to download comments from the bug trackers and put them into the report
+            a flag indicating whether to download comments from the bug tracker and put them into the report
             issue_closed_to_report_afv:
             a flag indicating whether to set report status to "Ask for Fix Verification" when tracker issue is closed
             kwargs: keyword arguments

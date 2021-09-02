@@ -1,4 +1,5 @@
 """Models and functions used for the main GUI."""
+import os
 import platform
 import sys
 
@@ -27,12 +28,16 @@ def run(*argv: str) -> None:
     Args:
         argv: command line arguments
     """
-    if platform.system() == 'Windows':
+    system = platform.system()
+    if system == 'Windows':
         # set explicit AppUserModelID ; allows custom icon in Windows taskbar
         # see https://stackoverflow.com/a/1552105/248343
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(  # type: ignore
             f'yeswehack.ywh2bt.gui.{__VERSION__}'.encode('utf-8'),
         )
+    elif system == 'Darwin':
+        # https://stackoverflow.com/a/64856281/248343
+        os.environ['QT_MAC_WANTS_LAYER'] = '1'
     args = [
         'ywh2bt-gui',
         *argv[1:],

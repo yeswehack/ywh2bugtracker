@@ -177,7 +177,7 @@ class Attachment:
         Returns:
             the data
         """
-        return self.data_loader()  # type: ignore
+        return self.data_loader()
 
 
 @dataclass

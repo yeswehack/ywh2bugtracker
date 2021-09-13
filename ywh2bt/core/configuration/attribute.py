@@ -319,16 +319,26 @@ class Attribute(Generic[T]):  # noqa: WPS214
         if isinstance(value, Validatable):
             value.validate()
         if self.validator:
-            self._apply_validator(
+            self.apply_validator(
                 validator=self.validator,
                 value=value,
             )
 
-    def _apply_validator(
+    def apply_validator(
         self,
         validator: ValidatorProtocol[T],
         value: Any,
     ) -> None:
+        """
+        Apply the validator to the given value.
+
+        Args:
+            validator: a validator
+            value: a value
+
+        Raises:
+            InvalidAttributeError: if the attribute value is invalid
+        """
         try:
             validator(
                 value=value,

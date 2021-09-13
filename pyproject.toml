@@ -41,8 +41,12 @@ requests-toolbelt = "^0.9.1"
 "ruamel.yaml" = "~0.16.12"
 singledispatchmethod = "^1.0"
 typing-extensions = "*"
+types-Markdown = "*"
+types-chardet = "*"
+types-requests = "*"
+types-setuptools = "*"
 tomlkit = "^0.7.0"
-yeswehack = ">=0.6.7,<1"
+yeswehack = ">=0.7.0,<1"
 
 [tool.poetry.dev-dependencies]
 mypy = "*"

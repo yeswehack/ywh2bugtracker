@@ -111,7 +111,7 @@ class SubtypableMetaclass(ABCMeta):
             subtype_manager = SubtypableManager()
             namespace[SUBTYPE_MANAGER_ATTR_NAME] = subtype_manager
 
-        return super(SubtypableMetaclass, mcs).__new__(mcs, name, bases, namespace)  # type: ignore  # noqa: WPS608
+        return super(SubtypableMetaclass, mcs).__new__(mcs, name, bases, namespace)  # noqa: WPS608
 
     def __call__(
         cls,

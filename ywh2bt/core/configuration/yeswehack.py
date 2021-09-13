@@ -17,75 +17,12 @@ from ywh2bt.core.configuration.attribute import (
     ExportableList,
     StrAttributeType,
 )
-from ywh2bt.core.configuration.headers import Headers
 from ywh2bt.core.configuration.validator import (
-    dict_has_non_blank_key_validator,
     length_one_validator,
     not_blank_validator,
     not_empty_validator,
     url_validator,
 )
-
-
-class OAuthSettings(AttributesContainer):
-    """OAuth settings."""
-
-    client_id: StrAttributeType = Attribute.create(
-        value_type=str,
-        short_description='Client ID',
-        description='OAuthSettings client ID',
-        required=True,
-        validator=not_blank_validator,
-    )
-    client_secret: StrAttributeType = Attribute.create(
-        value_type=str,
-        short_description='Secret',
-        description='OAuthSettings client secret',
-        required=True,
-        secret=True,
-        validator=not_blank_validator,
-    )
-    redirect_uri: StrAttributeType = Attribute.create(
-        value_type=str,
-        short_description='Redirect URI',
-        description='OAuthSettings redirect URI',
-        required=True,
-        validator=url_validator,
-    )
-
-    def __init__(
-        self,
-        client_id: Optional[str] = None,
-        client_secret: Optional[str] = None,
-        redirect_uri: Optional[str] = None,
-        **kwargs: Any,
-    ) -> None:
-        """
-        Initialize the settings.
-
-        Args:
-            client_id: an OAuth v2 client ID
-            client_secret: an OAuth v2 client secret
-            redirect_uri: a redirect URI
-            kwargs: keyword arguments
-        """
-        super().__init__(**kwargs)
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.redirect_uri = redirect_uri
-
-    def validate(
-        self,
-    ) -> None:
-        """Validate the object."""
-        attributes = (
-            self.client_id,
-            self.client_secret,
-            self.redirect_uri,
-        )
-        if not any(attributes):
-            return
-        super().validate()
 
 
 class Bugtrackers(ExportableList[str, str]):
@@ -333,24 +270,6 @@ class Programs(AttributesContainerList[Program]):
         )
 
 
-AppHeadersAttributeType = Union[
-    Optional[Dict[str, str]],
-    Optional[Headers],
-    Attribute[Headers],
-]
-AppHeadersInitType = Union[
-    Optional[Headers],
-    Optional[Dict[str, str]],
-]
-OAuthArgsAttributeType = Union[
-    Optional[Dict[str, str]],
-    Optional[OAuthSettings],
-    Attribute[OAuthSettings],
-]
-OAuthArgsInitType = Union[
-    Optional[OAuthSettings],
-    Optional[Dict[str, str]],
-]
 ProgramsAttributeType = Union[
     List[Union[Program, Dict[str, Any]]],
     Optional[Programs],
@@ -369,55 +288,22 @@ class YesWeHackConfiguration(AttributesContainer):
         value_type=str,
         short_description='API URL',
         description='Base URL of the YWH API',
-        default='https://apps.yeswehack.com',
+        default='https://api.yeswehack.com',
         validator=url_validator,
     )
-    apps_headers: AppHeadersAttributeType = Attribute.create(
-        short_description='Apps headers',
-        value_type=Headers,
-        required=True,
-        validator=dict_has_non_blank_key_validator(
-            'X-YesWeHack-Apps',
-        ),
-    )
-    login: StrAttributeType = Attribute.create(
+    pat: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='Login',
-        description='User login',
-        required=True,
-        validator=not_blank_validator,
-    )
-    password: StrAttributeType = Attribute.create(
-        value_type=str,
-        short_description='Password',
-        description='User password',
+        short_description='Personal Access Token',
+        description='Personal Access Token',
         required=True,
         secret=True,
         validator=not_blank_validator,
-    )
-    oauth_args: OAuthArgsAttributeType = Attribute.create(
-        value_type=OAuthSettings,
-        short_description='OAuth settings',
-        description='OAuth settings',
     )
     verify: BoolAttributeType = Attribute.create(
         value_type=bool,
         short_description='Verify TLS',
         description="Verify server's TLS certificate",
         default=True,
-    )
-    totp: BoolAttributeType = Attribute.create(
-        value_type=bool,
-        short_description='Use TOTP',
-        description=''.join((
-            'Use TOTP\n',
-            "Apps API doesn't require TOTP authentication, even if corresponding user has TOTP enabled.\n",
-            'However, on a secured program, information is limited for user with TOTP disabled, even in apps.\n',
-            'As a consequence, to allow proper bug tracking integration on a secured program,',
-            'program consumer must have TOTP enabled and, in BTI configuration TOTP must be set to false',
-        )),
-        default=True,
-        deprecated=True,
     )
     programs: ProgramsAttributeType = Attribute.create(
         value_type=Programs,
@@ -430,12 +316,8 @@ class YesWeHackConfiguration(AttributesContainer):
     def __init__(
         self,
         api_url: Optional[str] = None,
-        apps_headers: AppHeadersInitType = None,
-        login: Optional[str] = None,
-        password: Optional[str] = None,
-        oauth_args: OAuthArgsInitType = None,
+        pat: Optional[str] = None,
         verify: Optional[bool] = None,
-        totp: Optional[bool] = None,
         programs: ProgramsInitType = None,
         **kwargs: Any,
     ):
@@ -444,23 +326,15 @@ class YesWeHackConfiguration(AttributesContainer):
 
         Args:
             api_url: a YesWeHack API URL
-            apps_headers: a list of HTTP headers to be added to API calls
-            login: a YesWeHack user login
-            password: a YesWeHack user password
-            oauth_args: settings for API OAuth authentication
+            pat: a Personal Access Token
             verify: a flag indicating whether to check SSL/TLS connection
-            totp: a flag indicating whether to use TOTP
             programs: a list of Programs
             kwargs: keyword arguments
         """
         super().__init__(**kwargs)
         self.api_url = api_url
-        self.apps_headers = apps_headers
-        self.login = login
-        self.password = password
-        self.oauth_args = oauth_args
+        self.pat = pat
         self.verify = verify
-        self.totp = totp
         self.programs = programs
 
 

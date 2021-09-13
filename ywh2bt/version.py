@@ -2,7 +2,7 @@
 import os
 
 import pkg_resources
-import tomlkit  # type: ignore
+import tomlkit
 
 try:
     __VERSION__ = pkg_resources.get_distribution('ywh2bt').version
@@ -15,5 +15,9 @@ except pkg_resources.DistributionNotFound:
     )
     with open(pyproject_path) as pyproject_file:
         pyproject = pyproject_file.read()
-
-    __VERSION__ = tomlkit.parse(pyproject)['tool']['poetry']['version']
+    __VERSION__ = 'Unknown'
+    tool = tomlkit.api.parse(pyproject).get('tool')
+    if tool:
+        poetry = tool.get('poetry')
+        if poetry:
+            __VERSION__ = poetry.get('version', 'Unknown')

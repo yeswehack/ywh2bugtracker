@@ -21,13 +21,8 @@ only regular outbound web connections need to be authorized on your server.
 - `python` >= 3.7,<=3.9
 - [`pip`](https://pip.pypa.io/en/stable/installing/)
 
-To use it on your program, while maintaining the maximum security, the tool requires:
-
-- a specific right on the [Yes We Hack platform][YesWeHack-Platform] allowing you to use the API,
-  and a custom HTTP header to put in your configuration.
-  Both of them can be obtained by e-mailing us at [support@yeswehack.com](mailto:support@yeswehack.com).
-- creation of a user with role "program consumer" on the desired program.
-  It is the credentials of this user that you must use in the configuration.
+To use it on your program, while maintaining the maximum security, the tool requires you create a Personal Access Token
+on the [Yes We Hack platform][YesWeHack-Platform] with the role "Program Bug Tracker" for the desired program.
 
 # Installation
 
@@ -258,9 +253,7 @@ the report status will be set to _AFV_ only if the ServiceNow incident is set to
 
 - Have a user account on the [Yes We Hack platform][YesWeHack-Platform].
   This account will be used by the tool to interact with the platform:
-  - the user must have created an API Apps (_Account > My Yes We Hack -> API Apps_)
-  - the user must have the "Program Consumer" role on the programs, given by the Program or Business Unit manager
-- Be in possession of a custom HTTP header token that can be obtained by e-mailing [support@yeswehack.com](mailto:support@yeswehack.com)
+  - the user must have a Personal Access Token with the "Program Bug Tracker" role on the programs, given by the Program or Business Unit manager
 
 More information on how to set up API Apps or user roles are available in the official Yes We Hack User Guide
 that can be downloaded from the [Yes We Hack platform][YesWeHack-Platform].
@@ -269,16 +262,8 @@ that can be downloaded from the [Yes We Hack platform][YesWeHack-Platform].
 
 - **Key**: a unique name identifying this integration.
 - **API URL**: [Yes We Hack platform][YesWeHack-Platform] API URL.
-- **App headers**: a list of pairs of HTTP headers (header name and header value) 
-  that will be added to every call to the API.  
-  This list **must** include a pair with a header named `X-YesWeHack-Apps` and the value given by the Yes We Hack support.
-  See [Requirements](#requirements-4).
-- **Login**: Yes We Hack platform account login.
-- **Password**: Yes We Hack platform account password.
-- **OAuth settings**:
-  - **Client ID**: OAuth client ID.
-  - **Secret**: OAuth secret.
-  - **Redirect URI**: OAuth redirect.
+- **Personal Access Token**: a token.  
+  See [Requirements](#requirements-5).
 - **Verify TLS**: whether to verify if the API server's TLS certificate is valid.
 - **Programs**: a list of programs to be synchronized.
   - **Program slug**: a program slug.
@@ -297,7 +282,11 @@ that can be downloaded from the [Yes We Hack platform][YesWeHack-Platform].
     - **Issue closed to report AFV**: whether to set the reports status to "Ask for Fix Verification" 
       when the tracker issues are closed.
   - **Bug trackers**: a list of bug trackers keys.
-      
+
+**Notes**:
+- since v2.5.0, the API URL has been changed to `https://api.yeswehack.com`.
+- since v2.5.0, legacy options for OAuth authentication and TOTP are not available anymore.
+
 ## Command line
 
 The main script `ywh2bt` is used to execute synchronization, validate and test configurations.
@@ -369,13 +358,6 @@ $ docker run \
 
 # Known limitations and specific behaviours
 
-## Yes We Hack API TOTP
-
-Apps API doesn't require TOTP authentication, even if corresponding user has TOTP enabled.  
-However, on a secured program, information is limited for user with TOTP disabled, even in apps.  
-As a consequence, to allow proper bug tracking integration on a secured program,
-program consumer must have TOTP enabled and, in [Yes We Hack integration](#yes-we-hack-integration) TOTP must be set to `false`.
-
 ## Reports manual tracking
 
 Manually tracked reports (i.e., where a manager directly set the Tracking status to "tracked") 
@@ -401,6 +383,7 @@ won't be reflected in the report during subsequent synchronizations.
 
 ## Miscellaneous
 
+- Since v2.5.0, the [Yes We Hack platform][YesWeHack-Platform] API URL has been changed to `https://api.yeswehack.com`.
 - Since v2.0.0, unlike in previous versions, setting a tracked report back to "Ask for integration" 
   won't create a new issue in the tracker but update the existing one.
 - References to a same uploaded attachment in different comments is not supported yet,

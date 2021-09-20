@@ -9,16 +9,8 @@ bugtrackers:
 yeswehack:
   my-pgm:
     api_url: https://apps.yeswehack.com
-    apps_headers:
-      X-YesWeHack-Apps: my-custom-header
-    login: michel@example.com
-    password: azerty123!
-    oauth_args:
-      client_id: fa9a3b5b-1caf-4ae5-8350-30aeeb16a12d
-      client_secret: 43a3be42-229e-4f94-a0df-b1c62c64fb08
-      redirect_uri: https://example.com/redirect
+    pat: 7f8d43ad-3f5c-4a61-b4d2-d985ca3769a3
     verify: false
-    totp: false
     programs:
     - slug: my-pgm
       bugtrackers_name:

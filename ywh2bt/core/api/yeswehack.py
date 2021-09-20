@@ -21,8 +21,8 @@ from yeswehack.exceptions import APIError as YesWeHackRawAPiError
 from ywh2bt.core.api.client import TestableApiClient
 from ywh2bt.core.api.mapping import (
     MappingContext,
-    map_raw_logs,
     map_raw_attachment,
+    map_raw_logs,
     map_raw_report,
 )
 from ywh2bt.core.api.models.report import (
@@ -30,9 +30,7 @@ from ywh2bt.core.api.models.report import (
     Log,
     Report,
 )
-from ywh2bt.core.configuration.headers import Headers
 from ywh2bt.core.configuration.yeswehack import (
-    OAuthSettings,
     YesWeHackConfiguration,
 )
 from ywh2bt.core.exceptions import CoreException
@@ -77,19 +75,12 @@ class YesWeHackApiClient(TestableApiClient):
         self,
     ) -> YesWeHackRawApiClient:
         configuration = self._configuration
-        oauth_settings = cast(Optional[OAuthSettings], configuration.oauth_args)
-        oauth_mode = True if oauth_settings is not None and oauth_settings.export() else False  # noqa: WPS502
-        has_headers = configuration.apps_headers is not None
         try:
             client = YesWeHackRawApiClient(
-                username=configuration.login,
-                password=configuration.password,
                 api_url=self._normalize_api_url(
                     api_url=cast(str, configuration.api_url),
                 ),
-                oauth_mode=oauth_mode,
-                oauth_args=oauth_settings.export() if oauth_mode and oauth_settings else {},
-                apps_headers=cast(Headers, configuration.apps_headers).export() if has_headers else {},
+                pat=configuration.pat,
                 verify=configuration.verify,
                 lazy=True,
             )

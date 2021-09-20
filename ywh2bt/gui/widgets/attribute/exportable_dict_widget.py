@@ -410,7 +410,7 @@ class ExportableDictModel(QAbstractTableModel):
             row + count - 1,
         )
         key = list(self._exportable_dict.keys())[row]
-        self._exportable_dict = ExportableDict(
+        self._exportable_dict = self._exportable_dict.__class__(
             {
                 k: v for k, v in self._exportable_dict.items() if k != key
             },

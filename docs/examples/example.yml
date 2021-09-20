@@ -7,14 +7,7 @@ bugtrackers:
     project: my-project
 yeswehack:
   my-project-bug-bounty:
-    apps_headers:
-      X-YesWeHack-Apps: api-token
-    login: bot@my-company.com
-    password: 7IVpwUrDToxH@3$uo090C^Deevq4s8t8
-    oauth_args:
-      client_id: 7a0033b0-9f9e-47fa-b199-d5515f285e48
-      client_secret: azertyuiopsdfghjkl
-      redirect_uri: https://my-company.com/oauth/redirect
+    pat: 83eb3105-43a6-4c61-bf22-5f4b1a89cd6f
     programs:
     - slug: my-company-my-project
       synchronize_options:

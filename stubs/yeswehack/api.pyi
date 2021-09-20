@@ -10,16 +10,11 @@ import requests
 
 
 class YesWeHack:
-    token: str
     api_url: str
-    username: str
-    password: str
+    pat: str
     lazy: bool
     verify: bool
-    oauth_mode: bool
-    oauth_args: Dict[str, str]
     session: object
-    apps_headers: object
     managed_pgms: List[Any]
 
     def __init__(

@@ -1,16 +1,15 @@
 """Models and functions used for format conversion from jira to markdown."""
 
 import re
-import sys
-from typing import Dict, List
+from typing import (
+    Dict,
+    List,
+    Match,
+)
 
 from typing_extensions import Protocol
 
-if sys.version_info >= (3, 9):
-    MatchType = re.Match[str]
-else:
-    MatchType = re.Match
-
+MatchStr = Match[str]
 
 # inspired by https://github.com/metysj/jira2md.forked
 
@@ -75,7 +74,7 @@ def _replace_color(
 
 
 def _replace_header_sub(
-    match: MatchType,
+    match: MatchStr,
 ) -> str:
     prefix = '#' * int(match.group(1))
     title = match.group(2)
@@ -107,7 +106,7 @@ def _replace_italic(
 
 
 def _replace_list_sub(
-    match: MatchType,
+    match: MatchStr,
 ) -> str:
     prefix = '  ' * (len(match.group(1)) - 1)
     return f'{prefix}* '
@@ -138,7 +137,7 @@ def _replace_noformat(
 
 
 def _replace_numbered_list_sub(
-    match: MatchType,
+    match: MatchStr,
 ) -> str:
     prefix = '  ' * (len(match.group(1)) - 1)
     return f'{prefix}1. '
@@ -157,7 +156,7 @@ def _replace_panel(
 
 
 def _replace_quote_sub(
-    match: MatchType,
+    match: MatchStr,
 ) -> str:
     lines = match.group(1).strip().split('\n')
     joined_lines = '\n> '.join(lines).strip()
@@ -195,7 +194,7 @@ def _replace_superscript(
 
 
 def _replace_table_no_header_sub(
-    match: MatchType,
+    match: MatchStr,
 ) -> str:
     lookup_offset = match.start(1) - 1
     breaks_count = 0
@@ -221,7 +220,7 @@ def _replace_table_no_header(
 
 
 def _replace_table_header_sub(
-    match: MatchType,
+    match: MatchStr,
 ) -> str:
     header = match.group(1)
     single_barred = header.replace('||', '|')
@@ -299,7 +298,7 @@ class _Jira2Markdown:
             if match:
                 language = match.group(2) or ''
                 result = f'{result}```{language}{char}'
-                collecting = not collecting
+                collecting = not collecting  # noqa: WPS434
                 if collecting:
                     index += 1
             else:

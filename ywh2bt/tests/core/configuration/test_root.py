@@ -1,14 +1,16 @@
 import unittest
 
 from ywh2bt.core.configuration.error import AttributesError
-from ywh2bt.core.configuration.headers import Headers
 from ywh2bt.core.configuration.root import RootConfiguration
 from ywh2bt.core.configuration.tracker import Trackers
 from ywh2bt.core.configuration.trackers.github import GitHubConfiguration
 from ywh2bt.core.configuration.trackers.gitlab import GitLabConfiguration
 from ywh2bt.core.configuration.yeswehack import (
-    Bugtrackers, OAuthSettings, Program, Programs, YesWeHackConfiguration,
-    YesWeHackConfigurations
+    Bugtrackers,
+    Program,
+    Programs,
+    YesWeHackConfiguration,
+    YesWeHackConfigurations,
 )
 
 
@@ -29,18 +31,7 @@ class TestRoot(unittest.TestCase):
             yeswehack=YesWeHackConfigurations(
                 my_ywh=YesWeHackConfiguration(
                     api_url='http://example.com',
-                    login='michel@example.com',
-                    password='my-password',
-                    oauth_args=OAuthSettings(
-                        client_id='client-id',
-                        client_secret='client-secret',
-                        redirect_uri='http://example.com/oauth/redirect',
-                    ),
-                    apps_headers=Headers(
-                        {
-                            'X-YesWeHack-Apps': '123',
-                        },
-                    ),
+                    pat='e2d00087-a2fa-4fe2-ac1c-7abf1da2a036',
                     verify=True,
                     programs=Programs(
                         [
@@ -78,13 +69,7 @@ class TestRoot(unittest.TestCase):
             yeswehack=YesWeHackConfigurations(
                 my_ywh=YesWeHackConfiguration(
                     api_url='http://example.com',
-                    login='michel@example.com',
-                    password='my-password',
-                    oauth_args=OAuthSettings(
-                        client_id='client-id',
-                        client_secret='client-secret',
-                        redirect_uri='http://example.com/oauth/redirect',
-                    ),
+                    pat='e2d00087-a2fa-4fe2-ac1c-7abf1da2a036',
                     verify=True,
                     programs=Programs(
                         [
@@ -111,18 +96,7 @@ class TestRoot(unittest.TestCase):
             yeswehack=YesWeHackConfigurations(
                 my_ywh=YesWeHackConfiguration(
                     api_url='http://example.com',
-                    login='michel@example.com',
-                    password='my-password',
-                    oauth_args=OAuthSettings(
-                        client_id='client-id',
-                        client_secret='client-secret',
-                        redirect_uri='http://example.com/oauth/redirect',
-                    ),
-                    apps_headers=Headers(
-                        {
-                            'X-YesWeHack-Apps': '123',
-                        },
-                    ),
+                    pat='e2d00087-a2fa-4fe2-ac1c-7abf1da2a036',
                     verify=True,
                     programs=Programs(
                         [

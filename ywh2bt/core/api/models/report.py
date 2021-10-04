@@ -277,6 +277,14 @@ class StatusUpdateLog(Log):
 
 
 @dataclass
+class CloseLog(Log):
+    """A close log."""
+
+    old_status: Optional[Dict[str, Any]]
+    new_status: Optional[Dict[str, Any]]
+
+
+@dataclass
 class TrackingStatusLog(Log):
     """A tracking-status log."""
 

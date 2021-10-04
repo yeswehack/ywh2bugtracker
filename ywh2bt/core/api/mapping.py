@@ -16,6 +16,7 @@ from ywh2bt.core.api.models.report import (  # noqa: WPS235
     Attachment,
     Author,
     BugType,
+    CloseLog,
     CommentLog,
     Cvss,
     CvssUpdateLog,
@@ -268,6 +269,18 @@ def map_raw_log(  # noqa: WPS210,WPS212,WPS231
         context=context,
         raw_attachments=raw_log.attachments,
     )
+    if raw_log.type == 'close':
+        return CloseLog(
+            created_at=created_at,
+            log_id=log_id,
+            log_type=log_type,
+            private=private,
+            author=author,
+            message_html=message_html,
+            attachments=attachments,
+            old_status=raw_log.old_status,
+            new_status=raw_log.status,
+        )
     if raw_log.type == 'comment':
         return CommentLog(
             created_at=created_at,

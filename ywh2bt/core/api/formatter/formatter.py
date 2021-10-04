@@ -8,6 +8,7 @@ from singledispatchmethod import singledispatchmethod
 from typing_extensions import Protocol
 
 from ywh2bt.core.api.models.report import (
+    CloseLog,
     CommentLog,
     CvssUpdateLog,
     DetailsUpdateLog,
@@ -40,6 +41,7 @@ class ReportMessageFormatter(ABC):
 
     _report_title_template: Template
     _report_description_template: Template
+    _close_log_template: Template
     _comment_body_template: Template
     _comment_log_template: Template
     _cvss_update_log_template: Template
@@ -54,6 +56,7 @@ class ReportMessageFormatter(ABC):
         self,
         report_title_template: Template,
         report_description_template: Template,
+        close_log_template: Template,
         comment_body_template: Template,
         comment_log_template: Template,
         cvss_update_log_template: Template,
@@ -70,6 +73,7 @@ class ReportMessageFormatter(ABC):
         Args:
             report_title_template: a template for a report title
             report_description_template: a template for a report description
+            close_log_template: a template for a CloseLog
             comment_body_template: a template for an issue comment
             comment_log_template: a template for a template for a CommentLog
             cvss_update_log_template: a template for a CvssUpdateLog
@@ -82,6 +86,7 @@ class ReportMessageFormatter(ABC):
         """
         self._report_title_template = report_title_template
         self._report_description_template = report_description_template
+        self._close_log_template = close_log_template
         self._comment_body_template = comment_body_template
         self._comment_log_template = comment_log_template
         self._cvss_update_log_template = cvss_update_log_template
@@ -264,6 +269,23 @@ class ReportMessageFormatter(ABC):
         log: StatusUpdateLog,
     ) -> str:
         return self._status_update_log_template.substitute(
+            old_status=self._translate_status(
+                status=(log.old_status or {}).get('workflow_state') or '',
+            ),
+            new_status=self._translate_status(
+                status=(log.new_status or {}).get('workflow_state') or '',
+            ),
+            comment=self.transform_html(
+                html=log.message_html,
+            ),
+        )
+
+    @_transform_log.register
+    def _transform_close_log(
+        self,
+        log: CloseLog,
+    ) -> str:
+        return self._close_log_template.substitute(
             old_status=self._translate_status(
                 status=(log.old_status or {}).get('workflow_state') or '',
             ),

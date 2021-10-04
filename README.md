@@ -49,6 +49,9 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 
 ## Changelog
 
+- v2.5:
+    - added Personal Access Token (PAT) authentication
+    - removed OAuth authentication
 - v2.4:
     - added option to prevent recreation of issues that were created by a previous synchronization
       but are not found into the bug tracker anymore

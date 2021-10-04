@@ -23,6 +23,13 @@ Technical Environment: ${technical_environment}
 
 ${description}
 """
+CLOSE_LOG_TEMPLATE = """
+Report closed:
+${old_status} -> ${new_status}
+
+Comment:
+${comment}
+"""
 COMMENT_BODY_TEMPLATE = """
 Log: #${log_id}
 Date: ${date}
@@ -75,6 +82,7 @@ class ServiceNowReportMessageFormatter(ReportMessageFormatter):
         super().__init__(
             report_title_template=Template(REPORT_TITLE_TEMPLATE),
             report_description_template=Template(REPORT_DESCRIPTION_TEMPLATE),
+            close_log_template=Template(CLOSE_LOG_TEMPLATE),
             comment_body_template=Template(COMMENT_BODY_TEMPLATE),
             comment_log_template=Template(COMMENT_LOG_TEMPLATE),
             cvss_update_log_template=Template(CVSS_UPDATE_LOG_TEMPLATE),

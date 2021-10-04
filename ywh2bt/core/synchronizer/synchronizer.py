@@ -18,6 +18,7 @@ from typing import (
 
 from ywh2bt.core.api.models.report import (
     Attachment,
+    CloseLog,
     CommentLog,
     CvssUpdateLog,
     DetailsUpdateLog,
@@ -551,6 +552,7 @@ class ReportSynchronizer:
     ) -> bool:
         synchronize_options = self._synchronize_options
         return any((
+            isinstance(log, CloseLog) and synchronize_options.upload_status_updates,
             isinstance(log, CommentLog) and synchronize_options.upload_public_comments and not log.private,
             isinstance(log, CommentLog) and synchronize_options.upload_private_comments and log.private,
             isinstance(log, CvssUpdateLog) and synchronize_options.upload_cvss_updates,

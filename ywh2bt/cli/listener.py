@@ -128,7 +128,10 @@ class CliSynchronizerListener(SynchronizerListener):
         tracker_name = event.tracker_name
         report = event.report
         title_max_len = 32
-        title = report.title[:title_max_len] + (report.title[title_max_len:] and '...')
+        if report.title:
+            title = report.title[:title_max_len] + (report.title[title_max_len:] and '...')
+        else:
+            title = report.report_id
         report_details = f'#{report.report_id} ({title})'
         _print_timestamped(
             message=f'    Processing report {report_details} with "{tracker_name}": ',

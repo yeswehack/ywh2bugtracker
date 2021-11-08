@@ -51,7 +51,7 @@ class Report:
 
     raw_report: YesWeHackRawApiReport
     report_id: str
-    title: str
+    title: Optional[str]
     local_id: str
     bug_type: BugType
     scope: str

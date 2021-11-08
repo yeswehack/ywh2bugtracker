@@ -187,7 +187,10 @@ class _SynchronizerListener(SynchronizerListener):
         event: SynchronizerStartSendReportEvent,
     ) -> None:
         report = event.report
-        report_details = f'#{report.report_id} ({report.title})'
+        if report.title:
+            report_details = f'#{report.report_id} ({report.title})'
+        else:
+            report_details = f'#{report.report_id}'
         self._log_message(
             message=f'Processing report {report_details} with "{event.tracker_name}"...',
         )
@@ -230,7 +233,10 @@ class _SynchronizerListener(SynchronizerListener):
                 f'report => {" ; ".join(report_details)}',
             ),
         )
-        report_description = f'#{event.report.report_id} ({event.report.title})'
+        if event.report.title:
+            report_description = f'#{event.report.report_id} ({event.report.title})'
+        else:
+            report_description = f'#{event.report.report_id}'
         self._log_message(
             log_type=LogType.success,
             message=f'Processed report {report_description} with "{event.tracker_name}": {message}.',

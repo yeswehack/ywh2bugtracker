@@ -161,7 +161,7 @@ class Report:
     technical_environment: str
     technical_information: str
     technical_information_html: str
-    title: str
+    title: Optional[str]
     tracking_status: str
     vulnerable_part: str
 

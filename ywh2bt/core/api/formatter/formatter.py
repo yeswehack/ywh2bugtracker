@@ -141,7 +141,7 @@ class ReportMessageFormatter(ABC):
         return self._report_description_template.substitute(
             local_id=report.local_id,
             title=self._transform_value(
-                value=report.title,
+                value=report.title or '',
             ),
             priority_name=report.priority.name if report.priority else '',
             bug_type_label=self._get_property_label('bug_type'),

@@ -3,7 +3,9 @@ import asyncio
 import datetime
 import re
 from abc import ABC
+from copy import deepcopy
 from dataclasses import dataclass
+from string import Template
 from typing import (
     Any,
     Iterable,
@@ -25,6 +27,7 @@ from aiosnow.models.table.declared import (
     JournalModel,
 )
 
+from ywh2bt.core.api.formatter.markdown import ReportMessageMarkdownFormatter
 from ywh2bt.core.api.models.report import (
     Attachment,
     Log,
@@ -48,6 +51,7 @@ from ywh2bt.core.api.trackers.servicenow.model import (
 from ywh2bt.core.configuration.trackers.servicenow import ServiceNowConfiguration
 
 _RE_INLINE_ATTACHMENT = re.compile(pattern=r'(!?\[([^\]]+)]\(([^)]+)\))')
+_TEXT_MAX_SIZE = 32767  # ServiceNow has no defined limit but API sometime times out with big contents
 
 _MODEL_NOT_EQUALS_LIMIT = 100
 
@@ -62,6 +66,8 @@ class ServiceNowAsyncTrackerClient:
     _configuration: ServiceNowConfiguration
     _servicenow_client: Client
     _message_formatter: ServiceNowReportMessageFormatter
+
+    _attachments_list_description_item_markdown_template = Template('- [${name}](${url})')
 
     _incident_attachment_prefix: str = 'incident_'
     _comment_attachment_prefix: str = 'comment_'
@@ -327,20 +333,80 @@ class ServiceNowAsyncTrackerClient:
         short_description = self._message_formatter.format_report_title(
             report=report,
         )
-        description = self._replace_inline_attachments(
-            attachments=report.attachments,
-            content=self._message_formatter.format_report_description(
-                report=report,
-            ),
+        description = self._message_formatter.format_report_description(
+            report=report,
+        ) + self._get_attachments_list_description(
+            title='Attachments:',
+            item_template=self._attachments_list_description_item_markdown_template,
             file_name_prefix=self._incident_attachment_prefix,
+            attachments=report.attachments,
         )
+        markdown_description = ''
+        description_attachment = None
+        if len(description) > _TEXT_MAX_SIZE:
+            description_attachment = self._build_external_description_attachment(
+                name=f'report-{report.local_id.replace("#", "")}-description.md',
+            )
+            markdown_description = ReportMessageMarkdownFormatter().format_report_description(
+                report=report,
+            ) + self._get_attachments_list_description(
+                title='**Attachments**:',
+                item_template=self._attachments_list_description_item_markdown_template,
+                file_name_prefix=self._incident_attachment_prefix,
+                attachments=report.attachments,
+            )
+            report_copy = deepcopy(report)
+            report_copy.description_html = (
+                '<p>This report description is too big to fit into a ServiceNow issue. '
+                + f'See attachment <a href="{description_attachment.url}">{description_attachment.original_name}</a> '
+                + 'for more details.</p>'
+            )
+            description = self._replace_inline_attachments(
+                attachments=[
+                    description_attachment,
+                ],
+                file_name_prefix=self._incident_attachment_prefix,
+                content=self._message_formatter.format_report_description(
+                    report=report_copy,
+                ) + self._get_attachments_list_description(
+                    title='Attachments:',
+                    item_template=self._attachments_list_description_item_markdown_template,
+                    file_name_prefix=self._incident_attachment_prefix,
+                    attachments=[
+                        description_attachment,
+                        *report.attachments,
+                    ],
+                ),
+            )
+        description, markdown_description = self._replace_attachments_references(
+            attachments=report.attachments,
+            file_name_prefix=self._incident_attachment_prefix,
+            referencing_texts=[
+                description,
+                markdown_description,
+            ],
+        )
+        attachments = report.attachments
+        if description_attachment:
+            description_attachment.data_loader = lambda: bytes(markdown_description, 'utf-8')
+            description = self._replace_attachments_references(
+                attachments=report.attachments,
+                file_name_prefix=self._incident_attachment_prefix,
+                referencing_texts=[
+                    description,
+                ],
+            )[0]
+            attachments = [
+                description_attachment,
+                *attachments,
+            ]
         incident_data = await self._create_incident(
             short_description=short_description,
             description=description,
         )
         sys_id = incident_data['sys_id']
         await self._upload_attachments(
-            attachments=report.attachments,
+            attachments=attachments,
             file_name_prefix=self._incident_attachment_prefix,
             table_name='incident',
             record_sys_id=sys_id,
@@ -352,6 +418,20 @@ class ServiceNowAsyncTrackerClient:
             issue_id=sys_id,
             issue_url=issue_url,
             closed=False,
+        )
+
+    def _build_external_description_attachment(
+        self,
+        name: str,
+    ) -> Attachment:
+        return Attachment(
+            attachment_id=0,
+            name=name,
+            original_name=name,
+            mime_type='text/markdown',
+            size=0,
+            url=f'http://tracker/external/{name}',
+            data_loader=lambda: bytes('', 'utf-8'),
         )
 
     async def _create_incident(
@@ -410,6 +490,33 @@ class ServiceNowAsyncTrackerClient:
             ) from attachment_upload_exception
         return uploaded_attachments
 
+    def _get_attachments_list_description(
+        self,
+        title: str,
+        item_template: Template,
+        file_name_prefix: str,
+        attachments: List[Attachment],
+    ) -> str:
+        attachments_lines = []
+        if attachments:
+            attachments_lines = [
+                '',
+                title,
+            ]
+            for attachment in attachments:
+                attachments_lines.append(
+                    item_template.substitute(
+                        name=attachment.original_name,
+                        url=attachment.url,
+                    ),
+                )
+            attachments_lines.append('')
+        return self._replace_inline_attachments(
+            attachments=attachments,
+            content='\n'.join(attachments_lines),
+            file_name_prefix=file_name_prefix,
+        )
+
     async def send_logs(
         self,
         tracker_issue: TrackerIssue,
@@ -444,40 +551,10 @@ class ServiceNowAsyncTrackerClient:
         )
         if incident_data['state'].value.lower() == 'closed':
             return tracker_comments
-        incident_id = cast(str, incident_data['sys_id'])
         for log in logs:
-            comment = self._message_formatter.format_log(
+            comment_data, comment = await self._add_comment(
+                incident_data=incident_data,
                 log=log,
-            )
-            comment = self._replace_inline_attachments(
-                attachments=log.attachments,
-                content=comment,
-                file_name_prefix=self._comment_attachment_prefix,
-            )
-            async with IncidentModel(
-                self._servicenow_client,
-                table_name='incident',
-            ) as incident_model:
-                try:
-                    await incident_model.update(
-                        IncidentModel.sys_id == incident_id,
-                        {
-                            'comments': comment,
-                        },
-                    )
-                except AiosnowException as incident_update_exception:
-                    raise ServiceNowTrackerClientError(
-                        f'Unable to add comment to incident number {incident_data["number"]}',
-                    ) from incident_update_exception
-            comment_data = await self._get_incident_comment_id(
-                incident_id=incident_id,
-                comment=comment,
-            )
-            await self._upload_attachments(
-                attachments=log.attachments,
-                file_name_prefix=self._comment_attachment_prefix,
-                table_name='incident',
-                record_sys_id=incident_data['sys_id'],
             )
             tracker_comments.added_comments.append(
                 TrackerIssueComment(
@@ -490,6 +567,121 @@ class ServiceNowAsyncTrackerClient:
             )
         return tracker_comments
 
+    async def _add_comment(
+        self,
+        incident_data: Record,
+        log: Log,
+    ) -> Tuple[Record, str]:
+        incident_id = cast(str, incident_data['sys_id'])
+        comment = self._message_formatter.format_log(
+            log=log,
+        ) + self._get_attachments_list_description(
+            title='Attachments:',
+            item_template=self._attachments_list_description_item_markdown_template,
+            file_name_prefix=self._incident_attachment_prefix,
+            attachments=log.attachments,
+        )
+        markdown_comment = ''
+        comment_attachment = None
+        if len(comment) > _TEXT_MAX_SIZE:
+            comment_attachment = self._build_external_description_attachment(
+                name=f'comment-{log.log_id}-description.md',
+            )
+            markdown_comment = ReportMessageMarkdownFormatter().format_log(
+                log=log,
+            ) + self._get_attachments_list_description(
+                title='**Attachments**:',
+                item_template=self._attachments_list_description_item_markdown_template,
+                file_name_prefix=self._comment_attachment_prefix,
+                attachments=log.attachments,
+            )
+            log_copy = deepcopy(log)
+            log_copy.message_html = (
+                '<p>This comment is too big to fit into a ServiceNow comment. '
+                + f'See attachment <a href="{comment_attachment.url}">{comment_attachment.original_name}</a> '
+                + 'for more details.</p>'
+            )
+            comment = self._replace_inline_attachments(
+                attachments=[
+                    comment_attachment,
+                ],
+                file_name_prefix=self._incident_attachment_prefix,
+                content=self._message_formatter.format_log(
+                    log=log_copy,
+                ) + self._get_attachments_list_description(
+                    title='Attachments:',
+                    item_template=self._attachments_list_description_item_markdown_template,
+                    file_name_prefix=self._comment_attachment_prefix,
+                    attachments=[
+                        comment_attachment,
+                        *log.attachments,
+                    ],
+                ),
+            )
+        comment, markdown_comment = self._replace_attachments_references(
+            attachments=log.attachments,
+            file_name_prefix=self._comment_attachment_prefix,
+            referencing_texts=[
+                comment,
+                markdown_comment,
+            ],
+        )
+        attachments = log.attachments
+        if comment_attachment:
+            comment_attachment.data_loader = lambda: bytes(markdown_comment, 'utf-8')
+            comment = self._replace_attachments_references(
+                attachments=log.attachments,
+                file_name_prefix=self._incident_attachment_prefix,
+                referencing_texts=[
+                    comment,
+                ],
+            )[0]
+            attachments = [
+                comment_attachment,
+                *attachments,
+            ]
+        async with IncidentModel(
+            self._servicenow_client,
+            table_name='incident',
+        ) as incident_model:
+            try:
+                await incident_model.update(
+                    IncidentModel.sys_id == incident_id,
+                    {
+                        'comments': comment,
+                    },
+                )
+            except AiosnowException as incident_update_exception:
+                raise ServiceNowTrackerClientError(
+                    f'Unable to add comment to incident number {incident_data["number"]}',
+                ) from incident_update_exception
+        comment_data = await self._get_incident_comment_id(
+            incident_id=incident_id,
+            comment=comment,
+        )
+        await self._upload_attachments(
+            attachments=attachments,
+            file_name_prefix=self._comment_attachment_prefix,
+            table_name='incident',
+            record_sys_id=incident_data['sys_id'],
+        )
+        return comment_data, comment
+
+    def _replace_attachments_references(
+        self,
+        attachments: List[Attachment],
+        file_name_prefix: str,
+        referencing_texts: List[str],
+    ) -> List[str]:
+        return [
+            self._replace_inline_attachments(
+                attachments=attachments,
+                content=text,
+                file_name_prefix=file_name_prefix,
+            )
+            for text in referencing_texts
+        ]
+
     def _replace_inline_attachments(
         self,
         attachments: List[Attachment],
@@ -500,7 +692,7 @@ class ServiceNowAsyncTrackerClient:
         inline_attachments = _RE_INLINE_ATTACHMENT.findall(content)
         for match, attachment_name, url in inline_attachments:
             if url in attachment_urls:
-                content = content.replace(match, f'[See attachment "{file_name_prefix}{attachment_name}"]')
+                content = content.replace(match, f'{file_name_prefix}{attachment_name}')
         return content
 
     async def _get_incident_comment_id(

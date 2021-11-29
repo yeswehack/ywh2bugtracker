@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 import re
+from copy import deepcopy
 from datetime import datetime
 from typing import (
     Dict,
@@ -43,6 +44,7 @@ from ywh2bt.core.configuration.trackers.gitlab import GitLabConfiguration
 
 _RE_IMAGE = re.compile(pattern=r'!\[([^\]]+)]\(([^)]+)\)')
 _RE_CONTENT_DISPOSITION_FILENAME = re.compile(pattern='filename="([^"]+)";?')
+_TEXT_MAX_SIZE = 1000000
 
 
 class GitLabTrackerClientError(TrackerClientError):
@@ -174,22 +176,61 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
         """
         self._ensure_auth()
         gitlab_project = self._get_gitlab_project()
-        description = self._message_formatter.format_report_description(
+        title = self._message_formatter.format_report_title(
             report=report,
         )
-        uploads = self._upload_attachments(
-            gitlab_project=gitlab_project,
+        description = self._message_formatter.format_report_description(
+            report=report,
+        ) + self._get_attachments_list_description(
             attachments=report.attachments,
         )
-        description = self._replace_description_attachments(
-            description=description,
-            uploads=uploads,
+        external_description = ''
+        description_attachment = None
+        if len(description) > _TEXT_MAX_SIZE:
+            external_description = description
+            description_attachment = self._build_external_description_attachment(
+                name=f'report-{report.local_id.replace("#", "")}-description.md',
+            )
+            report_copy = deepcopy(report)
+            report_copy.description_html = (
+                '<p>This report description is too large to fit into a GitLab issue. '
+                + f'See attachment <a href="{description_attachment.url}">{description_attachment.original_name}</a> '
+                + 'for more details.</p>'
+            )
+            description = self._message_formatter.format_report_description(
+                report=report_copy,
+            ) + self._get_attachments_list_description(
+                attachments=[
+                    description_attachment,
+                    *report.attachments,
+                ],
+            )
+        description, external_description = self._replace_attachments_references(
+            uploads=self._upload_attachments(
+                gitlab_project=gitlab_project,
+                attachments=report.attachments,
+            ),
+            referencing_texts=[
+                description,
+                external_description,
+            ],
         )
+        if description_attachment:
+            description_attachment.data_loader = lambda: bytes(external_description, 'utf-8')
+            description = self._replace_attachments_references(
+                uploads=self._upload_attachments(
+                    gitlab_project=gitlab_project,
+                    attachments=[
+                        description_attachment,
+                    ],
+                ),
+                referencing_texts=[
+                    description,
+                ],
+            )[0]
         gitlab_issue = self._create_issue(
             gitlab_project=gitlab_project,
-            title=self._message_formatter.format_report_title(
-                report=report,
-            ),
+            title=title,
             description=description,
             confidential=self.configuration.confidential or False,
         )
@@ -197,6 +238,20 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
             issue_id=str(gitlab_issue.id),
             issue_url=gitlab_issue.web_url,
             closed=False,
+        )
+
+    def _build_external_description_attachment(
+        self,
+        name: str,
+    ) -> Attachment:
+        return Attachment(
+            attachment_id=0,
+            name=name,
+            original_name=name,
+            mime_type='text/markdown',
+            size=0,
+            url=f'http://tracker/external/{name}',
+            data_loader=lambda: bytes('', 'utf-8'),
         )
 
     def _extract_comments(
@@ -362,6 +417,21 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
                 return gitlab_issue
         return None
 
+    def _replace_attachments_references(
+        self,
+        uploads: List[Tuple[Attachment, str]],
+        referencing_texts: List[str],
+    ) -> List[str]:
+        for attachment, upload_url in uploads:
+            referencing_texts = [
+                text.replace(
+                    attachment.url,
+                    f'{self.configuration.url}/{self.configuration.project}{upload_url}',
+                )
+                for text in referencing_texts
+            ]
+        return referencing_texts
+
     def _upload_attachments(
         self,
         gitlab_project: Project,
@@ -380,28 +450,22 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
                 f'Unable to upload attachments for project {self.configuration.project} to GitLab',
             ) from e
 
-    def _replace_description_attachments(
+    def _get_attachments_list_description(
         self,
-        description: str,
-        uploads: List[Tuple[Attachment, str]],
+        attachments: List[Attachment],
     ) -> str:
-        if uploads:
+        attachments_lines = []
+        if attachments:
             attachments_lines = [
                 '',
-                'Attachments:',
+                '**Attachments**:',
             ]
-            for attachment, uploaded_url in uploads:
-                description = description.replace(
-                    attachment.url,
-                    uploaded_url,
-                )
+            for attachment in attachments:
                 attachments_lines.append(
-                    f'- [{attachment.original_name}]({uploaded_url})',
+                    f'- [{attachment.original_name}]({attachment.url})',
                 )
             attachments_lines.append('')
-            joined_attachments_lines = '\n'.join(attachments_lines)
-            description = f'{description}{joined_attachments_lines}'
-        return description
+        return '\n'.join(attachments_lines)
 
     def _create_issue(
         self,
@@ -430,15 +494,53 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
     ) -> ProjectIssueNote:
         comment_body = self._message_formatter.format_log(
             log=log,
-        )
-        uploads = self._upload_attachments(
-            gitlab_project=gitlab_project,
+        ) + self._get_attachments_list_description(
             attachments=log.attachments,
         )
-        comment_body = self._replace_description_attachments(
-            description=comment_body,
-            uploads=uploads,
+        external_body = ''
+        body_attachment = None
+        if len(comment_body) > _TEXT_MAX_SIZE:
+            external_body = comment_body
+            body_attachment = self._build_external_description_attachment(
+                name=f'comment-{log.log_id}-description.md',
+            )
+            log_copy = deepcopy(log)
+            log_copy.message_html = (
+                '<p>This comment is too large to fit into a GitLab comment. '
+                + f'See attachment <a href="{body_attachment.url}">{body_attachment.original_name}</a> '
+                + 'for more details.</p>'
+            )
+            comment_body = self._message_formatter.format_log(
+                log=log_copy,
+            ) + self._get_attachments_list_description(
+                attachments=[
+                    body_attachment,
+                    *log.attachments,
+                ],
+            )
+        comment_body, external_body = self._replace_attachments_references(
+            uploads=self._upload_attachments(
+                gitlab_project=gitlab_project,
+                attachments=log.attachments,
+            ),
+            referencing_texts=[
+                comment_body,
+                external_body,
+            ],
         )
+        if body_attachment:
+            body_attachment.data_loader = lambda: bytes(external_body, 'utf-8')
+            comment_body = self._replace_attachments_references(
+                uploads=self._upload_attachments(
+                    gitlab_project=gitlab_project,
+                    attachments=[
+                        body_attachment,
+                    ],
+                ),
+                referencing_texts=[
+                    comment_body,
+                ],
+            )[0]
         try:
             return gitlab_issue.notes.create({
                 'body': comment_body,

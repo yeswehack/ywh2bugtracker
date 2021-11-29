@@ -1,6 +1,8 @@
 import unittest
 
+from ywh2bt.core.api.models.report import Attachment
 from ywh2bt.core.html import (
+    cleanup_attachments_and_urls_from_html,
     cleanup_ywh_redirects_from_html,
     cleanup_ywh_redirects_from_text,
 )
@@ -76,4 +78,53 @@ class TestHtml(unittest.TestCase):
 [https://example.com/?expires=456](https://example.com/?expires=456)
 [https://example.com/?token=123&expires=456](https://example.com/?token=123&expires=456)
 [https://example.com/?foo=bar&token=123&expires=456](https://example.com/?foo=bar&token=123&expires=456)''',
+        )
+
+    def test_cleanup_attachments_and_urls_from_html(self) -> None:
+        attachments = [
+            self._build_attachment(url='https://ywh.domain/1234?abcd'),
+            self._build_attachment(url='https://ywh.domain/5678?efgh'),
+        ]
+        html = '''
+<a href="https://ywh.domain/1234?ijkl">
+    https://ywh.domain/1234
+</a>        
+<a href="https://ywh.domain/5678?mnop">
+    https://ywh.domain/5678
+</a>        
+<a href="https://ywh.domain/910?qrst">
+    https://ywh.domain/910
+</a>'''
+        cleaned_html, cleaned_attachments = cleanup_attachments_and_urls_from_html(
+            html=html,
+            attachments=attachments,
+        )
+        self.assertEqual(2, len(cleaned_attachments))
+        self.assertEqual(cleaned_attachments[0].url, 'https://ywh.domain/1234')
+        self.assertEqual(cleaned_attachments[1].url, 'https://ywh.domain/5678')
+        self.assertEqual(
+            cleaned_html,'''
+<a href="https://ywh.domain/1234">
+    https://ywh.domain/1234
+</a>        
+<a href="https://ywh.domain/5678">
+    https://ywh.domain/5678
+</a>        
+<a href="https://ywh.domain/910?qrst">
+    https://ywh.domain/910
+</a>'''
+        )
+
+    def _build_attachment(
+        self,
+        url: str,
+    ) -> Attachment:
+        return Attachment(
+            attachment_id=0,
+            name="str",
+            original_name="fake",
+            mime_type="text/plain",
+            size=0,
+            url=url,
+            data_loader=lambda: b'',
         )

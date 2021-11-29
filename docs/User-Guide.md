@@ -381,6 +381,19 @@ in the bug tracker issues or in the reports.
 Modifications of bug tracker comments that happen after a successful synchronization 
 won't be reflected in the report during subsequent synchronizations.
 
+## Bug trackers text size limitations
+
+The bug trackers have a maximum size allowed for the text of the issues or comments.
+When a platform report or comment size exceeds the maximum size allowed by a tracker,
+the content is put into a Markdown file which is attached to the issue or comment instead.
+
+| Bug tracker | Maximum size allowed |
+| ----------- | -------------------: |
+| GitHub      |          65536 bytes |
+| GitLab      |        1000000 bytes |
+| Jira        |          32767 bytes |
+| ServiceNow  |          32767 bytes |
+
 ## Miscellaneous
 
 - Since v2.5.0, the [Yes We Hack platform][YesWeHack-Platform] API URL has been changed to `https://api.yeswehack.com`.

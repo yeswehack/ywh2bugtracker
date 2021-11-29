@@ -32,7 +32,11 @@ from ywh2bt.core.api.models.report import (  # noqa: WPS235
     TrackerUpdateLog,
     TrackingStatusLog,
 )
-from ywh2bt.core.html import cleanup_ywh_redirects_from_html, cleanup_ywh_redirects_from_text
+from ywh2bt.core.html import (
+    cleanup_attachments_and_urls_from_html,
+    cleanup_ywh_redirects_from_html,
+    cleanup_ywh_redirects_from_text,
+)
 
 
 @dataclass
@@ -59,6 +63,14 @@ def map_raw_report(
     attachments = _map_raw_attachments(
         context=context,
         raw_attachments=raw_report.attachments,
+    )
+    description_html = cleanup_ywh_redirects_from_html(
+        ywh_domain=context.yeswehack_domain,
+        html=raw_report.description_html,
+    )
+    description_html, attachments = cleanup_attachments_and_urls_from_html(
+        html=description_html,
+        attachments=attachments,
     )
     bug_type = _map_raw_bug_type(
         context=context,
@@ -97,10 +109,7 @@ def map_raw_report(
         part_name=raw_report.part_name,
         payload_sample=raw_report.payload_sample,
         technical_environment=raw_report.technical_environment,
-        description_html=cleanup_ywh_redirects_from_html(
-            ywh_domain=context.yeswehack_domain,
-            html=raw_report.description_html,
-        ),
+        description_html=description_html,
         attachments=attachments,
         hunter=hunter,
         status=status,
@@ -261,13 +270,17 @@ def map_raw_log(  # noqa: WPS210,WPS212,WPS231
     ) if raw_log.author else Author(
         username='Anonymous',
     )
+    attachments = _map_raw_attachments(
+        context=context,
+        raw_attachments=raw_log.attachments,
+    )
     message_html = cleanup_ywh_redirects_from_html(
         ywh_domain=context.yeswehack_domain,
         html=raw_log.message_html or '',
     )
-    attachments = _map_raw_attachments(
-        context=context,
-        raw_attachments=raw_log.attachments,
+    message_html, attachments = cleanup_attachments_and_urls_from_html(
+        html=message_html,
+        attachments=attachments,
     )
     if raw_log.type == 'close':
         return CloseLog(

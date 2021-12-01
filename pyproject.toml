@@ -46,7 +46,7 @@ types-chardet = "*"
 types-requests = "*"
 types-setuptools = "*"
 tomlkit = "^0.7.0"
-yeswehack = ">=0.7.1,<1"
+yeswehack = ">=0.7.2,<1"
 
 [tool.poetry.dev-dependencies]
 mypy = "*"

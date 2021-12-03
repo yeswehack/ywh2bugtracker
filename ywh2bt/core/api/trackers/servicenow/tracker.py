@@ -56,6 +56,23 @@ _TEXT_MAX_SIZE = 32767  # ServiceNow has no defined limit but API sometime times
 _MODEL_NOT_EQUALS_LIMIT = 100
 
 
+@dataclass
+class RecordWrapper(ABC):
+    """A wrapper for records."""
+
+    data: Record
+
+
+@dataclass
+class CommentRecordWrapper(RecordWrapper):
+    """A wrapper for comment records."""
+
+
+@dataclass
+class AttachmentRecordWrapper(RecordWrapper):
+    """A wrapper for attachment records."""
+
+
 class ServiceNowTrackerClientError(TrackerClientError):
     """A ServiceNow tracker client error."""
 
@@ -191,8 +208,16 @@ class ServiceNowAsyncTrackerClient:
             ),
         )
         wrapped_items = sorted(wrapped_items, key=_sort_key_wrapped_sys_created_on)
+        return await self._extract_comments_from_records(
+            records=wrapped_items,
+        )
+
+    async def _extract_comments_from_records(
+        self,
+        records: List[RecordWrapper],
+    ) -> List[TrackerIssueComment]:
         comments = []
-        for wrapped_item in wrapped_items:
+        for wrapped_item in records:
             if isinstance(wrapped_item, CommentRecordWrapper):
                 comments.append(
                     self._extract_comment(
@@ -200,12 +225,30 @@ class ServiceNowAsyncTrackerClient:
                     ),
                 )
             elif isinstance(wrapped_item, AttachmentRecordWrapper):
-                comments.append(
-                    await self._extract_attachment(
-                        attachment_data=wrapped_item.data,
-                    ),
+                comment = await self._extract_comment_attachment_from_record(
+                    record=wrapped_item,
                 )
+                if comment.attachments:
+                    comments.append(
+                        comment,
+                    )
         return comments
+
+    async def _extract_comment_attachment_from_record(
+        self,
+        record: AttachmentRecordWrapper,
+    ) -> TrackerIssueComment:
+        comment = await self._extract_attachment(
+            attachment_data=record.data,
+        )
+        attachments = {}
+        for attachment_file_name, attachment in comment.attachments.items():
+            is_incident_attachment = attachment_file_name.startswith(self._incident_attachment_prefix)
+            is_comment_attachment = attachment_file_name.startswith(self._comment_attachment_prefix)
+            if not is_incident_attachment and not is_comment_attachment:
+                attachments[attachment_file_name] = attachment
+        comment.attachments = attachments
+        return comment
 
     def _exclude_from_list(
         self,
@@ -867,23 +910,6 @@ class ServiceNowTrackerClient(TrackerClient[ServiceNowConfiguration]):
     ) -> None:
         """Test the client."""
         asyncio.run(self._async_client.test())
-
-
-@dataclass
-class RecordWrapper(ABC):
-    """A wrapper for records."""
-
-    data: Record
-
-
-@dataclass
-class CommentRecordWrapper(RecordWrapper):
-    """A wrapper for comment records."""
-
-
-@dataclass
-class AttachmentRecordWrapper(RecordWrapper):
-    """A wrapper for attachment records."""
 
 
 def _sort_key_wrapped_sys_created_on(

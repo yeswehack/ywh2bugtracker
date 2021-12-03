@@ -145,6 +145,11 @@ Legend:
 - **Login**: GitHub account login. Only used when "Use CDN" is activated.
 - **Password**: GitHub account password. Only used when "Use CDN" is activated.
 
+##### Known limitations
+
+When "Use CDN" is activated, the GitHub account associated with the "Login"
+cannot have the two-factor authentication enabled.
+
 #### GitLab integration
 
 ![GitLab integration screen](img/ui-gitlab-empty.png)

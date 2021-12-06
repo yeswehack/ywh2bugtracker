@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="keywords" content="md5sum=2a4fd1f54cda1401dd72a592f95f0394" />
+  <meta name="keywords" content="md5sum=f6529891e32380e1fa4a040d0ad20606" />
   <title>YWH2BT User Guide</title>
   <style>
     html {
@@ -22,7 +22,7 @@
       padding-top: 50px;
       padding-bottom: 50px;
       hyphens: auto;
-      word-wrap: break-word;
+      overflow-wrap: break-word;
       text-rendering: optimizeLegibility;
       font-kerning: normal;
     }
@@ -93,6 +93,7 @@
     pre code {
       padding: 0;
       overflow: visible;
+      overflow-wrap: normal;
     }
     .sourceCode {
      background-color: transparent;
@@ -400,7 +401,8 @@
 <li><a href="#multiple-bug-trackers-per-program"><span class="toc-section-number">5.2</span> Multiple bug trackers per program</a></li>
 <li><a href="#changes-of-options-between-synchronizations"><span class="toc-section-number">5.3</span> Changes of options between synchronizations</a></li>
 <li><a href="#modifications-of-comments-post-synchronization"><span class="toc-section-number">5.4</span> Modifications of comments post synchronization</a></li>
-<li><a href="#miscellaneous"><span class="toc-section-number">5.5</span> Miscellaneous</a></li>
+<li><a href="#bug-trackers-text-size-limitations"><span class="toc-section-number">5.5</span> Bug trackers text size limitations</a></li>
+<li><a href="#miscellaneous"><span class="toc-section-number">5.6</span> Miscellaneous</a></li>
 </ul></li>
 <li><a href="#resources"><span class="toc-section-number">6</span> Resources</a>
 <ul>
@@ -543,6 +545,10 @@ e.g. for the project located at <code>https://github.com/yeswehack/ywh2bugtracke
 <li><strong>Login</strong>: GitHub account login. Only used when &quot;Use CDN&quot; is activated.</li>
 <li><strong>Password</strong>: GitHub account password. Only used when &quot;Use CDN&quot; is activated.</li>
 </ul>
+</section>
+<section id="known-limitations" class="level5" data-number="4.2.4.1.3">
+<h5 data-number="4.2.4.1.3"><span class="header-section-number">4.2.4.1.3</span> Known limitations</h5>
+<p>When &quot;Use CDN&quot; is activated, the GitHub account associated with the &quot;Login&quot; cannot have the two-factor authentication enabled.</p>
 </section>
 </section>
 <section id="gitlab-integration" class="level4" data-number="4.2.4.2">
@@ -795,8 +801,38 @@ See <code>ywh2bt -h</code> or <code>ywh2bt [command] -h</code> for detailed help
 <h2 data-number="5.4"><span class="header-section-number">5.4</span> Modifications of comments post synchronization</h2>
 <p>Modifications of bug tracker comments that happen after a successful synchronization won&#39;t be reflected in the report during subsequent synchronizations.</p>
 </section>
-<section id="miscellaneous" class="level2" data-number="5.5">
-<h2 data-number="5.5"><span class="header-section-number">5.5</span> Miscellaneous</h2>
+<section id="bug-trackers-text-size-limitations" class="level2" data-number="5.5">
+<h2 data-number="5.5"><span class="header-section-number">5.5</span> Bug trackers text size limitations</h2>
+<p>The bug trackers have a maximum size allowed for the text of the issues or comments. When a platform report or comment size exceeds the maximum size allowed by a tracker, the content is put into a Markdown file which is attached to the issue or comment instead.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Bug tracker</th>
+<th style="text-align: right;">Maximum size allowed</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>GitHub</td>
+<td style="text-align: right;">65536 bytes</td>
+</tr>
+<tr class="even">
+<td>GitLab</td>
+<td style="text-align: right;">1000000 bytes</td>
+</tr>
+<tr class="odd">
+<td>Jira</td>
+<td style="text-align: right;">32767 bytes</td>
+</tr>
+<tr class="even">
+<td>ServiceNow</td>
+<td style="text-align: right;">32767 bytes</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="miscellaneous" class="level2" data-number="5.6">
+<h2 data-number="5.6"><span class="header-section-number">5.6</span> Miscellaneous</h2>
 <ul>
 <li>Since v2.5.0, the <a href="https://www.yeswehack.com">Yes We Hack platform</a> API URL has been changed to <code>https://api.yeswehack.com</code>.</li>
 <li>Since v2.0.0, unlike in previous versions, setting a tracked report back to &quot;Ask for integration&quot; won&#39;t create a new issue in the tracker but update the existing one.</li>

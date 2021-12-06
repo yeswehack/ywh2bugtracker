@@ -1,5 +1,6 @@
 """Models and functions used for manipulating html data."""
 import re
+from copy import deepcopy
 from html import (
     escape as html_escape,
     unescape as html_unescape,
@@ -8,6 +9,8 @@ from typing import (
     Iterator,
     List,
     Optional,
+    Set,
+    Tuple,
     cast,
 )
 from urllib.parse import (
@@ -18,6 +21,8 @@ from urllib.parse import (
 
 import html2text
 from bs4 import BeautifulSoup  # type: ignore
+
+from ywh2bt.core.api.models.report import Attachment
 
 
 def ywh_html_to_markdown(
@@ -143,3 +148,44 @@ def _extract_real_url_from_redirect(
     if 'url' in params:
         return cast(List[str], params.get('url'))[0]
     return None
+
+
+def cleanup_attachments_and_urls_from_html(
+    html: str,
+    attachments: List[Attachment],
+) -> Tuple[str, List[Attachment]]:
+    """
+    Remove query parameters from attachments urls and from references in the HTML.
+
+    Args:
+        html: an html
+        attachments: a list of attachments
+
+    Returns:
+        the cleaned html
+    """
+    clean_attachments = []
+    clean_attachments_urls = []
+    attachments_domains: Set[str] = set()
+    for attachment in attachments:
+        parsed_url = urlsplit(attachment.url)
+        attachments_domains.add(parsed_url.netloc)
+        clean_attachment = deepcopy(attachment)
+        clean_attachment.url = f'{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}'
+        clean_attachments.append(clean_attachment)
+        clean_attachments_urls.append(clean_attachment.url)
+    domains_base_re = '|'.join([
+        re.escape(domain)
+        for domain in attachments_domains
+    ])
+    pattern = re.compile(f'"(https?://(?:{domains_base_re})[^ "]*)"')
+    html_urls = pattern.findall(html)
+    for html_url in html_urls:
+        parsed_html_url = urlsplit(html_url)
+        clean_html_url = f'{parsed_html_url.scheme}://{parsed_html_url.netloc}{parsed_html_url.path}'
+        if clean_html_url in clean_attachments_urls:
+            html = html.replace(
+                html_url,
+                clean_html_url,
+            )
+    return html, clean_attachments

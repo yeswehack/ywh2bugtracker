@@ -1,6 +1,8 @@
 """Models and functions used for data synchronisation between YesWeHack and Jira trackers."""
 import re
+from copy import deepcopy
 from datetime import datetime
+from string import Template
 from typing import (
     Any,
     Dict,
@@ -19,6 +21,7 @@ from jira import (  # type: ignore
 )
 from jira.utils import CaseInsensitiveDict  # type: ignore
 
+from ywh2bt.core.api.formatter.markdown import ReportMessageMarkdownFormatter
 from ywh2bt.core.api.models.report import (
     Attachment,
     Log,
@@ -38,11 +41,10 @@ from ywh2bt.core.configuration.trackers.jira import JiraConfiguration
 from ywh2bt.core.converter.jira2markdown import jira2markdown
 
 _RE_IMAGE = re.compile(pattern=r'!([^!|]+)(?:\|[^!]*)?!')
+_TEXT_MAX_SIZE = 32767
 
 
 # hot patching shenanigans
-
-
 def _case_insensitive_dict_init_hot_patch(
     obj: CaseInsensitiveDict,
     *args: Any,
@@ -69,6 +71,9 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
 
     _jira: Optional[JIRA]
     _message_formatter: JiraReportMessageFormatter
+
+    _attachments_list_description_item_jira_template = Template('- [${name}|${url}]')
+    _attachments_list_description_item_markdown_template = Template('- [${name}](${url})')
 
     def __init__(
         self,
@@ -230,20 +235,67 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
         )
         description = self._message_formatter.format_report_description(
             report=report,
-        )
-        jira_issue = self._create_issue(
-            title=title,
-            description=description,
-        )
-        uploads = self._upload_attachments(
-            issue=jira_issue,
+        ) + self._get_attachments_list_description(
+            title='*Attachments*:',
+            item_template=self._attachments_list_description_item_jira_template,
             attachments=report.attachments,
         )
-        for attachment_url, uploaded_url in uploads:
-            description = description.replace(
-                attachment_url,
-                uploaded_url,
+        markdown_description = ''
+        description_attachment = None
+        if len(description) > _TEXT_MAX_SIZE:
+            description_attachment = self._build_external_description_attachment(
+                name=f'report-{report.local_id.replace("#", "")}-description.md',
             )
+            markdown_description = ReportMessageMarkdownFormatter().format_report_description(
+                report=report,
+            ) + self._get_attachments_list_description(
+                title='**Attachments**:',
+                item_template=self._attachments_list_description_item_markdown_template,
+                attachments=report.attachments,
+            )
+            report_copy = deepcopy(report)
+            report_copy.description_html = (
+                '<p>This report description is too large to fit into a JIRA issue. '
+                + f'See attachment <a href="{description_attachment.url}">{description_attachment.original_name}</a> '
+                + 'for more details.</p>'
+            )
+            description = self._message_formatter.format_report_description(
+                report=report_copy,
+            ) + self._get_attachments_list_description(
+                title='*Attachments*:',
+                item_template=self._attachments_list_description_item_jira_template,
+                attachments=[
+                    description_attachment,
+                    *report.attachments,
+                ],
+            )
+        jira_issue = self._create_issue(
+            title=title,
+            description='This issue is being synchronized. Please check back in a moment.',
+        )
+        description, markdown_description = self._replace_attachments_references(
+            uploads=self._upload_attachments(
+                issue=jira_issue,
+                attachments=report.attachments,
+            ),
+            referencing_texts=[
+                description,
+                markdown_description,
+            ],
+        )
+        if description_attachment:
+            description_attachment.data_loader = lambda: bytes(markdown_description, 'utf-8')
+            description = self._replace_attachments_references(
+                uploads=self._upload_attachments(
+                    issue=jira_issue,
+                    attachments=[
+                        description_attachment,
+                    ],
+                ),
+                referencing_texts=[
+                    description,
+                ],
+            )[0]
         jira_issue.update(
             description=description,
         )
@@ -251,6 +303,20 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
             issue_id=jira_issue.key,
             issue_url=jira_issue.permalink(),
             closed=False,
+        )
+
+    def _build_external_description_attachment(
+        self,
+        name: str,
+    ) -> Attachment:
+        return Attachment(
+            attachment_id=0,
+            name=name,
+            original_name=name,
+            mime_type='text/markdown',
+            size=0,
+            url=f'http://tracker/external/{name}',
+            data_loader=lambda: bytes('', 'utf-8'),
         )
 
     def send_logs(
@@ -354,16 +420,63 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
     ) -> JIRAComment:
         comment_body = self._message_formatter.format_log(
             log=log,
-        )
-        uploads = self._upload_attachments(
-            issue=issue,
+        ) + self._get_attachments_list_description(
+            title='*Attachments*:',
+            item_template=self._attachments_list_description_item_jira_template,
             attachments=log.attachments,
         )
-        for attachment_url, uploaded_url in uploads:
-            comment_body = comment_body.replace(
-                attachment_url,
-                uploaded_url,
+        markdown_description = ''
+        body_attachment = None
+        if len(comment_body) > _TEXT_MAX_SIZE:
+            body_attachment = self._build_external_description_attachment(
+                name=f'comment-{log.log_id}-description.md',
             )
+            markdown_description = ReportMessageMarkdownFormatter().format_log(
+                log=log,
+            ) + self._get_attachments_list_description(
+                title='**Attachments**:',
+                item_template=self._attachments_list_description_item_markdown_template,
+                attachments=log.attachments,
+            )
+            log_copy = deepcopy(log)
+            log_copy.message_html = (
+                '<p>This comment is too large to fit into a JIRA comment. '
+                + f'See attachment <a href="{body_attachment.url}">{body_attachment.original_name}</a> '
+                + 'for more details.</p>'
+            )
+            comment_body = self._message_formatter.format_log(
+                log=log_copy,
+            ) + self._get_attachments_list_description(
+                title='*Attachments*:',
+                item_template=self._attachments_list_description_item_jira_template,
+                attachments=[
+                    body_attachment,
+                    *log.attachments,
+                ],
+            )
+        comment_body, markdown_description = self._replace_attachments_references(
+            uploads=self._upload_attachments(
+                issue=issue,
+                attachments=log.attachments,
+            ),
+            referencing_texts=[
+                comment_body,
+                markdown_description,
+            ],
+        )
+        if body_attachment:
+            body_attachment.data_loader = lambda: bytes(markdown_description, 'utf-8')
+            comment_body = self._replace_attachments_references(
+                uploads=self._upload_attachments(
+                    issue=issue,
+                    attachments=[
+                        body_attachment,
+                    ],
+                ),
+                referencing_texts=[
+                    comment_body,
+                ],
+            )[0]
         try:
             return self._get_client().add_comment(
                 issue=str(issue),
@@ -374,11 +487,46 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
                 f'Unable to add JIRA comment for issue {issue} in project {self.configuration.project}',
             ) from e
 
+    def _upload_attachments_and_substitute_references(
+        self,
+        issue: JIRAIssue,
+        attachments: List[Attachment],
+        referencing_texts: List[str],
+    ) -> List[str]:
+        uploads = self._upload_attachments(
+            issue=issue,
+            attachments=attachments,
+        )
+        for attachment, upload_url in uploads:
+            referencing_texts = [
+                text.replace(
+                    attachment.url,
+                    upload_url,
+                )
+                for text in referencing_texts
+            ]
+        return referencing_texts
+
+    def _replace_attachments_references(
+        self,
+        uploads: List[Tuple[Attachment, str]],
+        referencing_texts: List[str],
+    ) -> List[str]:
+        for attachment, upload_url in uploads:
+            referencing_texts = [
+                text.replace(
+                    attachment.url,
+                    upload_url,
+                )
+                for text in referencing_texts
+            ]
+        return referencing_texts
+
     def _upload_attachments(
         self,
         issue: JIRAIssue,
         attachments: List[Attachment],
-    ) -> List[Tuple[str, str]]:
+    ) -> List[Tuple[Attachment, str]]:
         uploads = []
         for attachment in attachments:
             try:
@@ -397,11 +545,33 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
             )
             uploads.append(
                 (
-                    attachment.url,
+                    attachment,
                     issue_attachment_url,
                 ),
             )
         return uploads
+
+    def _get_attachments_list_description(
+        self,
+        title: str,
+        item_template: Template,
+        attachments: List[Attachment],
+    ) -> str:
+        attachments_lines = []
+        if attachments:
+            attachments_lines = [
+                '',
+                title,
+            ]
+            for attachment in attachments:
+                attachments_lines.append(
+                    item_template.substitute(
+                        name=attachment.original_name,
+                        url=attachment.url,
+                    ),
+                )
+            attachments_lines.append('')
+        return '\n'.join(attachments_lines)
 
     def _get_client(
         self,

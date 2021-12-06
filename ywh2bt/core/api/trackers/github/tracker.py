@@ -1,6 +1,7 @@
 """Models and functions used for data synchronisation between YesWeHack and GitHub trackers."""
 import os
 import re
+from copy import deepcopy
 from datetime import (
     datetime,
     timezone,
@@ -11,6 +12,7 @@ from typing import (
     Iterable,
     List,
     Optional,
+    Tuple,
     cast,
 )
 
@@ -42,6 +44,9 @@ from ywh2bt.core.configuration.trackers.github import GitHubConfiguration
 
 _RE_IMAGE = re.compile(pattern=r'!\[([^\]]+)]\(([^)]+)\)')
 _RE_CONTENT_DISPOSITION_FILENAME = re.compile(pattern='filename="([^"]+)";?')
+_TEXT_MAX_SIZE = 65536
+
+AttachmentUploadResult = Tuple[Attachment, Optional[str], Optional[str]]
 
 
 class GitHubTrackerClientError(TrackerClientError):
@@ -181,22 +186,81 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
         title = self._message_formatter.format_report_title(
             report=report,
         )
-        body = self._message_formatter.format_report_description(
+        description = self._message_formatter.format_report_description(
             report=report,
+        ) + self._get_attachments_list_description(
+            attachments=report.attachments,
         )
+        external_description = ''
+        description_attachment = None
+        if len(description) > _TEXT_MAX_SIZE:
+            external_description = description
+            description_attachment = self._build_external_description_attachment(
+                name=f'report-{report.local_id.replace("#", "")}-description.md',
+            )
+            report_copy = deepcopy(report)
+            report_copy.description_html = (
+                '<p>This report description is too large to fit into a GitHub issue. '
+                + f'See attachment <a href="{description_attachment.url}">{description_attachment.original_name}</a> '
+                + 'for more details.</p>'
+            )
+            description = self._message_formatter.format_report_description(
+                report=report_copy,
+            ) + self._get_attachments_list_description(
+                attachments=[
+                    description_attachment,
+                    *report.attachments,
+                ],
+            )
         issue = self._create_issue(
             github_repository=repository,
             title=title,
-            body=body,
+            body='This issue is being synchronized. Please check back in a moment.',
         )
-        self._upload_issue_attachments(
-            issue=issue,
-            attachments=report.attachments,
+        description, external_description = self._replace_attachments_references(
+            uploads=self._upload_attachments(
+                issue=issue,
+                attachments=report.attachments,
+            ),
+            referencing_texts=[
+                description,
+                external_description,
+            ],
+        )
+        if description_attachment:
+            description_attachment.data_loader = lambda: bytes(external_description, 'utf-8')
+            description = self._replace_attachments_references(
+                uploads=self._upload_attachments(
+                    issue=issue,
+                    attachments=[
+                        description_attachment,
+                    ],
+                ),
+                referencing_texts=[
+                    description,
+                ],
+            )[0]
+        issue.edit(
+            body=description,
         )
         return self._build_tracker_issue(
             issue_id=str(issue.id),
             issue_url=issue.html_url,
             closed=False,
+        )
+
+    def _build_external_description_attachment(
+        self,
+        name: str,
+    ) -> Attachment:
+        return Attachment(
+            attachment_id=0,
+            name=name,
+            original_name=name,
+            mime_type='text/markdown',
+            size=0,
+            url=f'http://tracker/external/{name}',
+            data_loader=lambda: bytes('', 'utf-8'),
         )
 
     def send_logs(
@@ -231,11 +295,6 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
             github_comment = self._add_comment(
                 github_issue=github_issue,
                 log=log,
-            )
-            self._upload_comment_attachments(
-                issue=github_issue,
-                comment=github_comment,
-                attachments=log.attachments,
             )
             tracker_comments.added_comments.append(
                 TrackerIssueComment(
@@ -373,15 +432,65 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
     ) -> IssueComment:
         comment_body = self._message_formatter.format_log(
             log=log,
+        ) + self._get_attachments_list_description(
+            attachments=log.attachments,
         )
+        external_body = ''
+        body_attachment = None
+        if len(comment_body) > _TEXT_MAX_SIZE:
+            external_body = comment_body
+            body_attachment = self._build_external_description_attachment(
+                name=f'comment-{log.log_id}-description.md',
+            )
+            log_copy = deepcopy(log)
+            log_copy.message_html = (
+                '<p>This comment is too large to fit into a GitHub comment. '
+                + f'See attachment <a href="{body_attachment.url}">{body_attachment.original_name}</a> '
+                + 'for more details.</p>'
+            )
+            comment_body = self._message_formatter.format_log(
+                log=log_copy,
+            ) + self._get_attachments_list_description(
+                attachments=[
+                    body_attachment,
+                    *log.attachments,
+                ],
+            )
         try:
-            return github_issue.create_comment(
-                body=comment_body,
+            github_comment = github_issue.create_comment(
+                body='This comment is being synchronized. Please check back in a moment.',
             )
         except GithubException as e:
             raise GitHubTrackerClientError(
                 f'Unable to add GitHub comment for issue {github_issue} in project {self.configuration.project}',
             ) from e
+        comment_body, external_body = self._replace_attachments_references(
+            uploads=self._upload_attachments(
+                issue=github_issue,
+                attachments=log.attachments,
+            ),
+            referencing_texts=[
+                comment_body,
+                external_body,
+            ],
+        )
+        if body_attachment:
+            body_attachment.data_loader = lambda: bytes(external_body, 'utf-8')
+            comment_body = self._replace_attachments_references(
+                uploads=self._upload_attachments(
+                    issue=github_issue,
+                    attachments=[
+                        body_attachment,
+                    ],
+                ),
+                referencing_texts=[
+                    comment_body,
+                ],
+            )[0]
+        github_comment.edit(
+            body=comment_body,
+        )
+        return github_comment
 
     def _get_github_issue(
         self,
@@ -399,96 +508,103 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
             ) from e
         return None
 
-    def _upload_issue_attachments(
+    def _replace_attachments_references(
         self,
-        issue: Issue,
-        attachments: List[Attachment],
-    ) -> None:
-        body = self._upload_attachments(
-            issue=issue,
-            body=issue.body,
-            attachments=attachments,
-        )
-        issue.edit(
-            body=body,
-        )
-
-    def _upload_comment_attachments(
-        self,
-        issue: Issue,
-        comment: IssueComment,
-        attachments: List[Attachment],
-    ) -> None:
-        body = self._upload_attachments(
-            issue=issue,
-            body=comment.body,
-            attachments=attachments,
-        )
-        comment.edit(
-            body=body,
-        )
+        uploads: List[AttachmentUploadResult],
+        referencing_texts: List[str],
+    ) -> List[str]:
+        for attachment, upload_url, error_message in uploads:
+            if upload_url:
+                referencing_texts = [
+                    text.replace(
+                        attachment.url,
+                        upload_url,
+                    )
+                    for text in referencing_texts
+                ]
+            elif error_message:
+                referencing_texts = [
+                    self._substitute_attachment_url(
+                        body=text,
+                        url=attachment.url,
+                        substitution=error_message,
+                    )
+                    for text in referencing_texts
+                ]
+        return referencing_texts
 
     def _upload_attachments(
         self,
         issue: Issue,
-        body: str,
         attachments: List[Attachment],
-    ) -> str:
+    ) -> List[AttachmentUploadResult]:
+        uploads = []
         for attachment in attachments:
-            attachment_name = self._extract_attachment_name(
-                body=body,
-                attachment=attachment,
-            )
+            url = None
+            error_message = None
             if self.configuration.github_cdn_on:
                 url = self._attachment_uploader.upload_attachment(
                     issue=issue,
                     attachment=attachment,
                 )
-                if url:
-                    body = body.replace(
-                        attachment.url,
-                        url,
-                    )
-                else:
-                    substitution = f'(Attachment "{attachment_name}" not available due to upload error)'
-                    body = self._substitute_attachment(
-                        body=body,
-                        attachment=attachment,
-                        substitution=substitution,
-                    )
+                if not url:
+                    error_message = f'(Attachment "{attachment.original_name}" not available due to upload error)'
             else:
-                substitution = f'(Attachment "{attachment_name}" not available due to export script’s configuration)'
-                body = self._substitute_attachment(
-                    body=body,
-                    attachment=attachment,
-                    substitution=substitution,
+                error_message = (
+                    f'(Attachment "{attachment.original_name}" not available '
+                    + 'due to export script’s configuration)'
                 )
-        return body
+            uploads.append(
+                (
+                    attachment,
+                    url,
+                    error_message,
+                ),
+            )
+        return uploads
+
+    def _get_attachments_list_description(
+        self,
+        attachments: List[Attachment],
+    ) -> str:
+        attachments_lines = []
+        if attachments:
+            attachments_lines = [
+                '',
+                '**Attachments**:',
+            ]
+            for attachment in attachments:
+                attachments_lines.append(
+                    f'- [{attachment.original_name}]({attachment.url})',
+                )
+            attachments_lines.append('')
+        return '\n'.join(attachments_lines)
 
     def _extract_attachment_name(
         self,
-        body: str,
+        referencing_texts: List[str],
         attachment: Attachment,
     ) -> str:
         attachment_name_regex = self._attachment_name_regex_template.substitute(
             url=re.escape(attachment.url),
         )
-        matches = re.findall(
-            attachment_name_regex,
-            body,
-        )
-        if matches:
-            return cast(str, matches[0])
+        for text in referencing_texts:
+            matches = re.findall(
+                attachment_name_regex,
+                text,
+            )
+            if matches:
+                return cast(str, matches[0])
         return attachment.original_name
 
-    def _substitute_attachment(
+    def _substitute_attachment_url(
         self,
         body: str,
-        attachment: Attachment,
+        url: str,
         substitution: str,
     ) -> str:
         attachment_substitute_regex = self._attachment_substitute_regex_template.substitute(
-            url=re.escape(attachment.url),
+            url=re.escape(url),
         )
         return re.sub(
             attachment_substitute_regex,

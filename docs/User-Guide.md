@@ -145,6 +145,11 @@ Legend:
 - **Login**: GitHub account login. Only used when "Use CDN" is activated.
 - **Password**: GitHub account password. Only used when "Use CDN" is activated.
 
+##### Known limitations
+
+When "Use CDN" is activated, the GitHub account associated with the "Login"
+cannot have the two-factor authentication enabled.
+
 #### GitLab integration
 
 ![GitLab integration screen](img/ui-gitlab-empty.png)
@@ -380,6 +385,19 @@ in the bug tracker issues or in the reports.
 
 Modifications of bug tracker comments that happen after a successful synchronization 
 won't be reflected in the report during subsequent synchronizations.
+
+## Bug trackers text size limitations
+
+The bug trackers have a maximum size allowed for the text of the issues or comments.
+When a platform report or comment size exceeds the maximum size allowed by a tracker,
+the content is put into a Markdown file which is attached to the issue or comment instead.
+
+| Bug tracker | Maximum size allowed |
+| ----------- | -------------------: |
+| GitHub      |          65536 bytes |
+| GitLab      |        1000000 bytes |
+| Jira        |          32767 bytes |
+| ServiceNow  |          32767 bytes |
 
 ## Miscellaneous
 

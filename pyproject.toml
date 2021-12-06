@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ywh2bt"
-version = "2.5.4"
+version = "2.6.0"
 description = "ywh2bt - YesWeHack to Bug Tracker"
 readme = "README.md"
 authors = ["m.honel <m.honel@yeswehack.com>"]

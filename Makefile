@@ -120,7 +120,7 @@ user-guide-md5sum-html:  ## extract MD5sum of original User-Guide.md from genera
 		--user `id -u`:`id -g` \
 		--volume "/$(MAKEFILE_DIR)/$(USER_GUIDE_BUILD_PATH):/$(USER_GUIDE_BUILD_PATH)" \
 		--workdir /$(USER_GUIDE_BUILD_PATH) \
-		manorrock/xmllint \
+		pipelinecomponents/xmllint \
 		xmllint \
 		--html \
 		--xpath 'string(/html/head/meta[@name="keywords"]/@content)' \
@@ -130,7 +130,6 @@ user-guide-md5sum-html:  ## extract MD5sum of original User-Guide.md from genera
 user-guide-md5sum-pdf: ## extract MD5sum of original User-Guide.md from generated PDF
 	@docker run \
 		--rm \
-		--user `id -u`:`id -g` \
 		--volume "/$(MAKEFILE_DIR)/$(USER_GUIDE_BUILD_PATH):/$(USER_GUIDE_BUILD_PATH)" \
 		--workdir /$(USER_GUIDE_BUILD_PATH) \
 		$(POPPLER_DOCKER_IMAGE) \

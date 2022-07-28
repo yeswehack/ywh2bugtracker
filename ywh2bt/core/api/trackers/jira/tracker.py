@@ -4,7 +4,6 @@ from copy import deepcopy
 from datetime import datetime
 from string import Template
 from typing import (
-    Any,
     Dict,
     List,
     Optional,
@@ -13,13 +12,13 @@ from typing import (
 )
 from urllib.parse import quote
 
-from jira import (  # type: ignore
+from jira import (
     Comment as JIRAComment,
     Issue as JIRAIssue,
     JIRA,
     JIRAError,
 )
-from jira.utils import CaseInsensitiveDict  # type: ignore
+from requests_toolbelt.multipart.encoder import CustomBytesIO  # type: ignore
 
 from ywh2bt.core.api.formatter.markdown import ReportMessageMarkdownFormatter
 from ywh2bt.core.api.models.report import (
@@ -42,24 +41,6 @@ from ywh2bt.core.converter.jira2markdown import jira2markdown
 
 _RE_IMAGE = re.compile(pattern=r'!([^!|]+)(?:\|[^!]*)?!')
 _TEXT_MAX_SIZE = 32767
-
-
-# hot patching shenanigans
-def _case_insensitive_dict_init_hot_patch(
-    obj: CaseInsensitiveDict,
-    *args: Any,
-    **kw: Any,
-) -> None:
-    super(CaseInsensitiveDict, obj).__init__(*args, *kw)  # noqa: WPS608, WPS613
-    obj_copy = super(CaseInsensitiveDict, obj).copy()  # noqa: WPS608, WPS613
-    obj.itemlist = {}
-    for key, value in obj_copy.items():
-        if key != key.lower():
-            obj[key.lower()] = value
-            obj.pop(key, None)
-
-
-CaseInsensitiveDict.__init__ = _case_insensitive_dict_init_hot_patch  # noqa: WPS609
 
 
 class JiraTrackerClientError(TrackerClientError):
@@ -533,7 +514,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
                 issue_attachment = self._get_client().add_attachment(
                     issue=issue.key,
                     filename=attachment.original_name,
-                    attachment=attachment.data,
+                    attachment=CustomBytesIO(buffer=attachment.data),  # using CustomBytesIO despite jira expectations
                 )
             except JIRAError as e:
                 raise JiraTrackerClientError(
@@ -586,10 +567,10 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
         configuration = self.configuration
         try:
             return JIRA(
-                server=configuration.url,
+                server=cast(str, configuration.url),
                 basic_auth=(
-                    configuration.login,
-                    configuration.password,
+                    cast(str, configuration.login),
+                    cast(str, configuration.password),
                 ),
                 options={
                     'verify': configuration.verify,

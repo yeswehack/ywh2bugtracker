@@ -1,10 +1,9 @@
-FROM python:3.9-alpine AS builder
-RUN apk add --no-cache \
-    curl
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+FROM python:3.9-slim-buster AS builder
+RUN apt-get update && apt-get install -yq curl
+RUN curl -sSL https://install.python-poetry.org | python -
 WORKDIR /ywh2bt
 COPY / ./
-RUN ~/.poetry/bin/poetry build
+RUN /root/.local/bin/poetry build
 
 FROM python:3.9-slim-buster
 RUN apt-get update && \

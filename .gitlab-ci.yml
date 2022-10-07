@@ -6,6 +6,7 @@ variables:
   PYENV_ROOT: "${CI_PROJECT_DIR}/.cache/pyenv"
   TOX_WORK_DIR: "${CI_PROJECT_DIR}/.cache/tox"
   DOCKER_VERSION: "18.09"
+  CI_REGISTRY: registry.clacos.ninja
   CONTAINER_BASE: "${CI_REGISTRY}/${CI_PROJECT_PATH}"
   DOCKER_HUB_BASE_TAG: "yeswehack/ywh2bugtracker"
 
@@ -31,8 +32,6 @@ stages:
   services:
     - name: "docker:${DOCKER_VERSION}-dind"
       alias: docker
-  before_script:
-    - echo "${CI_JOB_TOKEN}" | docker login -u gitlab-ci-token --password-stdin git.clacos.ninja:4567/v2/
 
 Poetry check:
   stage: verify
@@ -120,11 +119,19 @@ Build:
 
 Build Docker:
   stage: build
-  extends: .base_docker
+  tags:
+    - docker20
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [ "" ]
   script:
-    - export DOCKER_LOCAL_TAG="${CONTAINER_BASE}:${CI_COMMIT_REF_SLUG}-$(cat .ywh2bt-version)"
-    - docker build --tag "${DOCKER_LOCAL_TAG}" .
-    - docker push "${DOCKER_LOCAL_TAG}"
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"registry.clacos.ninja\":{\"auth\":\"$DOCKER_AUTH\"}}}" > /kaniko/.docker/config.json
+    - cat /kaniko/.docker/config.json
+    - >-
+      /kaniko/executor --cache=true --context .
+      --dockerfile Dockerfile
+      --destination "${CONTAINER_BASE}:${CI_COMMIT_REF_SLUG}-$(cat .ywh2bt-version)"
 
 pages:
   stage: publish

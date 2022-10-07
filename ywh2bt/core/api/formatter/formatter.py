@@ -12,6 +12,7 @@ from ywh2bt.core.api.models.report import (
     CommentLog,
     CvssUpdateLog,
     DetailsUpdateLog,
+    FixVerifiedLog,
     Log,
     PriorityUpdateLog,
     REPORT_PROPERTY_LABELS,
@@ -46,6 +47,7 @@ class ReportMessageFormatter(ABC):
     _comment_log_template: Template
     _cvss_update_log_template: Template
     _status_update_log_template: Template
+    _fix_verified_log_template: Template
     _details_update_log_template: Template
     _details_update_log_line_template: Template
     _priority_update_log_template: Template
@@ -61,6 +63,7 @@ class ReportMessageFormatter(ABC):
         comment_log_template: Template,
         cvss_update_log_template: Template,
         status_update_log_template: Template,
+        fix_verified_log_template: Template,
         details_update_log_template: Template,
         details_update_log_line_template: Template,
         priority_update_log_template: Template,
@@ -78,6 +81,7 @@ class ReportMessageFormatter(ABC):
             comment_log_template: a template for a template for a CommentLog
             cvss_update_log_template: a template for a CvssUpdateLog
             status_update_log_template: a template for a StatusUpdateLog
+            fix_verified_log_template: a template for a FixVerifiedLog
             details_update_log_template: a template for a DetailsUpdateLog
             details_update_log_line_template: a template for entries of a DetailsUpdateLog
             priority_update_log_template: a template for a PriorityUpdateLog
@@ -91,6 +95,7 @@ class ReportMessageFormatter(ABC):
         self._comment_log_template = comment_log_template
         self._cvss_update_log_template = cvss_update_log_template
         self._status_update_log_template = status_update_log_template
+        self._fix_verified_log_template = fix_verified_log_template
         self._details_update_log_template = details_update_log_template
         self._details_update_log_line_template = details_update_log_line_template
         self._priority_update_log_template = priority_update_log_template
@@ -275,6 +280,18 @@ class ReportMessageFormatter(ABC):
             new_status=self._translate_status(
                 status=(log.new_status or {}).get('workflow_state') or '',
             ),
+            comment=self.transform_html(
+                html=log.message_html,
+            ),
+        )
+
+    @_transform_log.register
+    def _transform_fix_verified_log(
+        self,
+        log: FixVerifiedLog,
+    ) -> str:
+        return self._fix_verified_log_template.substitute(
+            verified='Fix verified' if log.verified else 'Fix refused',
             comment=self.transform_html(
                 html=log.message_html,
             ),

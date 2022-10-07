@@ -126,6 +126,7 @@ class Log:
     tracker_url: Optional[str]
     tracker_id: Optional[str]
     tracker_token: Optional[str]
+    fix_verified: bool
 
 
 class Report:

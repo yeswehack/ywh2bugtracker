@@ -312,6 +312,13 @@ class TrackerMessageLog(Log):
     tracker_id: Optional[str]
 
 
+@dataclass
+class FixVerifiedLog(Log):
+    """A fix-verified log."""
+
+    verified: bool
+
+
 class _LogFilterProtocol(Protocol):
 
     def __call__(

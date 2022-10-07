@@ -56,6 +56,13 @@ ${old_status} -> ${new_status}
 Comment:
 ${comment}
 """
+FIX_VERIFIED_LOG_TEMPLATE = """
+Fix verification:
+${verified}
+
+Comment:
+${comment}
+"""
 DETAILS_UPDATE_LOG_TEMPLATE = """
 Details updated:
 ${details_lines}
@@ -87,6 +94,7 @@ class ServiceNowReportMessageFormatter(ReportMessageFormatter):
             comment_log_template=Template(COMMENT_LOG_TEMPLATE),
             cvss_update_log_template=Template(CVSS_UPDATE_LOG_TEMPLATE),
             status_update_log_template=Template(STATUS_UPDATE_LOG_TEMPLATE),
+            fix_verified_log_template=Template(FIX_VERIFIED_LOG_TEMPLATE),
             details_update_log_template=Template(DETAILS_UPDATE_LOG_TEMPLATE),
             details_update_log_line_template=Template(DETAILS_UPDATE_LOG_LINE_TEMPLATE),
             priority_update_log_template=Template(PRIORITY_UPDATE_LOG_TEMPLATE),

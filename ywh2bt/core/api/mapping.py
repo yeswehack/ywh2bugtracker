@@ -21,6 +21,7 @@ from ywh2bt.core.api.models.report import (  # noqa: WPS235
     Cvss,
     CvssUpdateLog,
     DetailsUpdateLog,
+    FixVerifiedLog,
     Log,
     Priority,
     PriorityUpdateLog,
@@ -419,6 +420,17 @@ def map_raw_log(  # noqa: WPS210,WPS212,WPS231
                 text=raw_log.tracker_url,
             ) if raw_log.tracker_url else None,
             tracker_id=raw_log.tracker_id,
+        )
+    if raw_log.type == 'fix-verified':
+        return FixVerifiedLog(
+            created_at=created_at,
+            log_id=log_id,
+            log_type=log_type,
+            private=private,
+            author=author,
+            message_html=message_html,
+            attachments=attachments,
+            verified=raw_log.fix_verified,
         )
     return Log(
         created_at=created_at,

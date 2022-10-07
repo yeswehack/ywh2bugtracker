@@ -22,6 +22,7 @@ from ywh2bt.core.api.models.report import (
     CommentLog,
     CvssUpdateLog,
     DetailsUpdateLog,
+    FixVerifiedLog,
     Log,
     PriorityUpdateLog,
     REPORT_STATUS_TRANSLATIONS,
@@ -559,7 +560,7 @@ class ReportSynchronizer:
             isinstance(log, DetailsUpdateLog) and synchronize_options.upload_details_updates,
             isinstance(log, PriorityUpdateLog) and synchronize_options.upload_priority_updates,
             isinstance(log, RewardLog) and synchronize_options.upload_rewards,
-            isinstance(log, StatusUpdateLog) and synchronize_options.upload_status_updates,
+            isinstance(log, (StatusUpdateLog, FixVerifiedLog)) and synchronize_options.upload_status_updates,
         ))
 
     def _send_logs(

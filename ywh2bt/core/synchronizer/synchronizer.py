@@ -378,13 +378,13 @@ class ReportSynchronizer:
         )
         is_created_issue = False
         tracker_issue = None
-        if log and isinstance(log, TrackingStatusLog):
+        if isinstance(log, TrackingStatusLog):
             is_created_issue = True
             tracker_issue = self._get_tracker_issue_from_logs(
                 log=log,
             )
         if tracker_issue is None:
-            if not self._synchronize_options.recreate_missing_issues:
+            if isinstance(log, TrackingStatusLog) and not self._synchronize_options.recreate_missing_issues:
                 return SynchronizeReportResult(
                     is_created_issue=is_created_issue,
                     is_existing_issue=False,

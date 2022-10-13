@@ -5,7 +5,7 @@ variables:
   POETRY_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/poetry"
   PYENV_ROOT: "${CI_PROJECT_DIR}/.cache/pyenv"
   TOX_WORK_DIR: "${CI_PROJECT_DIR}/.cache/tox"
-  DOCKER_VERSION: "18.09"
+  DOCKER_VERSION: "20"
   CI_REGISTRY: registry.clacos.ninja
   CONTAINER_BASE: "${CI_REGISTRY}/${CI_PROJECT_PATH}"
   DOCKER_HUB_BASE_TAG: "yeswehack/ywh2bugtracker"
@@ -23,11 +23,15 @@ stages:
   - publish
 
 .base_poetry:
+  tags:
+    - docker20
   before_script:
     - pip install poetry
     - poetry install --no-root
 
 .base_docker:
+  tags:
+    - docker20
   image: "docker:${DOCKER_VERSION}"
   services:
     - name: "docker:${DOCKER_VERSION}-dind"

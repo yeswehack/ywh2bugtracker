@@ -49,6 +49,10 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 
 ## Changelog
 
+- v2.7:
+    - added synchronization of "fix verification" logs when "Upload status updates" is checked
+- v2.6:
+    - added work around bug trackers maximum size allowed for the text of the issues/comments (content put in Markdown file attachment when necessary)
 - v2.5:
     - added Personal Access Token (PAT) authentication
     - removed OAuth authentication

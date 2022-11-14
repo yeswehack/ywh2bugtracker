@@ -12,7 +12,7 @@ REPORT_DESCRIPTION_TEMPLATE = """
 || Title || ${local_id} : ${title} ||
 | Priority | ${priority_name} |
 | ${bug_type_label} | [${bug_type_name}|${bug_type_link}] => [Remediation|${bug_type_remediation_link}] |
-| ${scope_label} | ${scope} |
+| ${scope_label} | {noformat}${scope}{noformat} |
 | Severity | ${cvss_criticity}, score: ${cvss_score}, vector: {noformat}${cvss_vector}{noformat} |
 | ${end_point_label} | ${end_point} |
 | ${vulnerable_part_label} | ${vulnerable_part} |
@@ -72,7 +72,7 @@ DETAILS_UPDATE_LOG_TEMPLATE = """
 || Detail || Old value || New value ||
 ${details_lines}
 """
-DETAILS_UPDATE_LOG_LINE_TEMPLATE = """| *${updated_property}* | ${old_value} | ${new_value} |
+DETAILS_UPDATE_LOG_LINE_TEMPLATE = """| *${updated_property}* | {noformat}${old_value}{noformat} | {noformat}${new_value}{noformat} |
 """
 PRIORITY_UPDATE_LOG_TEMPLATE = """
 *Priority updated*:

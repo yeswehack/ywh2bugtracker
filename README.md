@@ -51,6 +51,7 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 
 - v2.7:
     - added synchronization of "fix verification" logs when "Upload status updates" is checked
+    - fixed an issue with jira when scope contains special markdown characters
 - v2.6:
     - added work around bug trackers maximum size allowed for the text of the issues/comments (content put in Markdown file attachment when necessary)
 - v2.5:

@@ -34,6 +34,7 @@ from ywh2bt.core.configuration.yeswehack import (
     YesWeHackConfiguration,
 )
 from ywh2bt.core.exceptions import CoreException
+from ywh2bt.version import __VERSION__
 
 
 class YesWeHackApiClientError(CoreException):
@@ -83,6 +84,9 @@ class YesWeHackApiClient(TestableApiClient):
                 pat=configuration.pat,
                 verify=configuration.verify,
                 lazy=True,
+                headers={
+                    'User-Agent': f'ywh2bt/{__VERSION__}',
+                },
             )
         except (YesWeHackRawAPiError, requests.RequestException) as e:
             raise YesWeHackApiClientError('Unable to initialize YesWeHack API client') from e

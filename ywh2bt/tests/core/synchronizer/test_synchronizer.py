@@ -36,6 +36,7 @@ from ywh2bt.core.api.models.report import (
 )
 from ywh2bt.core.api.tracker import (
     SendLogsResult,
+    TrackerAttachment,
     TrackerClient,
     TrackerIssue,
     TrackerIssueComment,
@@ -669,6 +670,7 @@ class SimpleMessageFormatter(AbstractSynchronizerMessageFormatter):
         self,
         comment: TrackerIssueComment,
         attachments: Dict[str, Attachment],
+        failed_attachments: Dict[str, TrackerAttachment],
     ) -> str:
         return self.download_comment_format.format(
             author=comment.author,

@@ -34,6 +34,7 @@ from ywh2bt.core.api.models.report import (
 )
 from ywh2bt.core.api.tracker import (
     SendLogsResult,
+    TrackerAttachment,
     TrackerClient,
     TrackerClientError,
     TrackerIssue,
@@ -76,6 +77,7 @@ from ywh2bt.core.synchronizer.listener import (
     SynchronizerStartFetchReportsEvent,
     SynchronizerStartSendReportEvent,
 )
+from ywh2bt.size import sizeof_fmt_si
 
 
 class Synchronizer:
@@ -624,6 +626,7 @@ class ReportSynchronizer:
         tracker_issue: TrackerIssue,
         tracker_comment: TrackerIssueComment,
     ) -> None:
+        failed_attachments = {}
         attachments = {}
         for attachment_key, attachment in tracker_comment.attachments.items():
             try:
@@ -633,10 +636,9 @@ class ReportSynchronizer:
                     file_content=attachment.content,
                     file_type=attachment.mime_type,
                 )
-            except YesWeHackApiClientError as upload_attachment_error:
-                raise SynchronizerError(
-                    f'Unable to upload attachment {attachment.filename} for report #{self._report.report_id}',
-                ) from upload_attachment_error
+            except YesWeHackApiClientError:
+                failed_attachments[attachment_key] = attachment
+                continue
             attachments[attachment_key] = uploaded_attachment
         try:
             self._yeswehack_client.post_report_tracker_message(
@@ -647,6 +649,7 @@ class ReportSynchronizer:
                 comment=self._message_formatter.format_download_comment(
                     comment=tracker_comment,
                     attachments=attachments,
+                    failed_attachments=failed_attachments,
                 ),
                 attachments=[uploaded_attachment.name for attachment_key, uploaded_attachment in attachments.items()],
             )
@@ -783,6 +786,7 @@ class AbstractSynchronizerMessageFormatter(ABC):
         self,
         comment: TrackerIssueComment,
         attachments: Dict[str, Attachment],
+        failed_attachments: Dict[str, TrackerAttachment],
     ) -> str:
         """
         Format a downloaded comment.
@@ -790,6 +794,7 @@ class AbstractSynchronizerMessageFormatter(ABC):
         Args:
             comment: a comment
             attachments: a dict of attachments
+            failed_attachments: a dict of tracker attachments that failed to be uploaded
         """
 
     @abstractmethod
@@ -834,6 +839,15 @@ class SynchronizerMessageFormatter(AbstractSynchronizerMessageFormatter):
         + 'Author: ${author}'
         + '\n\n'
         + '${comment}',
+    )
+    _failed_attachments_template: Template = Template(
+        '**YWH2BT note:**'
+        + '\n*There was an issue while uploading the following attachments from the bugtracker*:'
+        + '\n\n'
+        + '${attachments}',
+    )
+    _failed_attachment_template: Template = Template(
+        '- ${filename} (size=${size}, mime=${mimetype})',
     )
     _status_update_comment_template: Template = Template(
         '${comment}',
@@ -909,6 +923,7 @@ class SynchronizerMessageFormatter(AbstractSynchronizerMessageFormatter):
         self,
         comment: TrackerIssueComment,
         attachments: Dict[str, Attachment],
+        failed_attachments: Dict[str, TrackerAttachment],
     ) -> str:
         """
         Format a downloaded comment.
@@ -916,11 +931,12 @@ class SynchronizerMessageFormatter(AbstractSynchronizerMessageFormatter):
         Args:
             comment: a comment
             attachments: a dict of attachments
+            failed_attachments: a dict of tracker attachments that failed to be uploaded
 
         Returns:
             a formatted comment
         """
-        return self._download_comment_template.substitute(
+        formatted_comment = self._download_comment_template.substitute(
             date=comment.created_at,
             author=comment.author,
             comment=markdown_to_ywh(
@@ -928,6 +944,21 @@ class SynchronizerMessageFormatter(AbstractSynchronizerMessageFormatter):
                 attachments=attachments,
             ),
         )
+        if failed_attachments:
+            formatted_attachments = []
+            for _attachment_key, failed_attachment in failed_attachments.items():
+                formatted_attachments.append(
+                    self._failed_attachment_template.substitute(
+                        filename=failed_attachment.filename,
+                        mimetype=failed_attachment.mime_type,
+                        size=sizeof_fmt_si(len(failed_attachment.content), precision=2),
+                    ),
+                )
+            formatted_failed_attachments = self._failed_attachments_template.substitute(
+                attachments='\n'.join(formatted_attachments),
+            )
+            formatted_comment = f'{formatted_comment}\n\n{formatted_failed_attachments}'
+        return formatted_comment
 
     def format_status_update_comment(
         self,

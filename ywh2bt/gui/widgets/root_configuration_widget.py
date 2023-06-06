@@ -5,17 +5,9 @@ from typing import Any, Optional, Tuple, cast
 
 from PySide6.QtCore import QFileInfo, QSettings, Signal
 from PySide6.QtGui import QFontDatabase, QFontMetrics, Qt
-from PySide6.QtWidgets import (
-    QFileDialog,
-    QMessageBox,
-    QPlainTextEdit,
-    QProgressBar,
-    QScrollArea,
-    QSplitter,
-    QTabWidget,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtWidgets import (QFileDialog, QMessageBox, QPlainTextEdit,
+                               QProgressBar, QScrollArea, QSplitter,
+                               QTabWidget, QVBoxLayout, QWidget)
 
 from ywh2bt.core.configuration.root import RootConfiguration
 from ywh2bt.core.core import AVAILABLE_FORMATS, get_root_configuration_loader
@@ -25,9 +17,11 @@ from ywh2bt.core.loader import RootConfigurationLoader
 from ywh2bt.gui.dialog.error import ErrorDialogMixin
 from ywh2bt.gui.dialog.file import FileFormatDialogFilters
 from ywh2bt.gui.hashing import file_checksum
-from ywh2bt.gui.widgets.attribute.attributes_container_widget import AttributesContainerWidget
-from ywh2bt.gui.widgets.logs_widget import LogEntry, LogType, LogsWidget
-from ywh2bt.gui.widgets.root_configuration_entry import RootConfigurationEntry, RootConfigurationEntryFile
+from ywh2bt.gui.widgets.attribute.attributes_container_widget import \
+    AttributesContainerWidget
+from ywh2bt.gui.widgets.logs_widget import LogEntry, LogsWidget, LogType
+from ywh2bt.gui.widgets.root_configuration_entry import (
+    RootConfigurationEntry, RootConfigurationEntryFile)
 from ywh2bt.gui.widgets.thread.synchronizer import SynchronizerThread
 from ywh2bt.gui.widgets.thread.tester import TesterThread
 from ywh2bt.gui.widgets.typing import as_signal_instance
@@ -221,7 +215,7 @@ class RootConfigurationWidget(QWidget, ErrorDialogMixin):
         font.setFixedPitch(True)
         metrics = QFontMetrics(font)
         widget.setFont(font)
-        widget.setTabStopDistance(2 * metrics.width(' '))
+        widget.setTabStopDistance(2 * metrics.horizontalAdvance(' '))
         as_signal_instance(widget.textChanged).connect(
             self._on_raw_changed,
         )

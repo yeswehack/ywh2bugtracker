@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from io import StringIO
 from typing import Optional
 
-from PySide2.QtCore import QByteArray, QFileInfo
+from PySide6.QtCore import QByteArray, QFileInfo
 
 from ywh2bt.core.configuration.root import RootConfiguration
 from ywh2bt.core.core import get_root_configuration_loader

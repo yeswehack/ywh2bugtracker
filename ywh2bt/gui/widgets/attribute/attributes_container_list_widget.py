@@ -1,10 +1,12 @@
 """Models and functions used for attributes container list GUI."""
 from typing import Any, Optional, Type
 
-from PySide2.QtCore import Signal
-from PySide2.QtWidgets import QHBoxLayout, QLayout, QPushButton, QTabWidget, QVBoxLayout, QWidget
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import (QHBoxLayout, QLayout, QPushButton, QTabWidget,
+                               QVBoxLayout, QWidget)
 
-from ywh2bt.core.configuration.attribute import AttributesContainer, AttributesContainerList
+from ywh2bt.core.configuration.attribute import (AttributesContainer,
+                                                 AttributesContainerList)
 from ywh2bt.gui.widgets import constants
 from ywh2bt.gui.widgets.tab_widget_helper import object_to_tab_title
 from ywh2bt.gui.widgets.typing import as_signal_instance
@@ -79,7 +81,7 @@ class AttributesContainerListWidget(QWidget):
 
         layout.addWidget(self._empty_widget)
         layout.addWidget(self._tab_widget)
-        layout.setMargin(0)
+        layout.setContentsMargins(0, 0, 0, 0)
 
         self._auto_show_hide_tabs()
 
@@ -152,7 +154,8 @@ class AttributesContainerListWidget(QWidget):
         self,
         container: AttributesContainer,
     ) -> int:
-        from ywh2bt.gui.widgets.attribute.attributes_container_widget import AttributesContainerWidget  # noqa: WPS433
+        from ywh2bt.gui.widgets.attribute.attributes_container_widget import \
+            AttributesContainerWidget  # noqa: WPS433
         widget = AttributesContainerWidget(
             parent=self,
             container_class=container.__class__,

@@ -2,7 +2,7 @@
 from datetime import datetime
 from typing import cast
 
-from PySide2.QtCore import (
+from PySide6.QtCore import (
     QObject,
     QThread,
     Signal,

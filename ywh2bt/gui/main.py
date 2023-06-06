@@ -4,8 +4,8 @@ import platform
 import sys
 
 import urllib3  # type: ignore
-from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import QApplication
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QApplication
 
 # noinspection PyUnresolvedReferences
 import ywh2bt.gui.resources  # noqa: F401, WPS301

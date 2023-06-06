@@ -37,7 +37,7 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 
 ## Requirements
 
-- `python` >= 3.7,<=3.9
+- `python` >= 3.7,<=3.11
 - [`pip`](https://pip.pypa.io/en/stable/installing/)
 
 ## Supported trackers

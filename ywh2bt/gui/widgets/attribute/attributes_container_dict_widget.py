@@ -5,20 +5,17 @@ from functools import partial
 from string import Template
 from typing import Any, Dict, List, Optional, Tuple, Type, cast
 
-from PySide2.QtCore import QFile, QSize, Qt, Signal
-from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import (
-    QHBoxLayout,
-    QLayout,
-    QTabWidget,
-    QToolButton,
-    QWidget,
-)
+from PySide6.QtCore import QFile, QSize, Qt, Signal
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import (QHBoxLayout, QLayout, QTabWidget, QToolButton,
+                               QWidget)
 
-from ywh2bt.core.configuration.attribute import AttributesContainer, AttributesContainerDict
+from ywh2bt.core.configuration.attribute import (AttributesContainer,
+                                                 AttributesContainerDict)
 from ywh2bt.core.configuration.subtypable import SubtypableMetaclass
 from ywh2bt.gui.widgets import constants
-from ywh2bt.gui.widgets.attribute.attributes_container_dict_entry import AttributesContainerDictEntry
+from ywh2bt.gui.widgets.attribute.attributes_container_dict_entry import \
+    AttributesContainerDictEntry
 from ywh2bt.gui.widgets.typing import as_signal_instance
 
 T_AC = AttributesContainer
@@ -110,7 +107,7 @@ class AttributesContainerDictWidget(QWidget):
 
         layout.addWidget(self._empty_widget)
         layout.addWidget(self._tab_widget)
-        layout.setMargin(0)
+        layout.setContentsMargins(0, 0, 0, 0)
 
     def _create_empty_widget(
         self,

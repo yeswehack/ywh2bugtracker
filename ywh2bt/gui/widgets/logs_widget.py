@@ -7,9 +7,9 @@ from html import escape as html_escape
 from string import Template
 from typing import Any, Dict, Optional, OrderedDict
 
-from PySide2.QtCore import QPoint, QUrl, Qt, Signal
-from PySide2.QtGui import QDesktopServices, QMouseEvent
-from PySide2.QtWidgets import (
+from PySide6.QtCore import QPoint, QUrl, Qt, Signal
+from PySide6.QtGui import QDesktopServices, QMouseEvent
+from PySide6.QtWidgets import (
     QMenu,
     QPlainTextEdit,
     QVBoxLayout,

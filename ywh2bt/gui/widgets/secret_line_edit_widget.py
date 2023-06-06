@@ -4,9 +4,9 @@ from __future__ import annotations
 from functools import partial
 from typing import Any, Optional
 
-from PySide2.QtCore import Signal
-from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import (
+from PySide6.QtCore import Signal
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import (
     QHBoxLayout,
     QLineEdit,
     QPushButton,

@@ -3,9 +3,9 @@ from datetime import datetime
 from io import StringIO
 from typing import Any, Optional, Tuple, cast
 
-from PySide2.QtCore import QFileInfo, QSettings, Signal
-from PySide2.QtGui import QFontDatabase, QFontMetrics, Qt
-from PySide2.QtWidgets import (
+from PySide6.QtCore import QFileInfo, QSettings, Signal
+from PySide6.QtGui import QFontDatabase, QFontMetrics, Qt
+from PySide6.QtWidgets import (
     QFileDialog,
     QMessageBox,
     QPlainTextEdit,

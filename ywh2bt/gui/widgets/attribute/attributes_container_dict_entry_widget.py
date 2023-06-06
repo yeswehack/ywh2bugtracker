@@ -1,8 +1,8 @@
 """Models and functions used for attributes container dict entry GUI."""
 from typing import Any, Optional
 
-from PySide2.QtCore import Signal
-from PySide2.QtWidgets import QFormLayout, QLabel, QLineEdit, QVBoxLayout, QWidget
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QFormLayout, QLabel, QLineEdit, QVBoxLayout, QWidget
 
 from ywh2bt.core.configuration.attribute import AttributesContainer
 from ywh2bt.gui.widgets.attribute.attributes_container_dict_entry import AttributesContainerDictEntry

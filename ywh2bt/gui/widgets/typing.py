@@ -1,7 +1,7 @@
 """Models and functions used in data typing."""
 from typing import Any, Union, cast
 
-from PySide2.QtCore import Signal, SignalInstance
+from PySide6.QtCore import Signal, SignalInstance
 
 
 def as_signal_instance(
@@ -10,7 +10,7 @@ def as_signal_instance(
     """
     Cast a Signal object to a SignalInstance.
 
-    PySide2 magic / static typing / mypy.
+    PySide6 magic / static typing / mypy.
 
     Args:
         signal: a signal object

@@ -1,8 +1,8 @@
 """Models and functions used for check box with hint."""
 from typing import Any, Dict, Optional
 
-from PySide2.QtCore import Qt, Signal
-from PySide2.QtWidgets import QCheckBox, QHBoxLayout, QLabel, QWidget
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtWidgets import QCheckBox, QHBoxLayout, QLabel, QWidget
 
 from ywh2bt.gui.widgets.typing import as_signal_instance
 

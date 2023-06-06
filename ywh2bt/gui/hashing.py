@@ -1,5 +1,5 @@
 """Models and functions used in data hashing."""
-from PySide2.QtCore import QByteArray, QCryptographicHash, QFile
+from PySide6.QtCore import QByteArray, QCryptographicHash, QFile
 
 
 def file_checksum(

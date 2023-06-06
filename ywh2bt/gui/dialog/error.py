@@ -1,5 +1,5 @@
 """Models and functions used in error dialogs."""
-from PySide2.QtWidgets import QMessageBox, QWidget
+from PySide6.QtWidgets import QMessageBox, QWidget
 
 from ywh2bt.core.error import error_to_string
 

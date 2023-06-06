@@ -4,25 +4,18 @@ from __future__ import annotations
 import sys
 from typing import List, Optional, Union, cast
 
-from PySide2.QtCore import QByteArray, QEvent, QSettings, QSize, Qt, Signal
-from PySide2.QtGui import QIcon, QKeySequence
-from PySide2.QtWidgets import (
-    QAction,
-    QMainWindow,
-    QMenu,
-    QMessageBox,
-    QSizePolicy,
-    QStyle,
-    QToolBar,
-    QWidget,
-)
+from PySide6.QtCore import QByteArray, QEvent, QSettings, QSize, Qt, Signal
+from PySide6.QtGui import QAction, QIcon, QKeySequence
+from PySide6.QtWidgets import (QMainWindow, QMenu, QMessageBox, QSizePolicy,
+                               QStyle, QToolBar, QWidget)
 
 from ywh2bt.core.core import AVAILABLE_FORMATS
 from ywh2bt.gui.dialog.file import FileFormatDialogFilters
 from ywh2bt.gui.dialog.schema import SchemaDocumentationDialog
 from ywh2bt.gui.widgets.logs_widget import LogEntry
 from ywh2bt.gui.widgets.root_configuration_entry import RootConfigurationEntry
-from ywh2bt.gui.widgets.root_configurations_widget import RootConfigurationsWidget
+from ywh2bt.gui.widgets.root_configurations_widget import \
+    RootConfigurationsWidget
 from ywh2bt.gui.widgets.typing import as_signal_instance
 from ywh2bt.version import __VERSION__
 

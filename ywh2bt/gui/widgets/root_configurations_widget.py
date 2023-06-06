@@ -3,15 +3,17 @@ from __future__ import annotations
 
 from typing import Any, List, Optional, Tuple, cast
 
-from PySide2.QtCore import QFileInfo, QSettings, Qt, Signal
-from PySide2.QtWidgets import QBoxLayout, QFileDialog, QInputDialog, QMessageBox, QTabWidget, QWidget
+from PySide6.QtCore import QFileInfo, QSettings, Qt, Signal
+from PySide6.QtWidgets import (QBoxLayout, QFileDialog, QInputDialog,
+                               QMessageBox, QTabWidget, QWidget)
 
 from ywh2bt.core.core import AVAILABLE_FORMATS
 from ywh2bt.core.exceptions import CoreException
 from ywh2bt.gui.dialog.error import ErrorDialogMixin
 from ywh2bt.gui.dialog.file import FileFormatDialogFilters
 from ywh2bt.gui.widgets.root_configuration_entry import RootConfigurationEntry
-from ywh2bt.gui.widgets.root_configuration_widget import RootConfigurationWidget
+from ywh2bt.gui.widgets.root_configuration_widget import \
+    RootConfigurationWidget
 from ywh2bt.gui.widgets.typing import as_signal_instance
 
 
@@ -81,7 +83,7 @@ class RootConfigurationsWidget(QWidget, ErrorDialogMixin):  # noqa: WPS214
 
         layout.addWidget(self._empty_widget, Qt.AlignCenter)
         layout.addWidget(self._tab_widget)
-        layout.setMargin(0)
+        layout.setContentsMargins(0, 0, 0, 0)
 
     def _create_tab_widget(
         self,

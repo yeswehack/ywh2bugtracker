@@ -2,9 +2,10 @@
 from typing import Any, Optional
 
 import markdown
-from PySide2.QtGui import QKeySequence
-from PySide2.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
-from PySide2.QtWidgets import QAction, QMainWindow, QWidget
+from PySide6.QtGui import QAction, QKeySequence
+from PySide6.QtWebEngineCore import QWebEnginePage
+from PySide6.QtWebEngineWidgets import QWebEngineView
+from PySide6.QtWidgets import QMainWindow, QWidget
 
 from ywh2bt.core.schema.markdown import root_configuration_as_markdown
 from ywh2bt.gui.widgets.typing import as_signal_instance

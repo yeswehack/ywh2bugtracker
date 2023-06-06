@@ -5,8 +5,8 @@ from dataclasses import dataclass
 from functools import partial
 from typing import Any, Dict, Optional, Type, TypeVar, Union, cast
 
-from PySide2.QtCore import Qt, Signal
-from PySide2.QtWidgets import (
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtWidgets import (
     QFormLayout,
     QLabel,
     QLineEdit,

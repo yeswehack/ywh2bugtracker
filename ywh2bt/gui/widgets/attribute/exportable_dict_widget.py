@@ -4,17 +4,11 @@ from __future__ import annotations
 from functools import partial
 from typing import Any, List, Optional, Set, cast
 
-from PySide2.QtCore import QAbstractTableModel, QItemSelection, QModelIndex, Qt, Signal
-from PySide2.QtWidgets import (
-    QAbstractItemView,
-    QHBoxLayout,
-    QHeaderView,
-    QLayout,
-    QPushButton,
-    QTableView,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtCore import (QAbstractTableModel, QItemSelection, QModelIndex,
+                            Qt, Signal)
+from PySide6.QtWidgets import (QAbstractItemView, QHBoxLayout, QHeaderView,
+                               QLayout, QPushButton, QTableView, QVBoxLayout,
+                               QWidget)
 
 from ywh2bt.core.configuration.attribute import ExportableDict
 from ywh2bt.gui.widgets import constants
@@ -66,7 +60,7 @@ class ExportableDictWidget(QWidget):  # noqa: WPS214
 
         layout.addWidget(self._table)
         layout.addLayout(buttons_layout)
-        layout.setMargin(0)
+        layout.setContentsMargins(0, 0, 0, 0)
 
     def _create_table(
         self,

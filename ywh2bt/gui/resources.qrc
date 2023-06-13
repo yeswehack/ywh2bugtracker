@@ -1,20 +1,20 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource>
-        <file>resources/translations/fr_FR.ts</file>
-        <file>resources/translations/fr_FR.qm</file>
-        <file>resources/icons/hide.png</file>
         <file>resources/icons/show.png</file>
         <file>resources/icons/ywh2bt.png</file>
-        <file>resources/icons/types/YesWeHackConfiguration-2x.png</file>
+        <file>resources/icons/hide.png</file>
         <file>resources/icons/types/YesWeHackConfiguration.png</file>
-        <file>resources/icons/types/TrackerConfiguration/ServiceNowConfiguration.png</file>
-        <file>resources/icons/types/TrackerConfiguration/GitLabConfiguration.png</file>
+        <file>resources/icons/types/YesWeHackConfiguration-2x.png</file>
         <file>resources/icons/types/TrackerConfiguration/GitHubConfiguration-2x.png</file>
-        <file>resources/icons/types/TrackerConfiguration/ServiceNowConfiguration-2x.png</file>
         <file>resources/icons/types/TrackerConfiguration/GitHubConfiguration.png</file>
-        <file>resources/icons/types/TrackerConfiguration/JiraConfiguration.png</file>
-        <file>resources/icons/types/TrackerConfiguration/JiraConfiguration-2x.png</file>
         <file>resources/icons/types/TrackerConfiguration/GitLabConfiguration-2x.png</file>
+        <file>resources/icons/types/TrackerConfiguration/JiraConfiguration.png</file>
+        <file>resources/icons/types/TrackerConfiguration/GitLabConfiguration.png</file>
+        <file>resources/icons/types/TrackerConfiguration/ServiceNowConfiguration-2x.png</file>
+        <file>resources/icons/types/TrackerConfiguration/ServiceNowConfiguration.png</file>
+        <file>resources/icons/types/TrackerConfiguration/JiraConfiguration-2x.png</file>
+        <file>resources/translations/fr_FR.qm</file>
+        <file>resources/translations/fr_FR.ts</file>
     </qresource>
 </RCC>

@@ -256,7 +256,7 @@ class RootConfigurationsWidget(QWidget, ErrorDialogMixin):  # noqa: WPS214
         self,
     ) -> str:
         return QFileInfo(
-            cast(str, self._settings.value('last_opened_file')),
+            cast(str, self._settings.value('last_opened_file', '')),
         ).dir().path()
 
     def add_entry(

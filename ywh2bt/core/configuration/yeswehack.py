@@ -48,6 +48,12 @@ class SynchronizeOptions(AttributesContainer):
         description='Upload the report private comments into the bug tracker',
         default=False,
     )
+    upload_assign_comments: BoolAttributeType = Attribute.create(
+        value_type=bool,
+        short_description='Upload assignments comments',
+        description='Upload the comments of assignments into the bug tracker',
+        default=False,
+    )
     upload_public_comments: BoolAttributeType = Attribute.create(
         value_type=bool,
         short_description='Upload public comments',
@@ -98,6 +104,7 @@ class SynchronizeOptions(AttributesContainer):
         self,
         upload_private_comments: Optional[bool] = None,
         upload_public_comments: Optional[bool] = None,
+        upload_assign_comments: Optional[bool] = None,
         upload_details_updates: Optional[bool] = None,
         upload_cvss_updates: Optional[bool] = None,
         upload_priority_updates: Optional[bool] = None,
@@ -111,6 +118,7 @@ class SynchronizeOptions(AttributesContainer):
 
         Args:
             upload_private_comments: a flag indicating whether to upload private comments to the bug tracker
+            upload_assign_comments: a flag indicating whether to upload assign comments to the bug tracker
             upload_public_comments: a flag indicating whether to upload public comments to the bug tracker
             upload_cvss_updates: a flag indicating whether to upload CVSS updates to the bug tracker
             upload_details_updates: a flag indicating whether to upload details updates to the bug tracker
@@ -122,6 +130,7 @@ class SynchronizeOptions(AttributesContainer):
         """
         super().__init__(**kwargs)
         self.upload_private_comments = upload_private_comments
+        self.upload_assign_comments = upload_assign_comments
         self.upload_public_comments = upload_public_comments
         self.upload_cvss_updates = upload_cvss_updates
         self.upload_details_updates = upload_details_updates

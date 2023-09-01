@@ -47,6 +47,7 @@ types-requests = "*"
 types-setuptools = "*"
 tomlkit = "^0.7.0"
 yeswehack = ">=0.7.2,<1"
+urllib3 = "<=1.26.15"
 
 [tool.poetry.dev-dependencies]
 mypy = "*"

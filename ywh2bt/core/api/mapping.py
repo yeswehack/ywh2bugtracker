@@ -295,7 +295,7 @@ def map_raw_log(  # noqa: WPS210,WPS212,WPS231
             old_status=raw_log.old_status,
             new_status=raw_log.status,
         )
-    if raw_log.type == 'comment':
+    if raw_log.type == 'comment' or (raw_log.type == 'assign' and message_html):
         return CommentLog(
             created_at=created_at,
             log_id=log_id,

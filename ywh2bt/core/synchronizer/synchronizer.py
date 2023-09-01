@@ -557,7 +557,16 @@ class ReportSynchronizer:
         return any((
             isinstance(log, CloseLog) and synchronize_options.upload_status_updates,
             isinstance(log, CommentLog) and synchronize_options.upload_public_comments and not log.private,
-            isinstance(log, CommentLog) and synchronize_options.upload_private_comments and log.private,
+            (
+                isinstance(log, CommentLog) and synchronize_options.upload_private_comments
+                and log.log_type == 'comment'
+                and log.private
+            ),
+            (
+                isinstance(log, CommentLog) and synchronize_options.upload_assign_comments
+                and log.log_type == 'assign'
+                and log.private
+            ),
             isinstance(log, CvssUpdateLog) and synchronize_options.upload_cvss_updates,
             isinstance(log, DetailsUpdateLog) and synchronize_options.upload_details_updates,
             isinstance(log, PriorityUpdateLog) and synchronize_options.upload_priority_updates,

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ywh2bt"
-version = "2.7.4"
+version = "2.7.5"
 description = "ywh2bt - YesWeHack to Bug Tracker"
 readme = "README.md"
 authors = ["m.honel <m.honel@yeswehack.com>"]
@@ -47,6 +47,7 @@ types-requests = "*"
 types-setuptools = "*"
 tomlkit = "^0.7.0"
 yeswehack = ">=0.7.2,<1"
+urllib3 = "<=1.26.15"
 
 [tool.poetry.dev-dependencies]
 mypy = "*"

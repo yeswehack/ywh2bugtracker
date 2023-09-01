@@ -274,6 +274,7 @@ that can be downloaded from the [Yes We Hack platform][YesWeHack-Platform].
   - **Program slug**: a program slug.
   - **Synchronization options**: options for synchronizing a Yes We Hack report with the bug tracker.
     - **Upload private comments**: whether to upload the reports private comments into the bug tracker.
+    - **Upload assignments comments**: whether to upload the reports assignments comments into the bug tracker.
     - **Upload public comments**: whether to upload the reports public comments into the bug tracker.
     - **Upload CVSS updates**: whether to upload the reports CVSS updates into the bug tracker.
     - **Upload details updates**: whether to upload the reports details updates into the bug tracker.

@@ -54,6 +54,7 @@ Since data is pulled from YWH platform to your server, only regular outbound web
     - fixed an issue with jira when scope contains special markdown characters
     - fixed an issue when "Download bug trackers comments" feedback option is activated
       and bug tracker attachments do not meet platform attachments requirements (unacceptable mime-type, maximum allowed size exceeded)
+    - fixed an issue with jira when the title of an issue is longer than 255 characters
 - v2.6:
     - added work around bug trackers maximum size allowed for the text of the issues/comments (content put in Markdown file attachment when necessary)
 - v2.5:

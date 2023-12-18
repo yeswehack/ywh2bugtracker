@@ -40,6 +40,7 @@ from ywh2bt.core.configuration.trackers.jira import JiraConfiguration
 from ywh2bt.core.converter.jira2markdown import jira2markdown
 
 _RE_IMAGE = re.compile(pattern=r'!([^!|]+)(?:\|[^!]*)?!')
+_TITLE_MAX_SIZE = 255
 _TEXT_MAX_SIZE = 32767
 
 
@@ -214,6 +215,8 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
         title = self._message_formatter.format_report_title(
             report=report,
         )
+        if len(title) > _TITLE_MAX_SIZE:
+            title = f'{title[:_TITLE_MAX_SIZE - 3]}...'
         description = self._message_formatter.format_report_description(
             report=report,
         ) + self._get_attachments_list_description(

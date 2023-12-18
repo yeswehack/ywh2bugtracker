@@ -130,6 +130,7 @@ user-guide-md5sum-html:  ## extract MD5sum of original User-Guide.md from genera
 user-guide-md5sum-pdf: ## extract MD5sum of original User-Guide.md from generated PDF
 	@docker run \
 		--rm \
+		--volume "/$(MAKEFILE_DIR)/docs/bin/noop.sh:/docker-entrypoint.d/05-certificates.sh" \
 		--volume "/$(MAKEFILE_DIR)/$(USER_GUIDE_BUILD_PATH):/$(USER_GUIDE_BUILD_PATH)" \
 		--workdir /$(USER_GUIDE_BUILD_PATH) \
 		$(POPPLER_DOCKER_IMAGE) \

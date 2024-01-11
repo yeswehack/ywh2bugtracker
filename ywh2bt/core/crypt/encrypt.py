@@ -22,7 +22,7 @@ class Encryptor:
             CryptError: if an error occurred
         """
         if not isinstance(key, Key):
-            raise CryptError(f'Key should be {Key}. {type(key)} given.')
+            raise CryptError(f"Key should be {Key}. {type(key)} given.")
         self._key = key
 
     def encrypt(
@@ -42,10 +42,7 @@ class Encryptor:
             The encrypted message.
         """
         if not isinstance(message_bytes, bytes):
-            raise CryptError(f'Message should be {bytes}. {type(message_bytes)} given.')
+            raise CryptError(f"Message should be {bytes}. {type(message_bytes)} given.")
         key_generator = self._key.generator()
         message_size = len(message_bytes)
-        return bytes([
-            message_bytes[i] ^ next(key_generator)
-            for i in range(message_size)
-        ])
+        return bytes([message_bytes[i] ^ next(key_generator) for i in range(message_size)])

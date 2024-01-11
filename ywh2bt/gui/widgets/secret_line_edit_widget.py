@@ -2,11 +2,14 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Any, Optional
+from typing import (
+    Any,
+    Optional,
+)
 
-from PySide2.QtCore import Signal
-from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import (
+from PySide6.QtCore import Signal
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import (
     QHBoxLayout,
     QLineEdit,
     QPushButton,
@@ -47,8 +50,8 @@ class SecretLineEditWidget(QWidget):
             *args,
             **kwargs,
         )
-        self._icon_show = QIcon(':/resources/icons/show.png')
-        self._icon_hide = QIcon(':/resources/icons/hide.png')
+        self._icon_show = QIcon(":/resources/icons/show.png")
+        self._icon_hide = QIcon(":/resources/icons/hide.png")
 
         self._init_ui()
 
@@ -67,8 +70,8 @@ class SecretLineEditWidget(QWidget):
         self,
     ) -> QLineEdit:
         widget = QLineEdit(self)
-        widget.setEchoMode(QLineEdit.Password)
-        as_signal_instance(widget.textEdited[str]).connect(
+        widget.setEchoMode(QLineEdit.EchoMode.Password)
+        as_signal_instance(widget.textEdited).connect(
             as_signal_instance(self.text_edited).emit,
         )
         return widget
@@ -78,20 +81,20 @@ class SecretLineEditWidget(QWidget):
     ) -> QPushButton:
         widget = QPushButton(self)
         widget.setIcon(self._icon_hide)
-        widget.setToolTip('Reveal secret')
+        widget.setToolTip("Reveal secret")
         widget.setFixedWidth(constants.SMALL_BUTTON_WIDTH)
         widget.setIconSize(constants.SMALL_BUTTON_ICON_SIZE)
         as_signal_instance(widget.pressed).connect(
             partial(
                 self._update_widget,
-                QLineEdit.Normal,
+                QLineEdit.EchoMode.Normal,
                 self._icon_show,
             ),
         )
         as_signal_instance(widget.released).connect(
             partial(
                 self._update_widget,
-                QLineEdit.Password,
+                QLineEdit.EchoMode.Password,
                 self._icon_hide,
             ),
         )

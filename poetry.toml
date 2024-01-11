@@ -1,5 +1,7 @@
 [virtualenvs]
 in-project = true
+always-copy = true
+prefer-active-python = true
 
 [repositories]
 [repositories.testpypi]

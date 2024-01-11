@@ -4,7 +4,8 @@ from typing import Dict
 
 from ywh2bt.core.api.models.report import Attachment
 
-_RE_IMAGE = re.compile(pattern=r'\!\[([^\]]+)]\(([^)]+)\)')
+
+_RE_IMAGE = re.compile(pattern=r"\!\[([^\]]+)]\(([^)]+)\)")
 
 
 def markdown_to_ywh(
@@ -27,7 +28,7 @@ def markdown_to_ywh(
         if not attachment:
             continue
         message = message.replace(
-            f'![{key}]({value})',
-            f'{{YWH-C{attachment.attachment_id}}}',
+            f"![{key}]({value})",
+            f"{{YWH-C{attachment.attachment_id}}}",
         )
     return message

@@ -9,4 +9,4 @@ class SchemaDumpProtocol(Protocol):
         self,
     ) -> str:
         """Dump the schema."""
-        ...  # noqa: WPS428
+        ...

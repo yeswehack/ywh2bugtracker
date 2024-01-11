@@ -1,8 +1,20 @@
 """Models and functions used for check box with hint."""
-from typing import Any, Dict, Optional
+from typing import (
+    Any,
+    Dict,
+    Optional,
+)
 
-from PySide2.QtCore import Qt, Signal
-from PySide2.QtWidgets import QCheckBox, QHBoxLayout, QLabel, QWidget
+from PySide6.QtCore import (
+    Qt,
+    Signal,
+)
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QHBoxLayout,
+    QLabel,
+    QWidget,
+)
 
 from ywh2bt.gui.widgets.typing import as_signal_instance
 
@@ -10,7 +22,7 @@ from ywh2bt.gui.widgets.typing import as_signal_instance
 class HintedCheckBoxWidget(QWidget):
     """A widget consisting of a checkbox with a hint."""
 
-    stateChanged: Signal = Signal(Qt.CheckState)  # noqa: WPS115, N815
+    stateChanged: Signal = Signal(Qt.CheckState)  # noqa: N815
 
     _check_box: QCheckBox
     _label: QLabel
@@ -65,9 +77,9 @@ class HintedCheckBoxWidget(QWidget):
         state: int,
     ) -> None:
         states = {
-            0: Qt.Unchecked,
-            1: Qt.PartiallyChecked,
-            2: Qt.Checked,
+            0: Qt.CheckState.Unchecked,
+            1: Qt.CheckState.PartiallyChecked,
+            2: Qt.CheckState.Checked,
         }
         self._update_label_for_state(
             state=states[state],
@@ -92,7 +104,7 @@ class HintedCheckBoxWidget(QWidget):
         self,
         state: Qt.CheckState,
     ) -> None:
-        self._label.setText(self._state_hints.get(state, ''))
+        self._label.setText(self._state_hints.get(state, ""))
 
     def _create_label(
         self,

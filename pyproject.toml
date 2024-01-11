@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ywh2bt"
-version = "2.7.8"
+version = "2.8.0"
 description = "ywh2bt - YesWeHack to Bug Tracker"
 readme = "README.md"
 authors = ["m.honel <m.honel@yeswehack.com>"]
@@ -14,6 +14,9 @@ classifiers = [
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Security",
     "Topic :: Software Development :: Bug Tracking",
     "Typing :: Typed",
@@ -26,15 +29,24 @@ exclude = [
 ]
 
 [tool.poetry.dependencies]
+python = ">=3.7.0,<3.13"
+aiohttp = [
+    { version="^3.8.0", python = "<3.8" },
+    { version="^3.9.0", python = ">=3.8" },
+]
 aiosnow = "^0.6.0"
-python = ">=3.7.0,<3.10"
 beautifulsoup4 = "^4.9.3"
 html2text = "^2020.1.16"
-jira = "~3.2.0"
+jira = [
+    { version="~3.2.0", python = "<3.8" },
+    { version="^3.5.0", python = ">=3.8" },
+]
 lxml = "^4.5.2"
-markdown = "^3.3.3"
+markdown = [
+    { version="^3.3.3", python = "<3.8" },
+    { version="^3.0.0", python = ">=3.8" },
+]
 PyGithub = "^1.53"
-PySide2 = "^5.15.1"
 python-gitlab = "^2.5.0"
 requests = "^2.24.0"
 requests-toolbelt = "^0.9.1"
@@ -46,23 +58,67 @@ types-chardet = "*"
 types-requests = "*"
 types-setuptools = "*"
 tomlkit = "^0.7.0"
-yeswehack = ">=0.7.2,<1"
 urllib3 = "<=1.26.15"
+setuptools = { version="^69.0.2", python = ">=3.12" }
+pyside6 = [
+    { version="^6.5.0", python = "<3.12", optional = true },
+    { version="^6.6.0", python = ">=3.12", optional = true },
+]
+frozenlist = [
+    { version="^1.3.0", python = "<3.8" },
+    { version="^1.4.0", python = ">=3.8" },
+]
+yeswehack = ">=0.8.3"
+
+[tool.poetry.extras]
+gui = ["pyside6"]
 
 [tool.poetry.dev-dependencies]
-mypy = "*"
-flake8 = "^3.8.3"
-flake8-html = "^0.4.1"
-tox = "^3.20.1"
-tox-pyenv = "^1.1.0"
-wemake-python-styleguide = "^0.15.2"
+mypy =[
+    { version="^1.0", extras = ["dmypy"], python = "<3.12" },
+    { version="^1.8", extras = ["dmypy"], python = ">=3.12" },
+]
+tox =[
+    { version="^3.20.1", python = "<3.8" },
+    { version="^4.0.0", python = ">=3.8" },
+]
+flake8 = [
+    { version="^5.0.4", python = "<3.12" },
+    { version="^6.0.0", python = ">=3.12" },
+]
+black = "^22.10.0"
+flake8-logging-format = "^0.9.0"
+unittest-xml-reporting = "^3.2.0"
+isort = [
+    { version="^5.11.0", python = "<3.8" },
+    { version="^5.12.0", python = ">=3.8" },
+]
+flake8-tidy-imports = [
+    { version="^4.9.0", python = "<3.8" },
+    { version="^4.10.0", python = ">=3.8" },
+]
 
 [tool.poetry.scripts]
-ywh2bt = 'ywh2bt.cli.main:run'
-ywh2bt-gui = 'ywh2bt.gui.main:run'
+ywh2bt = "ywh2bt.cli.main:run"
+ywh2bt-gui = "ywh2bt.gui.main:run"
 
 [build-system]
 requires = [
     "poetry>=0.12"
 ]
 build-backend = "poetry.masonry.api"
+
+[tool.black]
+line-length = 120
+exclude = "ywh2bt/gui/resources\\.py$"
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+force_grid_wrap = 2
+lines_after_imports = 2
+include_trailing_comma = true
+line_length = 120
+skip = [
+    "ywh2bt/gui/resources.py",
+]

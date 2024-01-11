@@ -44,58 +44,58 @@ class SynchronizeOptions(AttributesContainer):
 
     upload_private_comments: BoolAttributeType = Attribute.create(
         value_type=bool,
-        short_description='Upload private comments',
-        description='Upload the report private comments into the bug tracker',
+        short_description="Upload private comments",
+        description="Upload the report private comments into the bug tracker",
         default=False,
     )
     upload_assign_comments: BoolAttributeType = Attribute.create(
         value_type=bool,
-        short_description='Upload assignments comments',
-        description='Upload the comments of assignments into the bug tracker',
+        short_description="Upload assignments comments",
+        description="Upload the comments of assignments into the bug tracker",
         default=False,
     )
     upload_public_comments: BoolAttributeType = Attribute.create(
         value_type=bool,
-        short_description='Upload public comments',
-        description='Upload the report public comments into the bug tracker',
+        short_description="Upload public comments",
+        description="Upload the report public comments into the bug tracker",
         default=False,
     )
     upload_cvss_updates: BoolAttributeType = Attribute.create(
         value_type=bool,
-        short_description='Upload CVSS updates',
-        description='Upload the report CVSS updates into the bug tracker',
+        short_description="Upload CVSS updates",
+        description="Upload the report CVSS updates into the bug tracker",
         default=False,
     )
     upload_details_updates: BoolAttributeType = Attribute.create(
         value_type=bool,
-        short_description='Upload details updates',
-        description='Upload the report details updates into the bug tracker',
+        short_description="Upload details updates",
+        description="Upload the report details updates into the bug tracker",
         default=False,
     )
     upload_priority_updates: BoolAttributeType = Attribute.create(
         value_type=bool,
-        short_description='Upload priority updates',
-        description='Upload the report priority updates into the bug tracker',
+        short_description="Upload priority updates",
+        description="Upload the report priority updates into the bug tracker",
         default=False,
     )
     upload_rewards: BoolAttributeType = Attribute.create(
         value_type=bool,
-        short_description='Upload rewards',
-        description='Upload the report rewards into the bug tracker',
+        short_description="Upload rewards",
+        description="Upload the report rewards into the bug tracker",
         default=False,
     )
     upload_status_updates: BoolAttributeType = Attribute.create(
         value_type=bool,
-        short_description='Upload status updates',
-        description='Upload the report status updates into the bug tracker',
+        short_description="Upload status updates",
+        description="Upload the report status updates into the bug tracker",
         default=False,
     )
     recreate_missing_issues: BoolAttributeType = Attribute.create(
         value_type=bool,
-        short_description='Recreate missing issues',
+        short_description="Recreate missing issues",
         description=(
-            'Recreate issues that were created by a previous synchronization '
-            + 'but are not found into the bug tracker anymore'
+            "Recreate issues that were created by a previous synchronization "
+            + "but are not found into the bug tracker anymore"
         ),
         default=True,
     )
@@ -156,13 +156,13 @@ class FeedbackOptions(AttributesContainer):
 
     download_tracker_comments: BoolAttributeType = Attribute.create(
         value_type=bool,
-        short_description='Download bug trackers comments',
-        description='Download comments from the bug tracker and put them into the report',
+        short_description="Download bug trackers comments",
+        description="Download comments from the bug tracker and put them into the report",
         default=False,
     )
     issue_closed_to_report_afv: BoolAttributeType = Attribute.create(
         value_type=bool,
-        short_description='Issue closed to report AFV',
+        short_description="Issue closed to report AFV",
         description='Set the report status to "Ask for Fix Verification" when the tracker issue is closed',
         default=False,
     )
@@ -204,25 +204,25 @@ class Program(AttributesContainer):
 
     slug: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='Program slug',
-        description='Program slug',
+        short_description="Program slug",
+        description="Program slug",
         required=True,
         validator=not_blank_validator,
     )
     synchronize_options: SynchronizeOptionsAttributeType = Attribute.create(
         value_type=SynchronizeOptions,
-        short_description='Synchronization options',
+        short_description="Synchronization options",
         required=True,
     )
     feedback_options: FeedbackOptionsAttributeType = Attribute.create(
         value_type=FeedbackOptions,
-        short_description='Feedback options',
+        short_description="Feedback options",
         required=True,
     )
     bugtrackers_name: BugtrackersNameAttributeType = Attribute.create(
         value_type=Bugtrackers,
-        short_description='Bug trackers',
-        description='Bug trackers names',
+        short_description="Bug trackers",
+        description="Bug trackers names",
         required=True,
         validator=length_one_validator,
     )
@@ -295,29 +295,29 @@ class YesWeHackConfiguration(AttributesContainer):
 
     api_url: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='API URL',
-        description='Base URL of the YWH API',
-        default='https://api.yeswehack.com',
+        short_description="API URL",
+        description="Base URL of the YWH API",
+        default="https://api.yeswehack.com",
         validator=url_validator,
     )
     pat: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='Personal Access Token',
-        description='Personal Access Token',
+        short_description="Personal Access Token",
+        description="Personal Access Token",
         required=True,
         secret=True,
         validator=not_blank_validator,
     )
     verify: BoolAttributeType = Attribute.create(
         value_type=bool,
-        short_description='Verify TLS',
+        short_description="Verify TLS",
         description="Verify server's TLS certificate",
         default=True,
     )
     programs: ProgramsAttributeType = Attribute.create(
         value_type=Programs,
-        short_description='Programs',
-        description='Programs',
+        short_description="Programs",
+        description="Programs",
         required=True,
         validator=not_empty_validator,
     )

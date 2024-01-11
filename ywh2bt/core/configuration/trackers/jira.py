@@ -1,9 +1,20 @@
 """Models used for the configuration of a Jira tracker."""
-from typing import Any, Optional, Text
+from typing import (
+    Any,
+    Optional,
+    Text,
+)
 
-from ywh2bt.core.configuration.attribute import Attribute, BoolAttributeType, StrAttributeType
+from ywh2bt.core.configuration.attribute import (
+    Attribute,
+    BoolAttributeType,
+    StrAttributeType,
+)
 from ywh2bt.core.configuration.tracker import TrackerConfiguration
-from ywh2bt.core.configuration.validator import not_blank_validator, url_validator
+from ywh2bt.core.configuration.validator import (
+    not_blank_validator,
+    url_validator,
+)
 
 
 class JiraConfiguration(TrackerConfiguration):
@@ -11,51 +22,51 @@ class JiraConfiguration(TrackerConfiguration):
 
     url: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='API URL',
-        description='Base URL of the Jira server',
+        short_description="API URL",
+        description="Base URL of the Jira server",
         required=True,
         validator=url_validator,
     )
     login: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='Login',
-        description='User login for the Jira server',
+        short_description="Login",
+        description="User login for the Jira server",
         required=True,
         secret=False,
         validator=not_blank_validator,
     )
     password: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='Password',
-        description='User password or API token for the Jira server',
+        short_description="Password",
+        description="User password or API token for the Jira server",
         required=True,
         secret=True,
         validator=not_blank_validator,
     )
     project: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='Project slug',
-        description='Jira slug',
+        short_description="Project slug",
+        description="Jira slug",
         required=True,
         validator=not_blank_validator,
     )
     verify: BoolAttributeType = Attribute.create(
         value_type=bool,
-        short_description='Verify SSL',
-        description='Verify SSL certs',
+        short_description="Verify SSL",
+        description="Verify SSL certs",
         default=True,
     )
     issuetype: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='Issue type',
-        description='Issue type (sensitive to account language)',
-        default='Task',
+        short_description="Issue type",
+        description="Issue type (sensitive to account language)",
+        default="Task",
     )
     issue_closed_status: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='Issue closed status',
-        description='Issue closed status (sensitive to account language)',
-        default='Closed',
+        short_description="Issue closed status",
+        description="Issue closed status (sensitive to account language)",
+        default="Closed",
     )
 
     def __init__(
@@ -93,6 +104,6 @@ class JiraConfiguration(TrackerConfiguration):
 
 
 TrackerConfiguration.register_subtype(
-    subtype_name='jira',
+    subtype_name="jira",
     subtype_class=JiraConfiguration,
 )

@@ -62,6 +62,6 @@ class YesWeHackApiClientsFactory(YesWeHackApiClientsAbstractFactory):
                     configuration=configuration,
                 )
             except YesWeHackApiClientError as e:
-                raise CoreException('Unable to create YesWeHack API client') from e
+                raise CoreException("Unable to create YesWeHack API client") from e
             self._yeswehack_api_clients[configuration] = client
         return self._yeswehack_api_clients[configuration]

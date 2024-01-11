@@ -22,37 +22,37 @@ class ServiceNowConfiguration(TrackerConfiguration):
 
     host: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='Instance host',
-        description='Host of the ServiceNow instance',
+        short_description="Instance host",
+        description="Host of the ServiceNow instance",
         required=True,
         validator=host_validator,
     )
     login: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='Login',
-        description='User login for the ServiceNow instance',
+        short_description="Login",
+        description="User login for the ServiceNow instance",
         required=True,
         secret=False,
         validator=not_blank_validator,
     )
     password: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='Password',
-        description='User password for the ServiceNow instance',
+        short_description="Password",
+        description="User password for the ServiceNow instance",
         required=True,
         secret=True,
         validator=not_blank_validator,
     )
     use_ssl: BoolAttributeType = Attribute.create(
         value_type=bool,
-        short_description='Use SSL',
-        description='Use SSL connection',
+        short_description="Use SSL",
+        description="Use SSL connection",
         default=True,
     )
     verify: BoolAttributeType = Attribute.create(
         value_type=bool,
-        short_description='Verify SSL',
-        description='Verify SSL certs',
+        short_description="Verify SSL",
+        description="Verify SSL certs",
         default=True,
     )
 
@@ -85,6 +85,6 @@ class ServiceNowConfiguration(TrackerConfiguration):
 
 
 TrackerConfiguration.register_subtype(
-    subtype_name='servicenow',
+    subtype_name="servicenow",
     subtype_class=ServiceNowConfiguration,
 )

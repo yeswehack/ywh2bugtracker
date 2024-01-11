@@ -5,11 +5,24 @@ from datetime import datetime
 from enum import Enum
 from html import escape as html_escape
 from string import Template
-from typing import Any, Dict, Optional, OrderedDict
+from typing import (
+    Any,
+    Dict,
+    Optional,
+    OrderedDict,
+)
 
-from PySide2.QtCore import QPoint, QUrl, Qt, Signal
-from PySide2.QtGui import QDesktopServices, QMouseEvent
-from PySide2.QtWidgets import (
+from PySide6.QtCore import (
+    QPoint,
+    Qt,
+    QUrl,
+    Signal,
+)
+from PySide6.QtGui import (
+    QDesktopServices,
+    QMouseEvent,
+)
+from PySide6.QtWidgets import (
     QMenu,
     QPlainTextEdit,
     QVBoxLayout,
@@ -22,18 +35,20 @@ from ywh2bt.gui.widgets.typing import as_signal_instance
 class LogType(Enum):
     """Log type."""
 
-    standard = 'normal'
-    success = 'success'
-    warning = 'warning'
-    error = 'error'
+    standard = "normal"
+    success = "success"
+    warning = "warning"
+    error = "error"
 
 
-LEVEL_COLORS: Dict[LogType, str] = OrderedDict[LogType, str]({
-    LogType.standard: 'black',
-    LogType.success: 'green',
-    LogType.warning: 'orange',
-    LogType.error: 'red',
-})
+LEVEL_COLORS: Dict[LogType, str] = OrderedDict[LogType, str](
+    {
+        LogType.standard: "black",
+        LogType.success: "green",
+        LogType.warning: "orange",
+        LogType.error: "red",
+    }
+)
 
 
 @dataclass
@@ -55,7 +70,7 @@ class _PlainTextEdit(QPlainTextEdit):
         event: QMouseEvent,
     ) -> None:
         anchor = None
-        if event.button() & Qt.LeftButton:
+        if event.button() & Qt.MouseButton.LeftButton:
             anchor = self.anchorAt(
                 event.pos(),
             )
@@ -68,7 +83,7 @@ class _PlainTextEdit(QPlainTextEdit):
         self,
         event: QMouseEvent,
     ) -> None:
-        if event.button() & Qt.LeftButton:
+        if event.button() & Qt.MouseButton.LeftButton:
             anchor = self.anchorAt(
                 event.pos(),
             )
@@ -118,11 +133,11 @@ class LogsWidget(QWidget):
 
     def _create_text_edit(
         self,
-    ) -> QPlainTextEdit:
+    ) -> _PlainTextEdit:
         widget = _PlainTextEdit(self)
-        widget.setLineWrapMode(QPlainTextEdit.NoWrap)
+        widget.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
         widget.setReadOnly(True)
-        widget.setContextMenuPolicy(Qt.CustomContextMenu)
+        widget.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         as_signal_instance(widget.customContextMenuRequested).connect(
             self._on_context_menu_requested,
         )
@@ -136,7 +151,7 @@ class LogsWidget(QWidget):
         position: QPoint,
     ) -> None:
         menu = QMenu(self)
-        action_clear = menu.addAction('Clear')
+        action_clear = menu.addAction("Clear")
         as_signal_instance(action_clear.triggered).connect(
             self._on_clear_action_triggered,
         )
@@ -147,7 +162,7 @@ class LogsWidget(QWidget):
     def _on_clear_action_triggered(
         self,
     ) -> None:
-        self._text_edit.setPlainText('')
+        self._text_edit.setPlainText("")
 
     def _on_link_clicked(
         self,
@@ -183,20 +198,18 @@ class LogsWidget(QWidget):
 
 
 log_html_template_contents = """
-<p style="color: ${type_color}"><b>[${date_time}]</b>: ${context}</p>
-<p style="color: ${type_color}; white-space: pre">${message}</p>
-<p></p>
+<p style="color: ${type_color}; white-space: pre"><b>[${date_time}] ${context}</b>: ${message}</p>
 """
 log_html_template = Template(log_html_template_contents)
 log_html_link_template = Template('<a href="${url}">${url}</a>')
 
-url_re = re.compile(r'(https?://[^\s]+)')
+url_re = re.compile(r"(https?://[^\s]+)")
 
 
 def _format_log_entry_html(
     entry: LogEntry,
 ) -> str:
-    date_time = entry.date_time.strftime('%Y-%m-%d %H:%M:%S')  # noqa: WPS323
+    date_time = entry.date_time.strftime("%Y-%m-%d %H:%M:%S")
     context = html_escape(entry.context.strip())
     message = html_escape(entry.message.strip())
     urls = url_re.findall(message)
@@ -223,5 +236,5 @@ def _log_type_to_color(
 ) -> str:
     return LEVEL_COLORS.get(
         log_type,
-        'black',
+        "black",
     )

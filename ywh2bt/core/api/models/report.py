@@ -15,34 +15,39 @@ from typing import (
 from typing_extensions import Protocol
 from yeswehack.api import Report as YesWeHackRawApiReport
 
-REPORT_PROPERTY_LABELS = MappingProxyType({
-    'bug_type': 'Bug type',
-    'scope': 'Scope',
-    'end_point': 'Endpoint',
-    'vulnerable_part': 'Vulnerable part',
-    'part_name': 'Part name',
-    'payload_sample': 'Payload',
-    'application_finger_print': 'Application fingerprint',
-})
-REPORT_STATUS_TRANSLATIONS = MappingProxyType({
-    'new': 'New',
-    'under_review': 'Under Review',
-    'reopen_under_review': 'Reopen Under Review',
-    'more_info': 'Need More Info',
-    'reopen_more_info': 'Reopen Need More Info',
-    'accepted': 'Accepted',
-    'ask_verif': 'Ask for fix verification',
-    'wont_fix': "Won't fix",
-    'informative': 'Informative',
-    'resolved': 'Resolved',
-    'rtfs': 'RTFS',
-    'spam': 'Spam',
-    'out_of_scope': 'Out Of Scope',
-    'not_applicable': 'Not Applicable',
-    'invalid': 'Invalid',
-    'duplicate': 'Duplicate',
-    'auto_close': 'Auto Close',
-})
+
+REPORT_PROPERTY_LABELS = MappingProxyType(
+    {
+        "bug_type": "Bug type",
+        "scope": "Scope",
+        "end_point": "Endpoint",
+        "vulnerable_part": "Vulnerable part",
+        "part_name": "Part name",
+        "payload_sample": "Payload",
+        "application_finger_print": "Application fingerprint",
+    }
+)
+REPORT_STATUS_TRANSLATIONS = MappingProxyType(
+    {
+        "new": "New",
+        "under_review": "Under Review",
+        "reopen_under_review": "Reopen Under Review",
+        "more_info": "Need More Info",
+        "reopen_more_info": "Reopen Need More Info",
+        "accepted": "Accepted",
+        "ask_verif": "Ask for fix verification",
+        "wont_fix": "Won't fix",
+        "informative": "Informative",
+        "resolved": "Resolved",
+        "rtfs": "RTFS",
+        "spam": "Spam",
+        "out_of_scope": "Out Of Scope",
+        "not_applicable": "Not Applicable",
+        "invalid": "Invalid",
+        "duplicate": "Duplicate",
+        "auto_close": "Auto Close",
+    }
+)
 
 
 @dataclass
@@ -83,25 +88,27 @@ class Report:
         Returns:
             a log
         """
-        tracking_status_logs = list(filter(
-            _all_log_filter(
-                partial(
-                    _log_type_equals,
-                    log_type='tracking-status',
-                ),
-                partial(
-                    _log_tracker_name_equals,
-                    tracker_name=tracker_name,
-                ),
-                _not_log_filter(
+        tracking_status_logs = list(
+            filter(
+                _all_log_filter(
                     partial(
-                        _log_tracker_id_equals,
-                        tracker_id=None,
+                        _log_type_equals,
+                        log_type="tracking-status",
+                    ),
+                    partial(
+                        _log_tracker_name_equals,
+                        tracker_name=tracker_name,
+                    ),
+                    _not_log_filter(
+                        partial(
+                            _log_tracker_id_equals,
+                            tracker_id=None,
+                        ),
                     ),
                 ),
-            ),
-            self.logs,
-        ))
+                self.logs,
+            )
+        )
         if tracking_status_logs:
             return tracking_status_logs[-1]
         return None
@@ -120,7 +127,7 @@ class Report:
             the logs that occurred after the given log
         """
         log_index = self.logs.index(log)
-        return self.logs[log_index + 1:]
+        return self.logs[log_index + 1 :]
 
     def get_comments_after(
         self,
@@ -135,12 +142,14 @@ class Report:
         Returns:
             the comments that occurred after the given log
         """
-        return list(filter(
-            _log_is_public_comment,
-            self.get_logs_after(
-                log=log,
-            ),
-        ))
+        return list(
+            filter(
+                _log_is_public_comment,
+                self.get_logs_after(
+                    log=log,
+                ),
+            )
+        )
 
     def get_comments(
         self,
@@ -151,10 +160,12 @@ class Report:
         Returns:
             the comments
         """
-        return list(filter(
-            _log_is_public_comment,
-            self.logs,
-        ))
+        return list(
+            filter(
+                _log_is_public_comment,
+                self.logs,
+            )
+        )
 
 
 @dataclass
@@ -184,15 +195,15 @@ class Attachment:
 class Priority:
     """A priority."""
 
-    name: str = ''
+    name: str = ""
 
 
 @dataclass
 class ReportProgram:
     """Program details from a report."""
 
-    title: str = ''
-    slug: str = ''
+    title: str = ""
+    slug: str = ""
 
 
 @dataclass
@@ -320,12 +331,11 @@ class FixVerifiedLog(Log):
 
 
 class _LogFilterProtocol(Protocol):
-
     def __call__(
         self,
         log: Log,
     ) -> bool:
-        ...  # noqa: WPS428
+        ...
 
 
 def _apply_log_filter(
@@ -340,7 +350,7 @@ def _apply_log_filter(
 def _all_log_filter(
     *filters: _LogFilterProtocol,
 ) -> _LogFilterProtocol:
-    def fn(  # noqa: WPS430
+    def fn(
         log: Log,
     ) -> bool:
         return all(
@@ -359,7 +369,7 @@ def _all_log_filter(
 def _not_log_filter(
     filter_fn: _LogFilterProtocol,
 ) -> _LogFilterProtocol:
-    def fn(  # noqa: WPS430
+    def fn(
         log: Log,
     ) -> bool:
         return not _apply_log_filter(
@@ -400,7 +410,7 @@ def _log_tracker_id_equals(
 
 _log_is_comment = partial(
     _log_type_equals,
-    log_type='comment',
+    log_type="comment",
 )
 _log_is_public = partial(
     _log_private_equals,

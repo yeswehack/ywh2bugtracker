@@ -1,5 +1,8 @@
 """Models and functions related to tabs (tab-widget, ...)."""
-from typing import Any, Optional
+from typing import (
+    Any,
+    Optional,
+)
 
 from ywh2bt.core.configuration.yeswehack import Program
 

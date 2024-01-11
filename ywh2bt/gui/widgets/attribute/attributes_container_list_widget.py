@@ -1,13 +1,28 @@
 """Models and functions used for attributes container list GUI."""
-from typing import Any, Optional, Type
+from typing import (
+    Any,
+    Optional,
+    Type,
+)
 
-from PySide2.QtCore import Signal
-from PySide2.QtWidgets import QHBoxLayout, QLayout, QPushButton, QTabWidget, QVBoxLayout, QWidget
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import (
+    QHBoxLayout,
+    QLayout,
+    QPushButton,
+    QTabWidget,
+    QVBoxLayout,
+    QWidget,
+)
 
-from ywh2bt.core.configuration.attribute import AttributesContainer, AttributesContainerList
+from ywh2bt.core.configuration.attribute import (
+    AttributesContainer,
+    AttributesContainerList,
+)
 from ywh2bt.gui.widgets import constants
 from ywh2bt.gui.widgets.tab_widget_helper import object_to_tab_title
 from ywh2bt.gui.widgets.typing import as_signal_instance
+
 
 T_AC = AttributesContainer
 T_ACL = AttributesContainerList[T_AC]
@@ -79,13 +94,13 @@ class AttributesContainerListWidget(QWidget):
 
         layout.addWidget(self._empty_widget)
         layout.addWidget(self._tab_widget)
-        layout.setMargin(0)
+        layout.setContentsMargins(0, 0, 0, 0)
 
         self._auto_show_hide_tabs()
 
     def _create_empty_widget(
         self,
-    ) -> QTabWidget:
+    ) -> QWidget:
         return self._create_buttons_widget()
 
     def _create_tab_widget(
@@ -101,9 +116,9 @@ class AttributesContainerListWidget(QWidget):
 
     def _create_buttons_widget(
         self,
-    ) -> QPushButton:
+    ) -> QWidget:
         button = QPushButton(
-            '+',
+            "+",
             self,
         )
         button.setFixedSize(constants.SMALL_BUTTON_SIZE)
@@ -152,7 +167,8 @@ class AttributesContainerListWidget(QWidget):
         self,
         container: AttributesContainer,
     ) -> int:
-        from ywh2bt.gui.widgets.attribute.attributes_container_widget import AttributesContainerWidget  # noqa: WPS433
+        from ywh2bt.gui.widgets.attribute.attributes_container_widget import AttributesContainerWidget
+
         widget = AttributesContainerWidget(
             parent=self,
             container_class=container.__class__,
@@ -187,7 +203,7 @@ class AttributesContainerListWidget(QWidget):
         container: AttributesContainer,
     ) -> str:
         if self._container_list is None:
-            return 'Tab'
+            return "Tab"
         title = object_to_tab_title(
             obj=container,
         )
@@ -195,7 +211,7 @@ class AttributesContainerListWidget(QWidget):
             index = self._container_list.index(container)
             class_name = self._container_list.values_type.__name__
             position = index + 1
-            title = f'{class_name} #{position}'
+            title = f"{class_name} #{position}"
         return title
 
     def _on_attributes_container_widget_changed(

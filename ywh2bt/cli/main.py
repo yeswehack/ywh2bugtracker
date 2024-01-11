@@ -1,18 +1,26 @@
 """CLI arguments parsing and execution."""
 import argparse
 import sys
+from typing import TYPE_CHECKING
 
-import urllib3  # type: ignore
+import urllib3
 
 from ywh2bt.cli.commands.convert import convert
 from ywh2bt.cli.commands.schema import dump_schema
 from ywh2bt.cli.commands.synchronize import synchronize
 from ywh2bt.cli.commands.test import test
 from ywh2bt.cli.commands.validate import validate
-from ywh2bt.core.core import AVAILABLE_FORMATS, AVAILABLE_SCHEMA_DUMP_FORMATS
-from ywh2bt.core.error import print_error, print_error_message
+from ywh2bt.core.core import (
+    AVAILABLE_FORMATS,
+    AVAILABLE_SCHEMA_DUMP_FORMATS,
+)
+from ywh2bt.core.error import (
+    print_error,
+    print_error_message,
+)
 from ywh2bt.core.exceptions import CoreException
 from ywh2bt.version import __VERSION__
+
 
 urllib3.disable_warnings(
     category=urllib3.exceptions.InsecureRequestWarning,
@@ -22,7 +30,10 @@ DEFAULT_FORMATTER_CLASS = argparse.ArgumentDefaultsHelpFormatter
 CONFIGURATION_FORMATS = list(AVAILABLE_FORMATS.keys())
 SCHEMA_DUMP_FORMATS = list(AVAILABLE_SCHEMA_DUMP_FORMATS.keys())
 
-SubParsersActionType = argparse._SubParsersAction  # noqa: WPS437
+if TYPE_CHECKING:
+    SubParsersActionType = argparse._SubParsersAction[argparse.ArgumentParser]
+else:
+    SubParsersActionType = argparse._SubParsersAction
 
 
 def run(
@@ -46,7 +57,7 @@ def run(
         sys.exit(1)
     except KeyboardInterrupt:
         print_error_message(
-            message='Interrupted by user.',
+            message="Interrupted by user.",
         )
         sys.exit(130)
     sys.exit(0)
@@ -59,14 +70,14 @@ def _parse_args(
         formatter_class=DEFAULT_FORMATTER_CLASS,
     )
     parser.add_argument(
-        '--version',
-        '-V',
-        action='version',
-        version=f'%(prog)s {__VERSION__}',  # noqa: C812, WPS323
+        "--version",
+        "-V",
+        action="version",
+        version=f"%(prog)s {__VERSION__} (python {'.'.join(map(str, sys.version_info[:3]))})",  # noqa: C812
     )
     parser.set_defaults(func=lambda _: parser.print_help())
 
-    commands = parser.add_subparsers(dest='command')
+    commands = parser.add_subparsers(dest="command")
 
     _add_validate_command(
         parent_parser=commands,
@@ -94,8 +105,8 @@ def _add_validate_command(
 ) -> None:
     validate_parser = parent_parser.add_parser(
         formatter_class=DEFAULT_FORMATTER_CLASS,
-        name='validate',
-        help='Validate configuration file (mandatory fields, data types, ...)',
+        name="validate",
+        help="Validate configuration file (mandatory fields, data types, ...)",
     )
     _add_config_file_format(
         parser=validate_parser,
@@ -108,9 +119,9 @@ def _add_synchronize_command(
 ) -> None:
     synchronize_parser = parent_parser.add_parser(
         formatter_class=DEFAULT_FORMATTER_CLASS,
-        name='synchronize',
-        aliases=('sync',),
-        help='Execute synchronization',
+        name="synchronize",
+        aliases=("sync",),
+        help="Execute synchronization",
     )
     _add_config_file_format(
         parser=synchronize_parser,
@@ -123,8 +134,8 @@ def _add_test_command(
 ) -> None:
     test_parser = parent_parser.add_parser(
         formatter_class=DEFAULT_FORMATTER_CLASS,
-        name='test',
-        help='Test the connection to the trackers',
+        name="test",
+        help="Test the connection to the trackers",
     )
     _add_config_file_format(
         parser=test_parser,
@@ -137,36 +148,36 @@ def _add_convert_command(
 ) -> None:
     convert_parser = parent_parser.add_parser(
         formatter_class=DEFAULT_FORMATTER_CLASS,
-        name='convert',
-        help='Convert a configuration file from a format to another',
+        name="convert",
+        help="Convert a configuration file from a format to another",
     )
     _add_config_file_format(
         parser=convert_parser,
         format_required=True,
     )
     convert_parser.add_argument(
-        '--destination-file',
-        '-d',
-        dest='destination_file',
+        "--destination-file",
+        "-d",
+        dest="destination_file",
         help='path to converted file ; if "-", print to stdout',
-        default='-',
+        default="-",
         type=str,
     )
     convert_parser.add_argument(
-        '--destination-format',
-        '-df',
-        dest='destination_format',
-        help='format to converted file',
+        "--destination-format",
+        "-df",
+        dest="destination_format",
+        help="format to converted file",
         required=True,
         type=str,
         default=argparse.SUPPRESS,
         choices=CONFIGURATION_FORMATS,
     )
     convert_parser.add_argument(
-        '--override',
-        dest='override',
-        help='override destination file if it already exists',
-        action='store_true',
+        "--override",
+        dest="override",
+        help="override destination file if it already exists",
+        action="store_true",
     )
     convert_parser.set_defaults(func=convert)
 
@@ -176,14 +187,14 @@ def _add_schema_command(
 ) -> None:
     schema_parser = parent_parser.add_parser(
         formatter_class=DEFAULT_FORMATTER_CLASS,
-        name='schema',
-        help='Dump a schema of the structure of the configuration files in JSON Schema, markdown or plaintext',
+        name="schema",
+        help="Dump a schema of the structure of the configuration files in JSON Schema, markdown or plaintext",
     )
     schema_parser.add_argument(
-        '--format',
-        '-f',
-        dest='output_format',
-        help='format',
+        "--format",
+        "-f",
+        dest="output_format",
+        help="format",
         type=str,
         required=False,
         default=SCHEMA_DUMP_FORMATS[0],
@@ -196,10 +207,10 @@ def _add_config_file(
     parser: argparse.ArgumentParser,
 ) -> None:
     parser.add_argument(
-        '--config-file',
-        '-c',
-        dest='config_file',
-        help='path to configuration file',
+        "--config-file",
+        "-c",
+        dest="config_file",
+        help="path to configuration file",
         required=True,
         type=str,
         default=argparse.SUPPRESS,
@@ -211,13 +222,13 @@ def _add_config_format(
     required: bool = False,
 ) -> None:
     parser.add_argument(
-        '--config-format',
-        '-f',
-        dest='config_format',
-        help='format of configuration file',
+        "--config-format",
+        "-f",
+        dest="config_format",
+        help="format of configuration file",
         type=str,
         required=required,
-        default='yaml',
+        default="yaml",
         choices=CONFIGURATION_FORMATS,
     )
 
@@ -235,7 +246,7 @@ def _add_config_file_format(
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run(
         *sys.argv[1:],
     )

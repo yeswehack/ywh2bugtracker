@@ -2,7 +2,11 @@
 import base64
 import json
 import re
-from typing import Optional, Type, TypeVar
+from typing import (
+    Optional,
+    Type,
+    TypeVar,
+)
 
 from ywh2bt.core.crypt.decrypt import Decryptor
 from ywh2bt.core.crypt.error import CryptError
@@ -10,14 +14,15 @@ from ywh2bt.core.crypt.key import Key
 from ywh2bt.core.state.error import StateError
 from ywh2bt.core.state.state import State
 
-StateType = TypeVar('StateType', bound=State, covariant=True)
+
+StateType = TypeVar("StateType", bound=State, covariant=True)
 
 
 class StateDecryptor:
     """A simple state decryptor."""
 
     _encrypted_re = re.compile(
-        r'\[YWH2BT:S:(.+)]',
+        r"\[YWH2BT:S:(.+)]",
     )
 
     @classmethod
@@ -55,16 +60,16 @@ class StateDecryptor:
         try:
             decrypted_data = decryptor.decrypt(encrypted)
         except CryptError as decrypt_error:
-            raise StateError(f'Unable to decrypt state {encrypted_state}') from decrypt_error
+            raise StateError(f"Unable to decrypt state {encrypted_state}") from decrypt_error
         try:
             class_name, data = json.loads(decrypted_data)
         except (json.JSONDecodeError, TypeError) as json_error:
-            raise StateError(f'Unable to deserialize state {encrypted_state}') from json_error
+            raise StateError(f"Unable to deserialize state {encrypted_state}") from json_error
         if class_name != state_type.__name__:
-            raise StateError(f'Invalid state type {class_name}')
+            raise StateError(f"Invalid state type {class_name}")
         if not isinstance(data, dict):
-            raise StateError('Invalid state data')
-        return state_type(**data)  # type: ignore
+            raise StateError("Invalid state data")
+        return state_type(**data)
 
     @classmethod
     def _extract_encrypted(

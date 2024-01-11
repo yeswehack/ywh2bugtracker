@@ -17,10 +17,8 @@ from unittest.mock import (
     create_autospec,
 )
 
-from yeswehack.api import (
-    Report as YesWeHackRawApiReport,
-    YesWeHack as YesWeHackRawApi,
-)
+from yeswehack.api import Report as YesWeHackRawApiReport
+from yeswehack.api import YesWeHack as YesWeHackRawApi
 
 from ywh2bt.core.api.models.report import (
     Attachment,
@@ -74,10 +72,9 @@ from ywh2bt.core.synchronizer.synchronizer import (
 
 
 class TestReportSynchronizer(TestCase):
-
     def setUp(self) -> None:
         TrackerConfiguration.register_subtype(
-            subtype_name='my',
+            subtype_name="my",
             subtype_class=MyTrackerTrackerConfiguration,
         )
 
@@ -100,23 +97,23 @@ class TestReportSynchronizer(TestCase):
     ) -> None:
         report = self._build_report(
             report_id=123,
-            tracking_status='AFI',
+            tracking_status="AFI",
         )
         ywh_api_client_mock = create_autospec(YesWeHackApiClient, spec_set=True)
         tracker_client_mock = create_autospec(TrackerClient, spec_set=True)
-        tracker_client_mock.tracker_type = 'MyTracker'
+        tracker_client_mock.tracker_type = "MyTracker"
         tracker_client_mock.send_report.return_value = TrackerIssue(
-            tracker_url='http://tracker/issue/1',
-            project='my-project',
-            issue_id='1',
-            issue_url='http://tracker/issue/1',
+            tracker_url="http://tracker/issue/1",
+            project="my-project",
+            issue_id="1",
+            issue_url="http://tracker/issue/1",
             closed=False,
         )
         Given(
             case=self,
             report=report,
             yeswehack_client=ywh_api_client_mock,
-            tracker_name='my-tracker',
+            tracker_name="my-tracker",
             tracker_client=tracker_client_mock,
             synchronize_options=SynchronizeOptions(
                 upload_private_comments=True,
@@ -127,56 +124,51 @@ class TestReportSynchronizer(TestCase):
             ),
             feedback_options=FeedbackOptions(),
             message_formatter=SimpleMessageFormatter(
-                tracking_status_update_format='issue url: {tracker_issue.issue_url}',
-                synchronization_done_format='issue url: {send_logs_result.tracker_issue.issue_url}',
-                download_comment_format='comment: {comment}',
-                status_update_comment_format='comment: {comment}',
+                tracking_status_update_format="issue url: {tracker_issue.issue_url}",
+                synchronization_done_format="issue url: {send_logs_result.tracker_issue.issue_url}",
+                download_comment_format="comment: {comment}",
+                status_update_comment_format="comment: {comment}",
             ),
-        ).when_synchronize_report(
-        ).then_assert_no_error(
-        ).then_assert_has_result(
-        ).then_assert_is_not_existing_issue(
-        ).then_assert_tracker_client_send_report_called_once_with(
+        ).when_synchronize_report().then_assert_no_error().then_assert_has_result().then_assert_is_not_existing_issue().then_assert_tracker_client_send_report_called_once_with(
             report=report,
-        ).then_assert_tracker_client_send_logs_not_called(
-        ).then_assert_yeswehack_client_put_report_tracking_status_called_once_with(
+        ).then_assert_tracker_client_send_logs_not_called().then_assert_yeswehack_client_put_report_tracking_status_called_once_with(
             report=report,
-            status='T',
-            tracker_name='my-tracker',
-            issue_id='1',
-            issue_url='http://tracker/issue/1',
-            comment='issue url: http://tracker/issue/1',
+            status="T",
+            tracker_name="my-tracker",
+            issue_id="1",
+            issue_url="http://tracker/issue/1",
+            comment="issue url: http://tracker/issue/1",
         )
 
     def test_new_afi_all_new_logs(
         self,
     ) -> None:
         comment_log1 = CommentLog(
-            created_at='2021-01-01T00:00:00+00:00',
+            created_at="2021-01-01T00:00:00+00:00",
             log_id=1,
-            log_type='comment',
+            log_type="comment",
             private=True,
             author=Author(
-                username='user1',
+                username="user1",
             ),
-            message_html='This is a comment',
+            message_html="This is a comment",
             attachments=[],
         )
         report = self._build_report(
             report_id=123,
-            tracking_status='AFI',
+            tracking_status="AFI",
             logs=[
                 comment_log1,
             ],
         )
         ywh_api_client_mock = create_autospec(YesWeHackApiClient, spec_set=True)
         tracker_client_mock = create_autospec(TrackerClient, spec_set=True)
-        tracker_client_mock.tracker_type = 'MyTracker'
+        tracker_client_mock.tracker_type = "MyTracker"
         issue = TrackerIssue(
-            tracker_url='http://tracker/issue/1',
-            project='my-project',
-            issue_id='1',
-            issue_url='http://tracker/issue/1',
+            tracker_url="http://tracker/issue/1",
+            project="my-project",
+            issue_id="1",
+            issue_url="http://tracker/issue/1",
             closed=False,
         )
         tracker_client_mock.send_report.return_value = issue
@@ -194,9 +186,9 @@ class TestReportSynchronizer(TestCase):
                         microsecond=420000,
                         tzinfo=datetime.timezone.utc,
                     ),
-                    author='tracker-user',
-                    comment_id='456',
-                    body='',
+                    author="tracker-user",
+                    comment_id="456",
+                    body="",
                     attachments={},
                 ),
             ],
@@ -205,7 +197,7 @@ class TestReportSynchronizer(TestCase):
             case=self,
             report=report,
             yeswehack_client=ywh_api_client_mock,
-            tracker_name='my-tracker',
+            tracker_name="my-tracker",
             tracker_client=tracker_client_mock,
             synchronize_options=SynchronizeOptions(
                 upload_private_comments=True,
@@ -216,16 +208,12 @@ class TestReportSynchronizer(TestCase):
             ),
             feedback_options=FeedbackOptions(),
             message_formatter=SimpleMessageFormatter(
-                tracking_status_update_format='issue url: {tracker_issue.issue_url}',
-                synchronization_done_format='issue url: {send_logs_result.tracker_issue.issue_url}',
-                download_comment_format='comment: {comment}',
-                status_update_comment_format='comment: {comment}',
+                tracking_status_update_format="issue url: {tracker_issue.issue_url}",
+                synchronization_done_format="issue url: {send_logs_result.tracker_issue.issue_url}",
+                download_comment_format="comment: {comment}",
+                status_update_comment_format="comment: {comment}",
             ),
-        ).when_synchronize_report(
-        ).then_assert_no_error(
-        ).then_assert_has_result(
-        ).then_assert_is_not_existing_issue(
-        ).then_assert_tracker_client_send_report_called_once_with(
+        ).when_synchronize_report().then_assert_no_error().then_assert_has_result().then_assert_is_not_existing_issue().then_assert_tracker_client_send_report_called_once_with(
             report=report,
         ).then_assert_tracker_client_send_logs_called_once_with(
             tracker_issue=issue,
@@ -234,76 +222,76 @@ class TestReportSynchronizer(TestCase):
             ],
         ).then_assert_yeswehack_client_put_report_tracking_status_called_once_with(
             report=report,
-            status='T',
-            tracker_name='my-tracker',
-            issue_id='1',
-            issue_url='http://tracker/issue/1',
-            comment='issue url: http://tracker/issue/1',
+            status="T",
+            tracker_name="my-tracker",
+            issue_id="1",
+            issue_url="http://tracker/issue/1",
+            comment="issue url: http://tracker/issue/1",
         )
 
     def test_partially_synced(
         self,
     ) -> None:
         comment_log1 = CommentLog(
-            created_at='2021-01-01T00:00:00+00:00',
+            created_at="2021-01-01T00:00:00+00:00",
             log_id=1,
-            log_type='comment',
+            log_type="comment",
             private=True,
             author=Author(
-                username='user1',
+                username="user1",
             ),
-            message_html='This is a comment',
+            message_html="This is a comment",
             attachments=[],
         )
         tracking_status = TrackingStatusLog(
-            created_at='2021-01-01T00:30:00+00:00',
+            created_at="2021-01-01T00:30:00+00:00",
             log_id=1,
-            log_type='tracking-status',
+            log_type="tracking-status",
             private=True,
             author=Author(
-                username='user1',
+                username="user1",
             ),
-            message_html='Tracked',
+            message_html="Tracked",
             attachments=[],
-            tracker_name='my-tracker',
-            tracker_url='http://tracker/issue/1',
-            tracker_id='1',
+            tracker_name="my-tracker",
+            tracker_url="http://tracker/issue/1",
+            tracker_id="1",
         )
         tracker_update_log1 = TrackerUpdateLog(
-            created_at='2021-01-01T01:00:00+00:00',
+            created_at="2021-01-01T01:00:00+00:00",
             log_id=2,
-            log_type='tracker-update',
+            log_type="tracker-update",
             private=True,
             author=Author(
-                username='user1',
+                username="user1",
             ),
-            message_html='This is a a tracker update',
+            message_html="This is a a tracker update",
             attachments=[],
-            tracker_name='my-tracker',
-            tracker_id='1',
-            tracker_url='http://tracker/issue/1',
+            tracker_name="my-tracker",
+            tracker_id="1",
+            tracker_url="http://tracker/issue/1",
             tracker_token=StateEncryptor.encrypt(
-                key='123',
+                key="123",
                 state=TrackerIssueState(
                     closed=False,
-                    bugtracker_name='my-tracker',
+                    bugtracker_name="my-tracker",
                 ),
             ),
         )
         comment_log2 = CommentLog(
-            created_at='2021-01-01T02:00:00+00:00',
+            created_at="2021-01-01T02:00:00+00:00",
             log_id=3,
-            log_type='comment',
+            log_type="comment",
             private=True,
             author=Author(
-                username='user1',
+                username="user1",
             ),
-            message_html='This is another comment',
+            message_html="This is another comment",
             attachments=[],
         )
         report = self._build_report(
             report_id=123,
-            tracking_status='T',
+            tracking_status="T",
             logs=[
                 comment_log1,
                 tracking_status,
@@ -313,12 +301,12 @@ class TestReportSynchronizer(TestCase):
         )
         ywh_api_client_mock = create_autospec(YesWeHackApiClient, spec_set=True)
         tracker_client_mock = create_autospec(TrackerClient, spec_set=True)
-        tracker_client_mock.tracker_type = 'MyTracker'
+        tracker_client_mock.tracker_type = "MyTracker"
         issue = TrackerIssue(
-            tracker_url='http://tracker/issue/1',
-            project='my-project',
-            issue_id='1',
-            issue_url='http://tracker/issue/1',
+            tracker_url="http://tracker/issue/1",
+            project="my-project",
+            issue_id="1",
+            issue_url="http://tracker/issue/1",
             closed=False,
         )
         tracker_client_mock.get_tracker_issue.return_value = issue
@@ -336,9 +324,9 @@ class TestReportSynchronizer(TestCase):
                         microsecond=420000,
                         tzinfo=datetime.timezone.utc,
                     ),
-                    author='tracker-user',
-                    comment_id='456',
-                    body='',
+                    author="tracker-user",
+                    comment_id="456",
+                    body="",
                     attachments={},
                 ),
             ],
@@ -347,7 +335,7 @@ class TestReportSynchronizer(TestCase):
             case=self,
             report=report,
             yeswehack_client=ywh_api_client_mock,
-            tracker_name='my-tracker',
+            tracker_name="my-tracker",
             tracker_client=tracker_client_mock,
             synchronize_options=SynchronizeOptions(
                 upload_private_comments=True,
@@ -358,34 +346,25 @@ class TestReportSynchronizer(TestCase):
             ),
             feedback_options=FeedbackOptions(),
             message_formatter=SimpleMessageFormatter(
-                tracking_status_update_format='issue url: {tracker_issue.issue_url}',
-                synchronization_done_format='issue url: {send_logs_result.tracker_issue.issue_url}',
-                download_comment_format='comment: {comment}',
-                status_update_comment_format='comment: {comment}',
+                tracking_status_update_format="issue url: {tracker_issue.issue_url}",
+                synchronization_done_format="issue url: {send_logs_result.tracker_issue.issue_url}",
+                download_comment_format="comment: {comment}",
+                status_update_comment_format="comment: {comment}",
             ),
-        ).when_synchronize_report(
-        ).then_assert_no_error(
-        ).then_assert_has_result(
-        ).then_assert_is_created_issue(
-        ).then_assert_tracker_client_send_report_not_called(
-        ).then_assert_tracker_client_send_logs_called_once_with(
+        ).when_synchronize_report().then_assert_no_error().then_assert_has_result().then_assert_is_created_issue().then_assert_tracker_client_send_report_not_called().then_assert_tracker_client_send_logs_called_once_with(
             tracker_issue=issue,
             logs=[
                 comment_log2,
             ],
         ).then_assert_yeswehack_client_post_report_tracker_update_called_once_with(
             report=report,
-            tracker_name='my-tracker',
-            issue_id='1',
-            issue_url='http://tracker/issue/1',
-            comment='issue url: http://tracker/issue/1',
+            tracker_name="my-tracker",
+            issue_id="1",
+            issue_url="http://tracker/issue/1",
+            comment="issue url: http://tracker/issue/1",
             token=StateEncryptor.encrypt(
-                key='123',
-                state=TrackerIssueState(
-                    closed=False,
-                    bugtracker_name='my-tracker',
-                    downloaded_comments=['456']
-                ),
+                key="123",
+                state=TrackerIssueState(closed=False, bugtracker_name="my-tracker", downloaded_comments=["456"]),
             ),
         )
 
@@ -394,39 +373,39 @@ class TestReportSynchronizer(TestCase):
     ) -> None:
         report = self._build_report(
             report_id=123,
-            tracking_status='T',
+            tracking_status="T",
             logs=[
                 TrackingStatusLog(
-                    created_at='2021-01-01T00:00:00+00:00',
+                    created_at="2021-01-01T00:00:00+00:00",
                     log_id=1,
-                    log_type='tracking-status',
+                    log_type="tracking-status",
                     private=True,
                     author=Author(
-                        username='user1',
+                        username="user1",
                     ),
-                    message_html='Tracked',
+                    message_html="Tracked",
                     attachments=[],
-                    tracker_name='my-tracker',
-                    tracker_url='http://tracker/issue/1',
-                    tracker_id='1',
+                    tracker_name="my-tracker",
+                    tracker_url="http://tracker/issue/1",
+                    tracker_id="1",
                 ),
             ],
         )
         ywh_api_client_mock = create_autospec(YesWeHackApiClient, spec_set=True)
         tracker_client_mock = create_autospec(TrackerClient, spec_set=True)
-        tracker_client_mock.tracker_type = 'MyTracker'
+        tracker_client_mock.tracker_type = "MyTracker"
         tracker_client_mock.get_tracker_issue.return_value = TrackerIssue(
-            tracker_url='http://tracker/issue/1',
-            project='my-project',
-            issue_id='1',
-            issue_url='http://tracker/issue/1',
+            tracker_url="http://tracker/issue/1",
+            project="my-project",
+            issue_id="1",
+            issue_url="http://tracker/issue/1",
             closed=False,
         )
         Given(
             case=self,
             report=report,
             yeswehack_client=ywh_api_client_mock,
-            tracker_name='my-tracker',
+            tracker_name="my-tracker",
             tracker_client=tracker_client_mock,
             synchronize_options=SynchronizeOptions(
                 upload_private_comments=True,
@@ -437,59 +416,53 @@ class TestReportSynchronizer(TestCase):
             ),
             feedback_options=FeedbackOptions(),
             message_formatter=SimpleMessageFormatter(
-                tracking_status_update_format='issue url: {tracker_issue.issue_url}',
-                synchronization_done_format='issue url: {send_logs_result.tracker_issue.issue_url}',
-                download_comment_format='comment: {comment}',
-                status_update_comment_format='comment: {comment}',
+                tracking_status_update_format="issue url: {tracker_issue.issue_url}",
+                synchronization_done_format="issue url: {send_logs_result.tracker_issue.issue_url}",
+                download_comment_format="comment: {comment}",
+                status_update_comment_format="comment: {comment}",
             ),
-        ).when_synchronize_report(
-        ).then_assert_no_error(
-        ).then_assert_has_result(
-        ).then_assert_is_created_issue(
-        ).then_assert_tracker_client_send_report_not_called(
-        ).then_assert_tracker_client_send_logs_not_called(
-        ).then_assert_yeswehack_client_put_report_tracking_status_not_called()
+        ).when_synchronize_report().then_assert_no_error().then_assert_has_result().then_assert_is_created_issue().then_assert_tracker_client_send_report_not_called().then_assert_tracker_client_send_logs_not_called().then_assert_yeswehack_client_put_report_tracking_status_not_called()
 
     def test_already_tracked_not_found(
         self,
     ) -> None:
         report = self._build_report(
             report_id=123,
-            tracking_status='T',
+            tracking_status="T",
             logs=[
                 TrackingStatusLog(
-                    created_at='2021-01-01',
+                    created_at="2021-01-01",
                     log_id=1,
-                    log_type='tracking-status',
+                    log_type="tracking-status",
                     private=True,
                     author=Author(
-                        username='user1',
+                        username="user1",
                     ),
-                    message_html='Tracked',
+                    message_html="Tracked",
                     attachments=[],
-                    tracker_name='my-tracker',
-                    tracker_url='http://tracker/issue/1',
-                    tracker_id='1',
+                    tracker_name="my-tracker",
+                    tracker_url="http://tracker/issue/1",
+                    tracker_id="1",
                 ),
             ],
         )
         ywh_api_client_mock = create_autospec(YesWeHackApiClient, spec_set=True)
         ywh_api_client_mock.put_report_tracking_status.return_value = None
         tracker_client_mock = create_autospec(TrackerClient, spec_set=True)
-        tracker_client_mock.tracker_type = 'MyTracker'
+        tracker_client_mock.tracker_type = "MyTracker"
         tracker_client_mock.get_tracker_issue.return_value = None
         tracker_client_mock.send_report.return_value = TrackerIssue(
-            tracker_url='http://tracker/issue/2',
-            project='my-project',
-            issue_id='2',
-            issue_url='http://tracker/issue/2',
+            tracker_url="http://tracker/issue/2",
+            project="my-project",
+            issue_id="2",
+            issue_url="http://tracker/issue/2",
             closed=False,
         )
         Given(
             case=self,
             report=report,
             yeswehack_client=ywh_api_client_mock,
-            tracker_name='my-tracker',
+            tracker_name="my-tracker",
             tracker_client=tracker_client_mock,
             synchronize_options=SynchronizeOptions(
                 upload_private_comments=True,
@@ -500,31 +473,26 @@ class TestReportSynchronizer(TestCase):
             ),
             feedback_options=FeedbackOptions(),
             message_formatter=SimpleMessageFormatter(
-                tracking_status_update_format='issue url: {tracker_issue.issue_url}',
-                synchronization_done_format='issue url: {send_logs_result.tracker_issue.issue_url}',
-                download_comment_format='comment: {comment}',
-                status_update_comment_format='comment: {comment}',
+                tracking_status_update_format="issue url: {tracker_issue.issue_url}",
+                synchronization_done_format="issue url: {send_logs_result.tracker_issue.issue_url}",
+                download_comment_format="comment: {comment}",
+                status_update_comment_format="comment: {comment}",
             ),
-        ).when_synchronize_report(
-        ).then_assert_no_error(
-        ).then_assert_has_result(
-        ).then_assert_is_not_existing_issue(
-        ).then_assert_tracker_client_send_report_called_once_with(
+        ).when_synchronize_report().then_assert_no_error().then_assert_has_result().then_assert_is_not_existing_issue().then_assert_tracker_client_send_report_called_once_with(
             report=report,
-        ).then_assert_tracker_client_send_logs_not_called(
-        ).then_assert_yeswehack_client_put_report_tracking_status_called_once_with(
+        ).then_assert_tracker_client_send_logs_not_called().then_assert_yeswehack_client_put_report_tracking_status_called_once_with(
             report=report,
-            status='T',
-            tracker_name='my-tracker',
-            issue_id='2',
-            issue_url='http://tracker/issue/2',
-            comment='issue url: http://tracker/issue/2',
+            status="T",
+            tracker_name="my-tracker",
+            issue_id="2",
+            issue_url="http://tracker/issue/2",
+            comment="issue url: http://tracker/issue/2",
         )
 
     def _build_report(
         self,
         report_id: int,
-        tracking_status: str = 'AFI',
+        tracking_status: str = "AFI",
         attachments: Optional[List[Attachment]] = None,
         logs: Optional[List[Log]] = None,
     ) -> Report:
@@ -536,56 +504,56 @@ class TestReportSynchronizer(TestCase):
         return Report(
             raw_report=raw_report,
             report_id=str(report_id),
-            title='A bug report',
-            local_id=f'YWH-{report_id}',
+            title="A bug report",
+            local_id=f"YWH-{report_id}",
             bug_type=BugType(
-                name='bug-type',
-                link='http://bug.example.com/type',
-                remediation_link='http://bug.example.com/type/remediation',
+                name="bug-type",
+                link="http://bug.example.com/type",
+                remediation_link="http://bug.example.com/type/remediation",
             ),
-            scope='',
+            scope="",
             cvss=Cvss(
-                criticity='critical',
+                criticity="critical",
                 score=9.0,
-                vector='vector',
+                vector="vector",
             ),
-            end_point='/',
-            vulnerable_part='post',
-            part_name='param',
-            payload_sample='abcde',
-            technical_environment='',
-            description_html='This is a bug',
+            end_point="/",
+            vulnerable_part="post",
+            part_name="param",
+            payload_sample="abcde",
+            technical_environment="",
+            description_html="This is a bug",
             attachments=attachments or [],
             hunter=Author(
-                username='a-hunter',
+                username="a-hunter",
             ),
             logs=logs or [],
-            status='accepted',
+            status="accepted",
             tracking_status=tracking_status,
             program=ReportProgram(
-                title='Program 1',
-                slug='program1',
+                title="Program 1",
+                slug="program1",
             ),
         )
 
     def _build_configuration(
         self,
-        tracker_key: str = 'tracker',
+        tracker_key: str = "tracker",
     ) -> RootConfiguration:
         return RootConfiguration(
             yeswehack=YesWeHackConfigurations(
                 ywh_test=YesWeHackConfiguration(
                     apps_headers=Headers(
                         **{
-                            'X-YesWeHack-Apps': 'qwerty',
+                            "X-YesWeHack-Apps": "qwerty",
                         },
                     ),
-                    login='api-consumer',
-                    password='password',
+                    login="api-consumer",
+                    password="password",
                     programs=Programs(
                         items=[
                             Program(
-                                slug='program1',
+                                slug="program1",
                                 bugtrackers_name=Bugtrackers(
                                     [
                                         tracker_key,

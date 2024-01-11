@@ -2,10 +2,23 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Any, List, Optional, Set, cast
+from typing import (
+    Any,
+    List,
+    Optional,
+    Set,
+    Union,
+)
 
-from PySide2.QtCore import QAbstractTableModel, QItemSelection, QModelIndex, Qt, Signal
-from PySide2.QtWidgets import (
+from PySide6.QtCore import (
+    QAbstractTableModel,
+    QItemSelection,
+    QModelIndex,
+    QPersistentModelIndex,
+    Qt,
+    Signal,
+)
+from PySide6.QtWidgets import (
     QAbstractItemView,
     QHBoxLayout,
     QHeaderView,
@@ -21,10 +34,10 @@ from ywh2bt.gui.widgets import constants
 from ywh2bt.gui.widgets.typing import as_signal_instance
 
 
-class ExportableDictWidget(QWidget):  # noqa: WPS214
+class ExportableDictWidget(QWidget):
     """Exportable dict GUI."""
 
-    dataChanged: Signal = Signal(ExportableDict)  # noqa: WPS115, N815
+    dataChanged: Signal = Signal(ExportableDict)  # noqa: N815
 
     _table: QTableView
     _add_button: QPushButton
@@ -66,16 +79,16 @@ class ExportableDictWidget(QWidget):  # noqa: WPS214
 
         layout.addWidget(self._table)
         layout.addLayout(buttons_layout)
-        layout.setMargin(0)
+        layout.setContentsMargins(0, 0, 0, 0)
 
     def _create_table(
         self,
     ) -> QTableView:
         widget = QTableView(self)
         widget.horizontalHeader().hide()
-        widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        widget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         widget.setEditTriggers(
-            QAbstractItemView.AllEditTriggers,
+            QAbstractItemView.EditTrigger.AllEditTriggers,
         )
         return widget
 
@@ -83,7 +96,7 @@ class ExportableDictWidget(QWidget):  # noqa: WPS214
         self,
     ) -> QPushButton:
         widget = QPushButton(
-            '+',
+            "+",
             self,
         )
         widget.setFixedSize(constants.SMALL_BUTTON_SIZE)
@@ -96,7 +109,7 @@ class ExportableDictWidget(QWidget):  # noqa: WPS214
         self,
     ) -> QPushButton:
         widget = QPushButton(
-            '-',
+            "-",
             self,
         )
         widget.setFixedSize(constants.SMALL_BUTTON_SIZE)
@@ -192,9 +205,7 @@ class ExportableDictWidget(QWidget):  # noqa: WPS214
         self,
     ) -> Set[int]:
         selection_model = self._table.selectionModel()
-        return set({
-            index.row() for index in selection_model.selectedIndexes()
-        })
+        return set({index.row() for index in selection_model.selectedIndexes()})
 
 
 class ExportableDictModel(QAbstractTableModel):
@@ -248,7 +259,7 @@ class ExportableDictModel(QAbstractTableModel):
         )
         if any(return_conditions):
             return None
-        if role in {Qt.DisplayRole, Qt.EditRole}:
+        if role in {Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole}:
             data = [
                 list(self._exportable_dict.keys()),
                 list(self._exportable_dict.values()),
@@ -273,7 +284,7 @@ class ExportableDictModel(QAbstractTableModel):
         Returns:
             True if the data has been set, otherwise False
         """
-        if self._exportable_dict is None or not index.isValid() or role != Qt.EditRole:
+        if self._exportable_dict is None or not index.isValid() or role != Qt.ItemDataRole.EditRole:
             return False
         existing_keys = list(self._exportable_dict.keys())
         key = existing_keys[index.row()]
@@ -324,8 +335,8 @@ class ExportableDictModel(QAbstractTableModel):
 
     def flags(
         self,
-        index: QModelIndex,
-    ) -> Qt.ItemFlags:
+        index: Union[QModelIndex, QPersistentModelIndex],
+    ) -> Qt.ItemFlag:
         """
         Get the flags for the given index.
 
@@ -336,9 +347,9 @@ class ExportableDictModel(QAbstractTableModel):
             The flags
         """
         if not index.isValid():
-            return Qt.ItemIsEnabled
+            return Qt.ItemFlag.ItemIsEnabled
 
-        return cast(Qt.ItemFlags, super().flags(index) | Qt.ItemIsEditable)
+        return super().flags(index) | Qt.ItemFlag.ItemIsEditable
 
     def insertRows(  # type: ignore # noqa: N802
         self,
@@ -372,7 +383,7 @@ class ExportableDictModel(QAbstractTableModel):
             key = self._get_next_new_available_key(
                 base_index=i,
             )
-            self._exportable_dict[key] = ''
+            self._exportable_dict[key] = ""
         self.endInsertRows()
         return True
 
@@ -382,7 +393,7 @@ class ExportableDictModel(QAbstractTableModel):
     ) -> str:
         n = 1
         while True:
-            value = f'New entry {base_index + n}'
+            value = f"New entry {base_index + n}"
             if value not in self._exportable_dict.keys():
                 return value
             n += 1
@@ -411,9 +422,7 @@ class ExportableDictModel(QAbstractTableModel):
         )
         key = list(self._exportable_dict.keys())[row]
         self._exportable_dict = self._exportable_dict.__class__(
-            {
-                k: v for k, v in self._exportable_dict.items() if k != key
-            },
+            {k: v for k, v in self._exportable_dict.items() if k != key},
         )
         self.endRemoveRows()
         return True

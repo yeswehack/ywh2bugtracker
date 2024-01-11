@@ -30,7 +30,7 @@ from ywh2bt.core.tester.listener import (
 
 def _print(
     message: str,
-    end: str = '\n',
+    end: str = "\n",
 ) -> None:
     write_message(
         stream=sys.stdout,
@@ -41,12 +41,12 @@ def _print(
 
 def _print_timestamped(
     message: str,
-    end: str = '\n',
+    end: str = "\n",
 ) -> None:
     now = datetime.now()
-    formatted_now = now.strftime('%Y-%m-%d %H:%M:%S.%f')  # noqa: WPS323
+    formatted_now = now.strftime("%Y-%m-%d %H:%M:%S.%f")
     _print(
-        message=f'[{formatted_now}] {message}',
+        message=f"[{formatted_now}] {message}",
         end=end,
     )
 
@@ -74,7 +74,7 @@ class CliSynchronizerListener(SynchronizerListener):
         listener_name = self.__class__.__name__
         event_name = event.__class__.__name__
         _print(
-            message=f'{listener_name}: Unhandled event {event_name}',
+            message=f"{listener_name}: Unhandled event {event_name}",
         )
 
     @_on_event.register
@@ -83,7 +83,7 @@ class CliSynchronizerListener(SynchronizerListener):
         event: SynchronizerStartEvent,
     ) -> None:
         _print_timestamped(
-            message='Starting synchronization:',
+            message="Starting synchronization:",
         )
 
     @_on_event.register
@@ -92,7 +92,7 @@ class CliSynchronizerListener(SynchronizerListener):
         event: SynchronizerEndEvent,
     ) -> None:
         _print_timestamped(
-            message='Synchronization done.',
+            message="Synchronization done.",
         )
 
     @_on_event.register
@@ -107,7 +107,7 @@ class CliSynchronizerListener(SynchronizerListener):
         )
         _print_timestamped(
             message=f'    Fetching reports for program "{program_slug}": ',
-            end='',
+            end="",
         )
 
     @_on_event.register
@@ -117,7 +117,7 @@ class CliSynchronizerListener(SynchronizerListener):
     ) -> None:
         reports_count = len(event.reports)
         _print(
-            message=f'{reports_count} report(s)',
+            message=f"{reports_count} report(s)",
         )
 
     @_on_event.register
@@ -129,13 +129,13 @@ class CliSynchronizerListener(SynchronizerListener):
         report = event.report
         if report.title:
             title_max_len = 32
-            title = report.title[:title_max_len] + (report.title[title_max_len:] and '...')
-            report_details = f'#{report.report_id} ({title})'
+            title = report.title[:title_max_len] + (report.title[title_max_len:] and "...")
+            report_details = f"#{report.report_id} ({title})"
         else:
-            report_details = f'#{report.report_id}'
+            report_details = f"#{report.report_id}"
         _print_timestamped(
             message=f'    Processing report {report_details} with "{tracker_name}": ',
-            end='',
+            end="",
         )
 
     @_on_event.register
@@ -147,7 +147,7 @@ class CliSynchronizerListener(SynchronizerListener):
         issue_added_comment_count = len(event.issue_added_comments)
         if not tracker_issue or not event.is_existing_issue:
             issue_details = [
-                'does not exist anymore',
+                "does not exist anymore",
             ]
         else:
             issue_details = [
@@ -155,23 +155,23 @@ class CliSynchronizerListener(SynchronizerListener):
             ]
             if event.is_created_issue:
                 if issue_added_comment_count:
-                    issue_details.append('updated')
+                    issue_details.append("updated")
             else:
-                issue_details.append('added')
+                issue_details.append("added")
             if issue_added_comment_count:
-                issue_details.append(f'{issue_added_comment_count} comment(s) added')
+                issue_details.append(f"{issue_added_comment_count} comment(s) added")
         report_added_comment_count = len(event.report_added_comments)
         report_details = []
         if report_added_comment_count:
-            report_details.append(f'{report_added_comment_count} comment(s) added')
+            report_details.append(f"{report_added_comment_count} comment(s) added")
         report_details.append(f'tracking status {"updated" if event.tracking_status_updated else "unchanged"}')
         if event.new_report_status:
             old_status, new_status = event.new_report_status
-            old_status_translation = REPORT_STATUS_TRANSLATIONS.get(old_status, 'Unknown')
-            new_status_translation = REPORT_STATUS_TRANSLATIONS.get(new_status, 'Unknown')
+            old_status_translation = REPORT_STATUS_TRANSLATIONS.get(old_status, "Unknown")
+            new_status_translation = REPORT_STATUS_TRANSLATIONS.get(new_status, "Unknown")
             report_details.append(f'status "{old_status_translation}" -> "{new_status_translation}"')
         _print(
-            message=' | '.join(
+            message=" | ".join(
                 (
                     f'issue => {" ; ".join(issue_details)}',
                     f'report => {" ; ".join(report_details)}',
@@ -203,7 +203,7 @@ class CliTesterListener(TesterListener):
         listener_name = self.__class__.__name__
         event_name = event.__class__.__name__
         _print(
-            message=f'{listener_name}: Unhandled event {event_name}',
+            message=f"{listener_name}: Unhandled event {event_name}",
         )
 
     @_on_event.register
@@ -212,7 +212,7 @@ class CliTesterListener(TesterListener):
         event: TesterStartEvent,
     ) -> None:
         _print_timestamped(
-            message='Starting test:',
+            message="Starting test:",
         )
 
     @_on_event.register
@@ -221,7 +221,7 @@ class CliTesterListener(TesterListener):
         event: TesterEndEvent,
     ) -> None:
         _print_timestamped(
-            message='Test done.',
+            message="Test done.",
         )
 
     @_on_event.register
@@ -231,8 +231,8 @@ class CliTesterListener(TesterListener):
     ) -> None:
         yeswehack_name = event.yeswehack_name
         _print_timestamped(
-            message=f'  YesWeHack {yeswehack_name}: ',
-            end='',
+            message=f"  YesWeHack {yeswehack_name}: ",
+            end="",
         )
 
     @_on_event.register
@@ -241,7 +241,7 @@ class CliTesterListener(TesterListener):
         event: TesterEndYesWeHackEvent,
     ) -> None:
         _print(
-            message='OK',
+            message="OK",
         )
 
     @_on_event.register
@@ -251,8 +251,8 @@ class CliTesterListener(TesterListener):
     ) -> None:
         tracker_name = event.tracker_name
         _print_timestamped(
-            message=f'  Tracker {tracker_name}: ',
-            end='',
+            message=f"  Tracker {tracker_name}: ",
+            end="",
         )
 
     @_on_event.register
@@ -261,5 +261,5 @@ class CliTesterListener(TesterListener):
         event: TesterEndTrackerEvent,
     ) -> None:
         _print(
-            message='OK',
+            message="OK",
         )

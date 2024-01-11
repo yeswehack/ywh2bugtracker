@@ -5,7 +5,10 @@ from dataclasses import dataclass
 from io import StringIO
 from typing import Optional
 
-from PySide2.QtCore import QByteArray, QFileInfo
+from PySide6.QtCore import (
+    QByteArray,
+    QFileInfo,
+)
 
 from ywh2bt.core.configuration.root import RootConfiguration
 from ywh2bt.core.core import get_root_configuration_loader
@@ -258,7 +261,7 @@ class RootConfigurationEntry:
         Returns:
             True if the configuration is empty, otherwise False.
         """
-        return self._raw == ''
+        return self._raw == ""
 
     @classmethod
     def from_file(
@@ -281,10 +284,10 @@ class RootConfigurationEntry:
         """
         file_path = file_info.filePath()
         try:
-            with open(file_path, 'r') as f:
+            with open(file_path, "r") as f:
                 raw = f.read()
         except IOError as e:
-            raise CoreException(f'Unable to open file:\n{file_path}') from e
+            raise CoreException(f"Unable to open file:\n{file_path}") from e
 
         return RootConfigurationEntry(
             name=file_info.fileName(),
@@ -315,13 +318,13 @@ class RootConfigurationEntry:
                 stream=raw_stream,
             )
         except LoaderError as e:
-            raise CoreException('Invalid raw configuration') from e
+            raise CoreException("Invalid raw configuration") from e
 
     def _raw_from_configuration(
         self,
     ) -> str:
         if not self._configuration:
-            return ''
+            return ""
         loader = get_root_configuration_loader(
             file_format=self._raw_format,
         )
@@ -332,5 +335,5 @@ class RootConfigurationEntry:
                 data=self._configuration,
             )
         except LoaderError:
-            return ''
+            return ""
         return raw_stream.getvalue()

@@ -1,10 +1,25 @@
 """Models used for the configuration of a GitHub tracker."""
-from typing import Any, Dict, Optional, Text
+from typing import (
+    Any,
+    Dict,
+    Optional,
+    Text,
+)
 
-from ywh2bt.core.configuration.attribute import Attribute, BoolAttributeType, StrAttributeType
-from ywh2bt.core.configuration.error import AttributesError, MissingAttributeError
+from ywh2bt.core.configuration.attribute import (
+    Attribute,
+    BoolAttributeType,
+    StrAttributeType,
+)
+from ywh2bt.core.configuration.error import (
+    AttributesError,
+    MissingAttributeError,
+)
 from ywh2bt.core.configuration.tracker import TrackerConfiguration
-from ywh2bt.core.configuration.validator import not_blank_validator, url_validator
+from ywh2bt.core.configuration.validator import (
+    not_blank_validator,
+    url_validator,
+)
 
 
 class GitHubConfiguration(TrackerConfiguration):
@@ -12,48 +27,48 @@ class GitHubConfiguration(TrackerConfiguration):
 
     url: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='API URL',
-        description='Base URL of the GitHub API',
-        default='https://api.github.com',
+        short_description="API URL",
+        description="Base URL of the GitHub API",
+        default="https://api.github.com",
         validator=url_validator,
     )
     token: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='API token',
-        description='User private token for the GitHub API',
+        short_description="API token",
+        description="User private token for the GitHub API",
         required=True,
         secret=True,
         validator=not_blank_validator,
     )
     project: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='Project path',
-        description='Path to the project on GitHub',
+        short_description="Project path",
+        description="Path to the project on GitHub",
         required=True,
         validator=not_blank_validator,
     )
     verify: BoolAttributeType = Attribute.create(
         value_type=bool,
-        short_description='Verify TLS',
+        short_description="Verify TLS",
         description="Verify server's TLS certificate",
         default=True,
     )
     github_cdn_on: BoolAttributeType = Attribute.create(
         value_type=bool,
-        short_description='Use CDN',
-        description='Enable or disable saving attachment file to GitHub CDN',
+        short_description="Use CDN",
+        description="Enable or disable saving attachment file to GitHub CDN",
         default=False,
     )
     login: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='Login',
-        description='User login for the GitHub server. Required only if github_cdn_on is true',
+        short_description="Login",
+        description="User login for the GitHub server. Required only if github_cdn_on is true",
         secret=False,
     )
     password: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='Password',
-        description='User password for the GitHub server. Required only if github_cdn_on is true',
+        short_description="Password",
+        description="User password for the GitHub server. Required only if github_cdn_on is true",
         secret=True,
     )
 
@@ -114,7 +129,7 @@ class GitHubConfiguration(TrackerConfiguration):
         if errors:
             if not super_error:
                 super_error = AttributesError(
-                    message='Validation error',
+                    message="Validation error",
                     errors={},
                     context=self,
                 )
@@ -128,12 +143,12 @@ class GitHubConfiguration(TrackerConfiguration):
     ) -> Dict[str, MissingAttributeError]:
         errors = {}
         if self.login is None:
-            errors['login'] = MissingAttributeError(
+            errors["login"] = MissingAttributeError(
                 message="Expecting value for attribute 'login' when 'github_on_cdn' is True",
                 context=self,
             )
         if self.password is None:
-            errors['password'] = MissingAttributeError(
+            errors["password"] = MissingAttributeError(
                 message="Expecting value for attribute 'password' when 'github_on_cdn' is True",
                 context=self,
             )
@@ -141,6 +156,6 @@ class GitHubConfiguration(TrackerConfiguration):
 
 
 TrackerConfiguration.register_subtype(
-    subtype_name='github',
+    subtype_name="github",
     subtype_class=GitHubConfiguration,
 )

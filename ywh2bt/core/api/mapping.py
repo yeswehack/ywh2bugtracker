@@ -1,18 +1,22 @@
 """Models and functions used for YesWeHack data mapping."""
 from dataclasses import dataclass
-from typing import Any, Dict, List, Union
-
-from yeswehack.api import (  # noqa: N811
-    Attachment as YesWeHackRawApiAttachment,
-    Author as YesWeHackRawApiAuthor,
-    BugType as YesWeHackRawApiBugType,
-    CVSS as YesWeHackRawApiCvss,
-    Log as YesWeHackRawApiLog,
-    Priority as YesWeHackRawApiPriority,
-    Report as YesWeHackRawApiReport,
+from typing import (
+    Any,
+    Dict,
+    List,
+    Union,
+    cast,
 )
 
-from ywh2bt.core.api.models.report import (  # noqa: WPS235
+from yeswehack.api import CVSS as YesWeHackRawApiCvss
+from yeswehack.api import Attachment as YesWeHackRawApiAttachment  # noqa: N811
+from yeswehack.api import Author as YesWeHackRawApiAuthor
+from yeswehack.api import BugType as YesWeHackRawApiBugType
+from yeswehack.api import Log as YesWeHackRawApiLog
+from yeswehack.api import Priority as YesWeHackRawApiPriority
+from yeswehack.api import Report as YesWeHackRawApiReport
+
+from ywh2bt.core.api.models.report import (
     Attachment,
     Author,
     BugType,
@@ -81,10 +85,14 @@ def map_raw_report(
         context=context,
         raw_cvss=raw_report.cvss,
     )
-    priority = _map_raw_priority(
-        context=context,
-        raw_priority=raw_report.priority,
-    ) if raw_report.priority else None
+    priority = (
+        _map_raw_priority(
+            context=context,
+            raw_priority=raw_report.priority,
+        )
+        if raw_report.priority
+        else None
+    )
     hunter = _map_raw_author(
         context=context,
         raw_author=raw_report.hunter,
@@ -149,8 +157,8 @@ def _map_raw_report_program(
     raw_program: Dict[Any, Any],
 ) -> ReportProgram:
     return ReportProgram(
-        title=raw_program.get('title', ''),
-        slug=raw_program.get('slug', ''),
+        title=raw_program.get("title", ""),
+        slug=raw_program.get("slug", ""),
     )
 
 
@@ -207,11 +215,11 @@ def _map_raw_author(
     context: MappingContext,
     raw_author: Union[YesWeHackRawApiAuthor, Dict[str, Any]],
 ) -> Author:
-    default_username = 'Anonymous'
+    default_username = "Anonymous"
     if isinstance(raw_author, YesWeHackRawApiAuthor):
         username = raw_author.username or default_username
     else:
-        username = raw_author.get('username', default_username)
+        username = raw_author.get("username", default_username)
     return Author(
         username=username,
     )
@@ -221,7 +229,7 @@ def _map_raw_status(
     context: MappingContext,
     raw_status: Dict[str, Any],
 ) -> str:
-    return raw_status.get('workflow_state', '')
+    return cast(str, raw_status.get("workflow_state", ""))
 
 
 def map_raw_logs(
@@ -247,7 +255,7 @@ def map_raw_logs(
     ]
 
 
-def map_raw_log(  # noqa: WPS210,WPS212,WPS231
+def map_raw_log(
     context: MappingContext,
     raw_log: YesWeHackRawApiLog,
 ) -> Log:
@@ -265,11 +273,15 @@ def map_raw_log(  # noqa: WPS210,WPS212,WPS231
     log_id = raw_log.id
     log_type = raw_log.type
     private = raw_log.private
-    author = _map_raw_author(
-        context=context,
-        raw_author=raw_log.author,
-    ) if raw_log.author else Author(
-        username='Anonymous',
+    author = (
+        _map_raw_author(
+            context=context,
+            raw_author=raw_log.author,
+        )
+        if raw_log.author
+        else Author(
+            username="Anonymous",
+        )
     )
     attachments = _map_raw_attachments(
         context=context,
@@ -277,13 +289,13 @@ def map_raw_log(  # noqa: WPS210,WPS212,WPS231
     )
     message_html = cleanup_ywh_redirects_from_html(
         ywh_domain=context.yeswehack_domain,
-        html=raw_log.message_html or '',
+        html=raw_log.message_html or "",
     )
     message_html, attachments = cleanup_attachments_and_urls_from_html(
         html=message_html,
         attachments=attachments,
     )
-    if raw_log.type == 'close':
+    if raw_log.type == "close":
         return CloseLog(
             created_at=created_at,
             log_id=log_id,
@@ -295,7 +307,7 @@ def map_raw_log(  # noqa: WPS210,WPS212,WPS231
             old_status=raw_log.old_status,
             new_status=raw_log.status,
         )
-    if raw_log.type == 'comment' or (raw_log.type == 'assign' and message_html):
+    if raw_log.type == "comment" or (raw_log.type == "assign" and message_html):
         return CommentLog(
             created_at=created_at,
             log_id=log_id,
@@ -305,7 +317,7 @@ def map_raw_log(  # noqa: WPS210,WPS212,WPS231
             message_html=message_html,
             attachments=attachments,
         )
-    if raw_log.type == 'cvss-update':
+    if raw_log.type == "cvss-update":
         return CvssUpdateLog(
             created_at=created_at,
             log_id=log_id,
@@ -323,7 +335,7 @@ def map_raw_log(  # noqa: WPS210,WPS212,WPS231
                 raw_cvss=raw_log.new_cvss,
             ),
         )
-    if raw_log.type == 'details-update':
+    if raw_log.type == "details-update":
         return DetailsUpdateLog(
             created_at=created_at,
             log_id=log_id,
@@ -335,7 +347,7 @@ def map_raw_log(  # noqa: WPS210,WPS212,WPS231
             old_details=raw_log.old_details,
             new_details=raw_log.new_details,
         )
-    if raw_log.type == 'priority-update':
+    if raw_log.type == "priority-update":
         return PriorityUpdateLog(
             created_at=created_at,
             log_id=log_id,
@@ -347,9 +359,11 @@ def map_raw_log(  # noqa: WPS210,WPS212,WPS231
             new_priority=_map_raw_priority(
                 context=context,
                 raw_priority=raw_log.priority,
-            ) if raw_log.priority else None,
+            )
+            if raw_log.priority
+            else None,
         )
-    if raw_log.type == 'reward':
+    if raw_log.type == "reward":
         return RewardLog(
             created_at=created_at,
             log_id=log_id,
@@ -360,7 +374,7 @@ def map_raw_log(  # noqa: WPS210,WPS212,WPS231
             attachments=attachments,
             reward_type=raw_log.reward_type,
         )
-    if raw_log.type == 'status-update':
+    if raw_log.type == "status-update":
         return StatusUpdateLog(
             created_at=created_at,
             log_id=log_id,
@@ -372,7 +386,7 @@ def map_raw_log(  # noqa: WPS210,WPS212,WPS231
             old_status=raw_log.old_status,
             new_status=raw_log.status,
         )
-    if raw_log.type == 'tracking-status':
+    if raw_log.type == "tracking-status":
         return TrackingStatusLog(
             created_at=created_at,
             log_id=log_id,
@@ -385,10 +399,12 @@ def map_raw_log(  # noqa: WPS210,WPS212,WPS231
             tracker_url=cleanup_ywh_redirects_from_text(
                 ywh_domain=context.yeswehack_domain,
                 text=raw_log.tracker_url,
-            ) if raw_log.tracker_url else None,
+            )
+            if raw_log.tracker_url
+            else None,
             tracker_id=raw_log.tracker_id,
         )
-    if raw_log.type == 'tracker-update':
+    if raw_log.type == "tracker-update":
         return TrackerUpdateLog(
             created_at=created_at,
             log_id=log_id,
@@ -401,11 +417,13 @@ def map_raw_log(  # noqa: WPS210,WPS212,WPS231
             tracker_url=cleanup_ywh_redirects_from_text(
                 ywh_domain=context.yeswehack_domain,
                 text=raw_log.tracker_url,
-            ) if raw_log.tracker_url else None,
+            )
+            if raw_log.tracker_url
+            else None,
             tracker_id=raw_log.tracker_id,
             tracker_token=raw_log.tracker_token,
         )
-    if raw_log.type == 'tracker-message':
+    if raw_log.type == "tracker-message":
         return TrackerMessageLog(
             created_at=created_at,
             log_id=log_id,
@@ -418,10 +436,12 @@ def map_raw_log(  # noqa: WPS210,WPS212,WPS231
             tracker_url=cleanup_ywh_redirects_from_text(
                 ywh_domain=context.yeswehack_domain,
                 text=raw_log.tracker_url,
-            ) if raw_log.tracker_url else None,
+            )
+            if raw_log.tracker_url
+            else None,
             tracker_id=raw_log.tracker_id,
         )
-    if raw_log.type == 'fix-verified':
+    if raw_log.type == "fix-verified":
         return FixVerifiedLog(
             created_at=created_at,
             log_id=log_id,

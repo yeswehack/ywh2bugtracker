@@ -42,7 +42,8 @@ from ywh2bt.core.api.tracker import (
 from ywh2bt.core.api.trackers.github.attachment import GitHubAttachmentUploader
 from ywh2bt.core.configuration.trackers.github import GitHubConfiguration
 
-_RE_IMAGE = re.compile(pattern=r'!\[([^\]]+)]\(([^)]+)\)')
+
+_RE_IMAGE = re.compile(pattern=r"!\[([^\]]+)]\(([^)]+)\)")
 _RE_CONTENT_DISPOSITION_FILENAME = re.compile(pattern='filename="([^"]+)";?')
 _TEXT_MAX_SIZE = 65536
 
@@ -56,8 +57,8 @@ class GitHubTrackerClientError(TrackerClientError):
 class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
     """A GitHub tracker client."""
 
-    _attachment_name_regex_template = Template(r'(?:!?\[)([^\[\]]*)(?:\])(?:\(${url}\))')
-    _attachment_substitute_regex_template = Template(r'!?\[[^\[\]]*\]\(${url}\)')
+    _attachment_name_regex_template = Template(r"(?:!?\[)([^\[\]]*)(?:\])(?:\(${url}\))")
+    _attachment_substitute_regex_template = Template(r"!?\[[^\[\]]*\]\(${url}\)")
     _github: Github
     _attachment_uploader: GitHubAttachmentUploader
     _message_formatter: ReportMessageMarkdownFormatter
@@ -95,7 +96,7 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
         Returns:
             the type of the  tracker client
         """
-        return 'GitHub'
+        return "GitHub"
 
     def _build_tracker_issue(
         self,
@@ -191,7 +192,7 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
         ) + self._get_attachments_list_description(
             attachments=report.attachments,
         )
-        external_description = ''
+        external_description = ""
         description_attachment = None
         if len(description) > _TEXT_MAX_SIZE:
             external_description = description
@@ -200,9 +201,9 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
             )
             report_copy = deepcopy(report)
             report_copy.description_html = (
-                '<p>This report description is too large to fit into a GitHub issue. '
+                "<p>This report description is too large to fit into a GitHub issue. "
                 + f'See attachment <a href="{description_attachment.url}">{description_attachment.original_name}</a> '
-                + 'for more details.</p>'
+                + "for more details.</p>"
             )
             description = self._message_formatter.format_report_description(
                 report=report_copy,
@@ -215,7 +216,7 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
         issue = self._create_issue(
             github_repository=repository,
             title=title,
-            body='This issue is being synchronized. Please check back in a moment.',
+            body="This issue is being synchronized. Please check back in a moment.",
         )
         description, external_description = self._replace_attachments_references(
             uploads=self._upload_attachments(
@@ -228,7 +229,7 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
             ],
         )
         if description_attachment:
-            description_attachment.data_loader = lambda: bytes(external_description, 'utf-8')
+            description_attachment.data_loader = lambda: bytes(external_description, "utf-8")
             description = self._replace_attachments_references(
                 uploads=self._upload_attachments(
                     issue=issue,
@@ -257,10 +258,10 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
             attachment_id=0,
             name=name,
             original_name=name,
-            mime_type='text/markdown',
+            mime_type="text/markdown",
             size=0,
-            url=f'http://tracker/external/{name}',
-            data_loader=lambda: bytes('', 'utf-8'),
+            url=f"http://tracker/external/{name}",
+            data_loader=lambda: bytes("", "utf-8"),
         )
 
     def send_logs(
@@ -290,7 +291,7 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
             issue_id=tracker_issue.issue_id,
         )
         if not github_issue:
-            raise GitHubTrackerClientError(f'GitHub issue {tracker_issue.issue_id} not found')
+            raise GitHubTrackerClientError(f"GitHub issue {tracker_issue.issue_id} not found")
         for log in logs:
             github_comment = self._add_comment(
                 github_issue=github_issue,
@@ -331,9 +332,9 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
         try:
             login = self._github.get_user().login
         except GithubException as e:
-            raise GitHubTrackerClientError('Unable to log in with GitHub API client') from e
+            raise GitHubTrackerClientError("Unable to log in with GitHub API client") from e
         if not login:
-            raise GitHubTrackerClientError('Unable to log in with GitHub API client')
+            raise GitHubTrackerClientError("Unable to log in with GitHub API client")
 
     def _extract_comments(
         self,
@@ -380,7 +381,7 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
             response = requests.get(url)
         except requests.RequestException:
             return None
-        content_disposition = response.headers.get('Content-Disposition')
+        content_disposition = response.headers.get("Content-Disposition")
         filename = None
         if content_disposition:
             match = _RE_CONTENT_DISPOSITION_FILENAME.search(content_disposition)
@@ -390,7 +391,7 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
             filename = os.path.basename(url)
         return TrackerAttachment(
             filename=filename,
-            mime_type=response.headers.get('Content-Type', 'text/plain'),
+            mime_type=response.headers.get("Content-Type", "text/plain"),
             content=response.content,
         )
 
@@ -398,7 +399,7 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
         self,
     ) -> Repository:
         project = cast(str, self.configuration.project)
-        if project[0] == '/':
+        if project[0] == "/":
             project = project[1:]
         try:
             return self._github.get_repo(
@@ -406,7 +407,7 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
             )
         except (GithubException, requests.RequestException) as e:
             raise GitHubTrackerClientError(
-                f'Unable to get GitHub repository {self.configuration.project}',
+                f"Unable to get GitHub repository {self.configuration.project}",
             ) from e
 
     def _create_issue(
@@ -422,7 +423,7 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
             )
         except GithubException as e:
             raise GitHubTrackerClientError(
-                f'Unable to create issue for project {self.configuration.project} to GitHub',
+                f"Unable to create issue for project {self.configuration.project} to GitHub",
             ) from e
 
     def _add_comment(
@@ -430,27 +431,23 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
         github_issue: Issue,
         log: Log,
     ) -> IssueComment:
-        comment_body = self._message_formatter.format_log(
-            log=log,
-        ) + self._get_attachments_list_description(
+        comment_body = self._message_formatter.format_log(log=log,) + self._get_attachments_list_description(
             attachments=log.attachments,
         )
-        external_body = ''
+        external_body = ""
         body_attachment = None
         if len(comment_body) > _TEXT_MAX_SIZE:
             external_body = comment_body
             body_attachment = self._build_external_description_attachment(
-                name=f'comment-{log.log_id}-description.md',
+                name=f"comment-{log.log_id}-description.md",
             )
             log_copy = deepcopy(log)
             log_copy.message_html = (
-                '<p>This comment is too large to fit into a GitHub comment. '
+                "<p>This comment is too large to fit into a GitHub comment. "
                 + f'See attachment <a href="{body_attachment.url}">{body_attachment.original_name}</a> '
-                + 'for more details.</p>'
+                + "for more details.</p>"
             )
-            comment_body = self._message_formatter.format_log(
-                log=log_copy,
-            ) + self._get_attachments_list_description(
+            comment_body = self._message_formatter.format_log(log=log_copy,) + self._get_attachments_list_description(
                 attachments=[
                     body_attachment,
                     *log.attachments,
@@ -458,11 +455,11 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
             )
         try:
             github_comment = github_issue.create_comment(
-                body='This comment is being synchronized. Please check back in a moment.',
+                body="This comment is being synchronized. Please check back in a moment.",
             )
         except GithubException as e:
             raise GitHubTrackerClientError(
-                f'Unable to add GitHub comment for issue {github_issue} in project {self.configuration.project}',
+                f"Unable to add GitHub comment for issue {github_issue} in project {self.configuration.project}",
             ) from e
         comment_body, external_body = self._replace_attachments_references(
             uploads=self._upload_attachments(
@@ -475,7 +472,7 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
             ],
         )
         if body_attachment:
-            body_attachment.data_loader = lambda: bytes(external_body, 'utf-8')
+            body_attachment.data_loader = lambda: bytes(external_body, "utf-8")
             comment_body = self._replace_attachments_references(
                 uploads=self._upload_attachments(
                     issue=github_issue,
@@ -499,12 +496,12 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
         github_repository = self._get_repository()
         issue_id_int = int(issue_id)
         try:
-            for issue in github_repository.get_issues(state='all'):
+            for issue in github_repository.get_issues(state="all"):
                 if issue.id == issue_id_int:
                     return issue
         except GithubException as e:
             raise GitHubTrackerClientError(
-                f'GitHub issue {issue_id} not found in project {self.configuration.project}',
+                f"GitHub issue {issue_id} not found in project {self.configuration.project}",
             ) from e
         return None
 
@@ -551,8 +548,7 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
                     error_message = f'(Attachment "{attachment.original_name}" not available due to upload error)'
             else:
                 error_message = (
-                    f'(Attachment "{attachment.original_name}" not available '
-                    + 'due to export script’s configuration)'
+                    f'(Attachment "{attachment.original_name}" not available ' + "due to export script’s configuration)"
                 )
             uploads.append(
                 (
@@ -570,15 +566,15 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
         attachments_lines = []
         if attachments:
             attachments_lines = [
-                '',
-                '**Attachments**:',
+                "",
+                "**Attachments**:",
             ]
             for attachment in attachments:
                 attachments_lines.append(
-                    f'- [{attachment.original_name}]({attachment.url})',
+                    f"- [{attachment.original_name}]({attachment.url})",
                 )
-            attachments_lines.append('')
-        return '\n'.join(attachments_lines)
+            attachments_lines.append("")
+        return "\n".join(attachments_lines)
 
     def _extract_attachment_name(
         self,
@@ -618,6 +614,6 @@ class GitHubTrackerClient(TrackerClient[GitHubConfiguration]):
         try:
             user_id = self._github.get_user().id
         except GithubException as e:
-            raise GitHubTrackerClientError('Unable to authenticate to GitHub') from e
+            raise GitHubTrackerClientError("Unable to authenticate to GitHub") from e
         if not isinstance(user_id, int):
-            raise GitHubTrackerClientError('Unable to authenticate to GitHub')
+            raise GitHubTrackerClientError("Unable to authenticate to GitHub")

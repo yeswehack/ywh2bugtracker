@@ -1,8 +1,14 @@
 """Models and functions used for Json data SerDe."""
 import json
-from typing import Any, TextIO
+from typing import (
+    Any,
+    TextIO,
+)
 
-from ywh2bt.core.serde import SerDe, SerDeError
+from ywh2bt.core.serde import (
+    SerDe,
+    SerDeError,
+)
 
 
 class JsonSerDe(SerDe):
@@ -26,7 +32,7 @@ class JsonSerDe(SerDe):
         try:
             stream.write(json.dumps(data, indent=2))
         except Exception as e:
-            raise SerDeError('JSON dump error') from e
+            raise SerDeError("JSON dump error") from e
 
     def deserialize_from_stream(
         self,
@@ -47,4 +53,4 @@ class JsonSerDe(SerDe):
         try:
             return json.load(stream)
         except Exception as e:
-            raise SerDeError('JSON load error') from e
+            raise SerDeError("JSON load error") from e

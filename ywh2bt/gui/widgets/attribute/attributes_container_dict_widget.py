@@ -3,11 +3,24 @@ import re
 from dataclasses import dataclass
 from functools import partial
 from string import Template
-from typing import Any, Dict, List, Optional, Tuple, Type, cast
+from typing import (
+    Any,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    cast,
+)
 
-from PySide2.QtCore import QFile, QSize, Qt, Signal
-from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import (
+from PySide6.QtCore import (
+    QFile,
+    QSize,
+    Qt,
+    Signal,
+)
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import (
     QHBoxLayout,
     QLayout,
     QTabWidget,
@@ -15,18 +28,22 @@ from PySide2.QtWidgets import (
     QWidget,
 )
 
-from ywh2bt.core.configuration.attribute import AttributesContainer, AttributesContainerDict
+from ywh2bt.core.configuration.attribute import (
+    AttributesContainer,
+    AttributesContainerDict,
+)
 from ywh2bt.core.configuration.subtypable import SubtypableMetaclass
 from ywh2bt.gui.widgets import constants
 from ywh2bt.gui.widgets.attribute.attributes_container_dict_entry import AttributesContainerDictEntry
 from ywh2bt.gui.widgets.typing import as_signal_instance
 
+
 T_AC = AttributesContainer
 T_ACD = AttributesContainerDict[T_AC]
 
 ICON_PATH_TEMPLATES: Tuple[Template, ...] = (
-    Template(':/resources/icons/types/${type_name}-2x.png'),
-    Template(':/resources/icons/types/${type_name}.png'),
+    Template(":/resources/icons/types/${type_name}-2x.png"),
+    Template(":/resources/icons/types/${type_name}.png"),
 )
 
 
@@ -110,14 +127,14 @@ class AttributesContainerDictWidget(QWidget):
 
         layout.addWidget(self._empty_widget)
         layout.addWidget(self._tab_widget)
-        layout.setMargin(0)
+        layout.setContentsMargins(0, 0, 0, 0)
 
     def _create_empty_widget(
         self,
     ) -> QWidget:
         return self._create_buttons_widget(
-            text_template=Template('Add'),
-            tool_tip_template=Template('Add ${type_name}'),
+            text_template=Template("Add"),
+            tool_tip_template=Template("Add ${type_name}"),
             buttons_size=constants.BIG_BUTTON_SIZE,
             icons_size=constants.BIG_BUTTON_ICON_SIZE,
         )
@@ -126,8 +143,8 @@ class AttributesContainerDictWidget(QWidget):
         self,
     ) -> QTabWidget:
         corner_widget = self._create_buttons_widget(
-            text_template=Template(''),
-            tool_tip_template=Template('Add ${type_name}'),
+            text_template=Template(""),
+            tool_tip_template=Template("Add ${type_name}"),
             buttons_size=constants.TAB_WIDGET_CORNER_BUTTON_SIZE,
             icons_size=constants.SMALL_BUTTON_ICON_SIZE,
         )
@@ -153,7 +170,9 @@ class AttributesContainerDictWidget(QWidget):
             buttons_size=buttons_size,
             icons_size=icons_size,
         )
-        margin_left, margin_top, margin_right, margin_bottom = layout.getContentsMargins()
+        margin_left, margin_top, margin_right, margin_bottom = cast(
+            Tuple[int, int, int, int], layout.getContentsMargins()
+        )
         layout.setContentsMargins(0, margin_top, margin_right, margin_bottom)
         widget = QWidget(self)
         widget.setLayout(layout)
@@ -169,7 +188,7 @@ class AttributesContainerDictWidget(QWidget):
         icon_size: QSize,
     ) -> QToolButton:
         widget = QToolButton(self)
-        widget.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        widget.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
         if text:
             widget.setText(text)
         if icon:
@@ -198,9 +217,9 @@ class AttributesContainerDictWidget(QWidget):
                 button_descriptions.append(
                     _ButtonDescription(
                         type_name=type_name,
-                        icon_type_name=f'{values_type.__name__}/{type_class.__name__}',
+                        icon_type_name=f"{values_type.__name__}/{type_class.__name__}",
                         entry_args={
-                            'type': type_name,
+                            "type": type_name,
                         },
                     ),
                 )
@@ -281,8 +300,9 @@ class AttributesContainerDictWidget(QWidget):
         self,
         entry: AttributesContainerDictEntry,
     ) -> int:
-        from ywh2bt.gui.widgets.attribute.attributes_container_dict_entry_widget import \
-            AttributesContainerDictEntryWidget  # noqa: WPS433, N400
+        from ywh2bt.gui.widgets.attribute.attributes_container_dict_entry_widget import (  # noqa: N400
+            AttributesContainerDictEntryWidget,
+        )
 
         widget = AttributesContainerDictEntryWidget(
             entry=entry,
@@ -293,12 +313,35 @@ class AttributesContainerDictWidget(QWidget):
         as_signal_instance(widget.value_changed).connect(
             self._on_container_dict_entry_value_changed,
         )
-        tab_index = self._tab_widget.addTab(
-            widget,
-            entry.key,
-        )
+        icon = self._get_entry_tab_icon(entry)
+        if icon:
+            tab_index = self._tab_widget.addTab(
+                widget,
+                icon,
+                entry.key,
+            )
+        else:
+            tab_index = self._tab_widget.addTab(
+                widget,
+                entry.key,
+            )
         self._auto_show_hide_tabs()
         return tab_index
+
+    def _get_entry_tab_icon(
+        self,
+        entry: AttributesContainerDictEntry,
+    ) -> Optional[QIcon]:
+        item_values_type = self._container_dict_class().values_type  # type: ignore
+        if isinstance(item_values_type, SubtypableMetaclass):
+            values_type = cast(SubtypableMetaclass, item_values_type)
+            types = values_type.get_registered_subtypes()
+            for type_name, type_class in types.items():
+                if isinstance(entry.value, type_class):
+                    return self._get_type_icon(f"{values_type.__name__}/{type_class.__name__}")
+        else:
+            return self._get_type_icon(item_values_type.__name__)
+        return None
 
     def _on_tab_close_requested(
         self,
@@ -335,7 +378,7 @@ class AttributesContainerDictWidget(QWidget):
                 key_index = (key, index)
                 break
         if not key_index:
-            raise KeyError(f'Could not find old key for {entry}')
+            raise KeyError(f"Could not find old key for {entry}")
         self._container_dict.swap_key(
             old=key_index[0],
             new=entry.key,
@@ -402,8 +445,8 @@ def _get_icon(
 def _value_class_to_snake_case(
     value: Any,
 ) -> str:
-    pattern = re.compile('(?<!^)(?=[A-Z])')
-    return pattern.sub('_', value.__class__.__name__).lower()
+    pattern = re.compile("(?<!^)(?=[A-Z])")
+    return pattern.sub("_", value.__class__.__name__).lower()
 
 
 def _try_get_icon(
@@ -427,7 +470,7 @@ def _get_next_available_key(
         snake = _value_class_to_snake_case(
             value=value,
         )
-        key = f'{snake}_{i}'
+        key = f"{snake}_{i}"
         if not container_dict or key not in container_dict:
             return key
         i += 1

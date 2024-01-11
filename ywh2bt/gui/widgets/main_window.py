@@ -2,12 +2,27 @@
 from __future__ import annotations
 
 import sys
-from typing import List, Optional, Union, cast
+from typing import (
+    List,
+    Optional,
+    Union,
+    cast,
+)
 
-from PySide2.QtCore import QByteArray, QEvent, QSettings, QSize, Qt, Signal
-from PySide2.QtGui import QIcon, QKeySequence
-from PySide2.QtWidgets import (
+from PySide6.QtCore import (
+    QByteArray,
+    QSettings,
+    QSize,
+    Qt,
+    Signal,
+)
+from PySide6.QtGui import (
     QAction,
+    QCloseEvent,
+    QIcon,
+    QKeySequence,
+)
+from PySide6.QtWidgets import (
     QMainWindow,
     QMenu,
     QMessageBox,
@@ -26,14 +41,15 @@ from ywh2bt.gui.widgets.root_configurations_widget import RootConfigurationsWidg
 from ywh2bt.gui.widgets.typing import as_signal_instance
 from ywh2bt.version import __VERSION__
 
+
 __UI_VERSION__ = 1
 
-_MENU_SEPARATOR = '-'
-_TOOL_BAR_SEPARATOR = '-'
-_TOOL_BAR_SPACER = '<->'
+_MENU_SEPARATOR = "-"
+_TOOL_BAR_SEPARATOR = "-"
+_TOOL_BAR_SPACER = "<->"
 
 
-class MainWindow(QMainWindow):  # noqa: WPS214
+class MainWindow(QMainWindow):
     """Main window."""
 
     _log_entry_available: Signal = Signal(LogEntry)
@@ -80,7 +96,7 @@ class MainWindow(QMainWindow):  # noqa: WPS214
 
         tool_bar = self._create_main_tool_bar()
         self.addToolBar(
-            Qt.LeftToolBarArea,
+            Qt.ToolBarArea.LeftToolBarArea,
             tool_bar,
         )
 
@@ -109,8 +125,8 @@ class MainWindow(QMainWindow):  # noqa: WPS214
     ) -> None:
         bar = self.menuBar()
 
-        file_menu = bar.addMenu('&File')
-        file_menu.setObjectName('menu_file')
+        file_menu = bar.addMenu("&File")
+        file_menu.setObjectName("menu_file")
         _add_menu_items(
             menu=file_menu,
             items=[
@@ -124,8 +140,8 @@ class MainWindow(QMainWindow):  # noqa: WPS214
             ],
         )
 
-        run_menu = bar.addMenu('&Run')
-        run_menu.setObjectName('menu_run')
+        run_menu = bar.addMenu("&Run")
+        run_menu.setObjectName("menu_run")
         _add_menu_items(
             menu=run_menu,
             items=[
@@ -134,8 +150,8 @@ class MainWindow(QMainWindow):  # noqa: WPS214
             ],
         )
 
-        help_menu = bar.addMenu('&Help')
-        help_menu.setObjectName('menu_help')
+        help_menu = bar.addMenu("&Help")
+        help_menu.setObjectName("menu_help")
         _add_menu_items(
             menu=help_menu,
             items=[
@@ -147,11 +163,11 @@ class MainWindow(QMainWindow):  # noqa: WPS214
     def _create_new_action(
         self,
     ) -> QAction:
-        action = QAction('&New', self)
-        action.setObjectName('action_new')
-        action.setIcon(self.style().standardIcon(QStyle.SP_FileIcon))
-        action.setShortcuts(QKeySequence.New)
-        action.setStatusTip('Create a new configuration file')
+        action = QAction("&New", self)
+        action.setObjectName("action_new")
+        action.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_FileIcon))
+        action.setShortcuts(QKeySequence.StandardKey.New)
+        action.setStatusTip("Create a new configuration file")
         as_signal_instance(action.triggered).connect(
             self._on_new_file_triggered,
         )
@@ -160,11 +176,11 @@ class MainWindow(QMainWindow):  # noqa: WPS214
     def _create_open_action(
         self,
     ) -> QAction:
-        action = QAction('&Open...', self)
-        action.setObjectName('action_open')
-        action.setIcon(self.style().standardIcon(QStyle.SP_DialogOpenButton))
-        action.setShortcuts(QKeySequence.Open)
-        action.setStatusTip('Open a configuration file')
+        action = QAction("&Open...", self)
+        action.setObjectName("action_open")
+        action.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_DialogOpenButton))
+        action.setShortcuts(QKeySequence.StandardKey.Open)
+        action.setStatusTip("Open a configuration file")
         as_signal_instance(action.triggered).connect(
             self._on_open_file_triggered,
         )
@@ -173,12 +189,12 @@ class MainWindow(QMainWindow):  # noqa: WPS214
     def _create_save_action(
         self,
     ) -> QAction:
-        action = QAction('&Save...', self)
-        action.setObjectName('action_save')
+        action = QAction("&Save...", self)
+        action.setObjectName("action_save")
         action.setEnabled(False)
-        action.setIcon(self.style().standardIcon(QStyle.SP_DialogSaveButton))
-        action.setShortcuts(QKeySequence.Save)
-        action.setStatusTip('Save the current configuration file')
+        action.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton))
+        action.setShortcuts(QKeySequence.StandardKey.Save)
+        action.setStatusTip("Save the current configuration file")
         as_signal_instance(action.triggered).connect(
             self._on_save_configuration_triggered,
         )
@@ -187,10 +203,10 @@ class MainWindow(QMainWindow):  # noqa: WPS214
     def _create_save_as_action(
         self,
     ) -> QAction:
-        action = QAction('&Save as...', self)
-        action.setObjectName('action_save_as')
+        action = QAction("&Save as...", self)
+        action.setObjectName("action_save_as")
         action.setEnabled(False)
-        action.setStatusTip('Save the current configuration in a new file')
+        action.setStatusTip("Save the current configuration in a new file")
         as_signal_instance(action.triggered).connect(
             self._on_save_as_configuration_triggered,
         )
@@ -199,12 +215,12 @@ class MainWindow(QMainWindow):  # noqa: WPS214
     def _create_reload_action(
         self,
     ) -> QAction:
-        action = QAction('&Reload from disk', self)
-        action.setObjectName('action_reload')
+        action = QAction("&Reload from disk", self)
+        action.setObjectName("action_reload")
         action.setEnabled(False)
-        action.setIcon(self.style().standardIcon(QStyle.SP_BrowserReload))
-        action.setShortcuts(QKeySequence.Refresh)
-        action.setStatusTip('Reload the current configuration file from the disk')
+        action.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload))
+        action.setShortcuts(QKeySequence.StandardKey.Refresh)
+        action.setStatusTip("Reload the current configuration file from the disk")
         as_signal_instance(action.triggered).connect(
             self._on_reload_configuration_triggered,
         )
@@ -213,11 +229,11 @@ class MainWindow(QMainWindow):  # noqa: WPS214
     def _create_test_action(
         self,
     ) -> QAction:
-        action = QAction('&Test...', self)
-        action.setObjectName('action_test')
+        action = QAction("&Test...", self)
+        action.setObjectName("action_test")
         action.setEnabled(False)
-        action.setIcon(self.style().standardIcon(QStyle.SP_DialogApplyButton))
-        action.setStatusTip('Test the connection to the trackers and to YesWeHack programs')
+        action.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_DialogApplyButton))
+        action.setStatusTip("Test the connection to the trackers and to YesWeHack programs")
         as_signal_instance(action.triggered).connect(
             self._on_test_configuration_triggered,
         )
@@ -226,11 +242,11 @@ class MainWindow(QMainWindow):  # noqa: WPS214
     def _create_sync_action(
         self,
     ) -> QAction:
-        action = QAction('&Sync...', self)
-        action.setObjectName('action_sync')
+        action = QAction("&Sync...", self)
+        action.setObjectName("action_sync")
         action.setEnabled(False)
-        action.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
-        action.setStatusTip('Synchronize the current configuration file')
+        action.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MediaPlay))
+        action.setStatusTip("Synchronize the current configuration file")
         as_signal_instance(action.triggered).connect(
             self._on_sync_configuration_triggered,
         )
@@ -239,10 +255,10 @@ class MainWindow(QMainWindow):  # noqa: WPS214
     def _create_about_action(
         self,
     ) -> QAction:
-        action = QAction('&About', self)
-        action.setObjectName('action_about')
-        action.setIcon(QIcon(':/resources/icons/ywh2bt.png'))
-        action.setStatusTip('Show information about this application')
+        action = QAction("&About", self)
+        action.setObjectName("action_about")
+        action.setIcon(QIcon(":/resources/icons/ywh2bt.png"))
+        action.setStatusTip("Show information about this application")
         as_signal_instance(action.triggered).connect(
             self._on_about_triggered,
         )
@@ -251,10 +267,10 @@ class MainWindow(QMainWindow):  # noqa: WPS214
     def _create_schema_doc_action(
         self,
     ) -> QAction:
-        action = QAction('&Schema documentation', self)
-        action.setObjectName('action_schema_doc')
-        action.setIcon(self.style().standardIcon(QStyle.SP_DialogHelpButton))
-        action.setStatusTip('Show configuration schema documentation')
+        action = QAction("&Schema documentation", self)
+        action.setObjectName("action_schema_doc")
+        action.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_DialogHelpButton))
+        action.setStatusTip("Show configuration schema documentation")
         as_signal_instance(action.triggered).connect(
             self._on_schema_doc_triggered,
         )
@@ -263,10 +279,10 @@ class MainWindow(QMainWindow):  # noqa: WPS214
     def _create_exit_action(
         self,
     ) -> QAction:
-        action = QAction('E&xit', self)
-        action.setObjectName('action_exit')
-        action.setShortcuts(QKeySequence.Quit)
-        action.setStatusTip('Exit the application')
+        action = QAction("E&xit", self)
+        action.setObjectName("action_exit")
+        action.setShortcuts(QKeySequence.StandardKey.Quit)
+        action.setStatusTip("Exit the application")
         as_signal_instance(action.triggered).connect(
             self._on_exit_triggered,
         )
@@ -274,9 +290,9 @@ class MainWindow(QMainWindow):  # noqa: WPS214
 
     def _create_main_tool_bar(
         self,
-    ) -> QWidget:
-        tool_bar = self.addToolBar('Main tools')
-        tool_bar.setObjectName('tools_tool_bar')
+    ) -> QToolBar:
+        tool_bar = self.addToolBar("Main tools")
+        tool_bar.setObjectName("tools_tool_bar")
 
         _add_tool_bar_items(
             tool_bar=tool_bar,
@@ -301,12 +317,12 @@ class MainWindow(QMainWindow):  # noqa: WPS214
         self,
     ) -> QWidget:
         toolbar = QToolBar(self)
-        toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
 
         spacer_begin = QWidget(toolbar)
-        spacer_begin.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        spacer_begin.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         spacer_end = QWidget(toolbar)
-        spacer_end.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        spacer_end.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
         toolbar.addWidget(spacer_begin)
         toolbar.addAction(self._action_new)
@@ -347,7 +363,7 @@ class MainWindow(QMainWindow):  # noqa: WPS214
         entry: RootConfigurationEntry,
     ) -> None:
         self.statusBar().showMessage(
-            f'{entry.name} saved',
+            f"{entry.name} saved",
         )
 
     def _on_current_entry_changed(
@@ -466,16 +482,20 @@ class MainWindow(QMainWindow):  # noqa: WPS214
     def _on_about_triggered(
         self,
     ) -> None:
-        python_version = '.'.join(map(str, sys.version_info[:3]))
+        python_version = ".".join(map(str, sys.version_info[:3]))
         about_text = [
-            f'<b>Core version</b>: {__VERSION__}',
-            f'<b>UI version</b>: {__UI_VERSION__}',
-            f'Python: {python_version}',
+            (
+                "<b><a href='https://github.com/yeswehack/ywh2bugtracker'>ywh2bt</a> "
+                "by <a href='https://yeswehack.com'>YesWeHack</a></b>"
+            ),
+            f"<b>Core version</b>: {__VERSION__}",
+            f"<b>UI version</b>: {__UI_VERSION__}",
+            f"<b>Python</b>: {python_version}",
         ]
         QMessageBox.about(
             self,
-            'ywh2bt-gui',
-            '<br/>\n'.join(about_text),
+            "ywh2bt - About",
+            "<br/>\n".join(about_text),
         )
 
     def _on_schema_doc_triggered(
@@ -491,9 +511,19 @@ class MainWindow(QMainWindow):  # noqa: WPS214
             self._restore_schema_doc_geometry_from_settings()
         self._schema_doc_dialog.show()
 
-    def closeEvent(  # noqa: N802
+    def open_file(
         self,
-        event: QEvent,
+        file_path: str,
+        file_format: str,
+    ) -> None:
+        self._root_configurations_widget.try_open_configuration_file(
+            file_path=file_path,
+            file_format=file_format,
+        )
+
+    def closeEvent(
+        self,
+        event: QCloseEvent,
     ) -> None:
         """
         Handle 'close' event.
@@ -504,12 +534,12 @@ class MainWindow(QMainWindow):  # noqa: WPS214
         if self._root_configurations_widget.has_changed_entries():
             reply = QMessageBox.question(
                 self,
-                'Exit',
-                'Are you sure you want to exit?\nUnsaved changes might be lost.',
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No,
+                "Exit",
+                "Are you sure you want to exit?\nUnsaved changes might be lost.",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
             )
-            if reply == QMessageBox.No:
+            if reply == QMessageBox.StandardButton.No:
                 event.ignore()
                 return
         self._save_settings()
@@ -519,10 +549,10 @@ class MainWindow(QMainWindow):  # noqa: WPS214
     def _save_settings(
         self,
     ) -> None:
-        self._settings.setValue('main_geometry', self.saveGeometry().toBase64())
-        self._settings.setValue('main_state', self.saveState(__UI_VERSION__).toBase64())
+        self._settings.setValue("main_geometry", self.saveGeometry().toBase64())
+        self._settings.setValue("main_state", self.saveState(__UI_VERSION__).toBase64())
         if self._schema_doc_dialog:
-            self._settings.setValue('schema_doc_geometry', self._schema_doc_dialog.saveGeometry().toBase64())
+            self._settings.setValue("schema_doc_geometry", self._schema_doc_dialog.saveGeometry().toBase64())
 
     def _restore_settings(
         self,
@@ -533,27 +563,27 @@ class MainWindow(QMainWindow):  # noqa: WPS214
     def _restore_geometry_from_settings(
         self,
     ) -> None:
-        if not self._settings.contains('main_geometry'):
+        if not self._settings.contains("main_geometry"):
             return
-        geometry = QByteArray.fromBase64(cast(QByteArray, self._settings.value('main_geometry')))
+        geometry = QByteArray.fromBase64(cast(QByteArray, self._settings.value("main_geometry")))
         if geometry:
             self.restoreGeometry(geometry)
 
     def _restore_state_from_settings(
         self,
     ) -> None:
-        if not self._settings.contains('main_state'):
+        if not self._settings.contains("main_state"):
             return
-        state = QByteArray.fromBase64(cast(QByteArray, self._settings.value('main_state')))
+        state = QByteArray.fromBase64(cast(QByteArray, self._settings.value("main_state")))
         if state:
             self.restoreState(state, __UI_VERSION__)
 
     def _restore_schema_doc_geometry_from_settings(
         self,
     ) -> None:
-        if not self._schema_doc_dialog or not self._settings.contains('schema_doc_geometry'):
+        if not self._schema_doc_dialog or not self._settings.contains("schema_doc_geometry"):
             return
-        geometry = QByteArray.fromBase64(cast(QByteArray, self._settings.value('schema_doc_geometry')))
+        geometry = QByteArray.fromBase64(cast(QByteArray, self._settings.value("schema_doc_geometry")))
         if geometry:
             self._schema_doc_dialog.restoreGeometry(geometry)
 
@@ -578,7 +608,7 @@ def _add_tool_bar_items(
             tool_bar.addSeparator()
         elif item == _TOOL_BAR_SPACER:
             spacer = QWidget(tool_bar)
-            spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             tool_bar.addWidget(spacer)
         elif isinstance(item, QAction):
             tool_bar.addAction(item)

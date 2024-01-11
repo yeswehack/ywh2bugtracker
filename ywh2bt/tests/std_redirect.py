@@ -3,7 +3,11 @@ from __future__ import annotations
 import io
 import sys
 from types import TracebackType
-from typing import Dict, List, Type
+from typing import (
+    Dict,
+    List,
+    Type,
+)
 
 
 class StdRedirect:
@@ -12,12 +16,12 @@ class StdRedirect:
 
     def __init__(self) -> None:
         self._new_targets = {
-            'stdout': io.StringIO(),
-            'stderr': io.StringIO(),
+            "stdout": io.StringIO(),
+            "stderr": io.StringIO(),
         }
         self._old_targets = {
-            'stdout': [],
-            'stderr': [],
+            "stdout": [],
+            "stderr": [],
         }
 
     def __enter__(self) -> StdRedirect:
@@ -42,10 +46,10 @@ class StdRedirect:
         return self._new_targets[stream_name].getvalue()
 
     def get_stdout(self) -> str:
-        return self._get_value('stdout')
+        return self._get_value("stdout")
 
     def get_stderr(self) -> str:
-        return self._get_value('stderr')
+        return self._get_value("stderr")
 
     @classmethod
     def redirect(cls) -> StdRedirect:

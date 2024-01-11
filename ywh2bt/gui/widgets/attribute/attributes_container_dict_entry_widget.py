@@ -1,8 +1,17 @@
 """Models and functions used for attributes container dict entry GUI."""
-from typing import Any, Optional
+from typing import (
+    Any,
+    Optional,
+)
 
-from PySide2.QtCore import Signal
-from PySide2.QtWidgets import QFormLayout, QLabel, QLineEdit, QVBoxLayout, QWidget
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import (
+    QFormLayout,
+    QLabel,
+    QLineEdit,
+    QVBoxLayout,
+    QWidget,
+)
 
 from ywh2bt.core.configuration.attribute import AttributesContainer
 from ywh2bt.gui.widgets.attribute.attributes_container_dict_entry import AttributesContainerDictEntry
@@ -50,9 +59,10 @@ class AttributesContainerDictEntryWidget(QWidget):
         layout = QVBoxLayout(self)
 
         form_layout = QFormLayout()
+        form_layout.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
 
         key_label = QLabel(
-            'Key:',
+            "Key:",
             self,
         )
         self._key_line_edit = self._create_key_widget()

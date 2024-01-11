@@ -17,101 +17,101 @@ class TestCli(unittest.TestCase):
             )
         self.assertEqual(0, se.exception.code)
         self.assertIn(__VERSION__, outputs.get_stdout())
-        self.assertEqual('', outputs.get_stderr())
+        self.assertEqual("", outputs.get_stderr())
 
     def test_version_long(self) -> None:
         self._test_version(
-            flag='--version',
+            flag="--version",
         )
 
     def test_version_short(self) -> None:
         self._test_version(
-            flag='-V',
+            flag="-V",
         )
 
     def test_file_not_found(self) -> None:
         with self.assertRaises(SystemExit) as se, StdRedirect.redirect() as outputs:
             cli_run(
-                'validate',
+                "validate",
                 f'--config-file={resource("configurations/does-not-exist.json")}',
             )
         self.assertEqual(1, se.exception.code)
-        self.assertEqual('', outputs.get_stdout())
-        self.assertNotEqual('', outputs.get_stderr())
+        self.assertEqual("", outputs.get_stdout())
+        self.assertNotEqual("", outputs.get_stderr())
 
     def test_invalid_format(self) -> None:
         with self.assertRaises(SystemExit) as se, StdRedirect.redirect() as outputs:
             cli_run(
-                'validate',
+                "validate",
                 f'--config-file={resource("configurations/valid.json")}',
-                '--config-format=foo',
+                "--config-format=foo",
             )
         self.assertEqual(2, se.exception.code)
-        self.assertEqual('', outputs.get_stdout())
-        self.assertNotEqual('', outputs.get_stderr())
+        self.assertEqual("", outputs.get_stdout())
+        self.assertNotEqual("", outputs.get_stderr())
 
     def test_valid_json(self) -> None:
         with self.assertRaises(SystemExit) as se, StdRedirect.redirect() as outputs:
             cli_run(
-                'validate',
+                "validate",
                 f'--config-file={resource("configurations/valid.json")}',
-                '--config-format=json',
+                "--config-format=json",
             )
         self.assertEqual(0, se.exception.code)
-        self.assertEqual('', outputs.get_stdout())
-        self.assertEqual('', outputs.get_stderr())
+        self.assertEqual("", outputs.get_stdout())
+        self.assertEqual("", outputs.get_stderr())
 
     def test_invalid_json(self) -> None:
         with self.assertRaises(SystemExit) as se, StdRedirect.redirect() as outputs:
             cli_run(
-                'validate',
+                "validate",
                 f'--config-file={resource("configurations/invalid.json")}',
-                '--config-format=json',
+                "--config-format=json",
             )
         self.assertEqual(1, se.exception.code)
-        self.assertEqual('', outputs.get_stdout())
-        self.assertIn('Invalid configuration', outputs.get_stderr())
+        self.assertEqual("", outputs.get_stdout())
+        self.assertIn("Invalid configuration", outputs.get_stderr())
 
     def test_valid_yaml(self) -> None:
         with self.assertRaises(SystemExit) as se, StdRedirect.redirect() as outputs:
             cli_run(
-                'validate',
+                "validate",
                 f'--config-file={resource("configurations/valid.yml")}',
-                '--config-format=yaml',
+                "--config-format=yaml",
             )
         self.assertEqual(0, se.exception.code)
-        self.assertEqual('', outputs.get_stdout())
-        self.assertEqual('', outputs.get_stderr())
+        self.assertEqual("", outputs.get_stdout())
+        self.assertEqual("", outputs.get_stderr())
 
     def test_invalid_yaml(self) -> None:
         with self.assertRaises(SystemExit) as se, StdRedirect.redirect() as outputs:
             cli_run(
-                'validate',
+                "validate",
                 f'--config-file={resource("configurations/invalid.yml")}',
-                '--config-format=yaml',
+                "--config-format=yaml",
             )
         self.assertEqual(1, se.exception.code)
-        self.assertEqual('', outputs.get_stdout())
-        self.assertNotEqual('', outputs.get_stderr())
+        self.assertEqual("", outputs.get_stdout())
+        self.assertNotEqual("", outputs.get_stderr())
 
     def test_format_mismatch(self) -> None:
         with self.assertRaises(SystemExit) as se, StdRedirect.redirect() as outputs:
             cli_run(
-                'validate',
+                "validate",
                 f'--config-file={resource("configurations/invalid.yml")}',
-                '--config-format=json',
+                "--config-format=json",
             )
         self.assertEqual(1, se.exception.code)
-        self.assertEqual('', outputs.get_stdout())
-        self.assertNotEqual('', outputs.get_stderr())
+        self.assertEqual("", outputs.get_stdout())
+        self.assertNotEqual("", outputs.get_stderr())
 
     def test_not_root(self) -> None:
         with self.assertRaises(SystemExit) as se, StdRedirect.redirect() as outputs:
             cli_run(
-                'validate',
+                "validate",
                 f'--config-file={resource("configurations/not-root.json")}',
-                '--config-format=json',
+                "--config-format=json",
             )
         self.assertEqual(1, se.exception.code)
-        self.assertEqual('', outputs.get_stdout())
-        self.assertNotEqual('', outputs.get_stderr())
+        self.assertEqual("", outputs.get_stdout())
+        self.assertNotEqual("", outputs.get_stderr())

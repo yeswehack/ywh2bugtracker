@@ -1,6 +1,12 @@
 """Models and functions used for data serialization/deserialization."""
-from abc import ABC, abstractmethod
-from typing import Any, TextIO
+from abc import (
+    ABC,
+    abstractmethod,
+)
+from typing import (
+    Any,
+    TextIO,
+)
 
 from ywh2bt.core.exceptions import CoreException
 

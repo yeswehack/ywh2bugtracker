@@ -5,7 +5,10 @@ from dataclasses import dataclass
 from ywh2bt.core.configuration.root import RootConfiguration
 from ywh2bt.core.configuration.tracker import TrackerConfiguration
 from ywh2bt.core.configuration.yeswehack import YesWeHackConfiguration
-from ywh2bt.core.listener import Event, Listener
+from ywh2bt.core.listener import (
+    Event,
+    Listener,
+)
 
 
 @dataclass

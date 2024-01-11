@@ -2,14 +2,16 @@
 from __future__ import annotations
 
 from collections import OrderedDict
-from typing import (  # noqa: WPS235
+from typing import (
     Any,
     Dict,
     Generic,
     List,
     Mapping,
     Optional,
-    OrderedDict as OrderedDictType,
+)
+from typing import OrderedDict as OrderedDictType
+from typing import (
     Text,
     Type,
     TypeVar,
@@ -26,13 +28,17 @@ from ywh2bt.core.configuration.error import (
 )
 from ywh2bt.core.configuration.exportable import Exportable
 from ywh2bt.core.configuration.validatable import Validatable
-from ywh2bt.core.configuration.validator import ValidatorError, ValidatorProtocol
+from ywh2bt.core.configuration.validator import (
+    ValidatorError,
+    ValidatorProtocol,
+)
 
-T = TypeVar('T', covariant=True)
-V = TypeVar('V', covariant=True)
+
+T = TypeVar("T", covariant=True)
+V = TypeVar("V", covariant=True)
 
 
-class Attribute(Generic[T]):  # noqa: WPS214
+class Attribute(Generic[T]):
     """
     A class representing an attribute of a configuration.
 
@@ -99,7 +105,7 @@ class Attribute(Generic[T]):  # noqa: WPS214
                     )
                 except ValidatorError as e:
                     raise InvalidAttributeError(
-                        message=f'Validation error for default value ({repr(default)}): {e}',
+                        message=f"Validation error for default value ({repr(default)}): {e}",
                         context=self,
                     )
 
@@ -180,7 +186,7 @@ class Attribute(Generic[T]):  # noqa: WPS214
         """
         if value:
             if isinstance(value, Dict):
-                value = self.value_type(**value)  # type: ignore
+                value = self.value_type(**value)
             elif isinstance(value, List):
                 value = self.value_type(value)  # type: ignore
         return instance.set_attribute_value(
@@ -206,9 +212,16 @@ class Attribute(Generic[T]):  # noqa: WPS214
         Returns:
             The computed value
         """
-        return cast(Optional[T], instance.get_attribute_value(
-            attribute=self,
-        )) if instance is not None else self
+        return (
+            cast(
+                Optional[T],
+                instance.get_attribute_value(
+                    attribute=self,
+                ),
+            )
+            if instance is not None
+            else self
+        )
 
     def __set_name__(
         self,
@@ -234,7 +247,7 @@ class Attribute(Generic[T]):  # noqa: WPS214
         """
         if self._name is not None:
             return self._name
-        return f'Unnamed attribute #{hash(self):x}'
+        return f"Unnamed attribute #{hash(self):x}"
 
     def as_repr(
         self,
@@ -261,26 +274,26 @@ class Attribute(Generic[T]):  # noqa: WPS214
             The string representation
         """
         items = [
-            f'name={repr(self.name)}',
-            f'value_type={repr(self.value_type)}',
-            f'required={repr(self.required)}',
-            f'secret={repr(self.secret)}',
+            f"name={repr(self.name)}",
+            f"value_type={repr(self.value_type)}",
+            f"required={repr(self.required)}",
+            f"secret={repr(self.secret)}",
         ]
         if self.short_description:
-            items.append(f'short_description={repr(self.short_description)}')
+            items.append(f"short_description={repr(self.short_description)}")
         if self.description:
-            items.append(f'description={repr(self.description)}')
+            items.append(f"description={repr(self.description)}")
         if self.default is not None:
-            items.append(f'default={self.as_repr(self.default)}')
+            items.append(f"default={self.as_repr(self.default)}")
 
-        joined_items = ', '.join(items)
-        return f'{self.__class__.__name__}({joined_items})'
+        joined_items = ", ".join(items)
+        return f"{self.__class__.__name__}({joined_items})"
 
     def _ensure_default_value_type(self) -> None:
         if not isinstance(self.default, self.value_type):
             default_type = type(self.default)
             safe_default_repr = self.as_repr(self.default)
-            message = f'Expecting {self.value_type} for default value ; got {default_type} ({safe_default_repr}).'
+            message = f"Expecting {self.value_type} for default value ; got {default_type} ({safe_default_repr})."
             raise InvalidAttributeError(
                 message=message,
                 context=self,
@@ -290,7 +303,7 @@ class Attribute(Generic[T]):  # noqa: WPS214
         if self.default is None:
             if self.required:
                 raise MissingAttributeError(
-                    message=f'Expecting value for required attribute {repr(self.name)} with no default',
+                    message=f"Expecting value for required attribute {repr(self.name)} with no default",
                     context=self,
                 )
 
@@ -301,11 +314,11 @@ class Attribute(Generic[T]):  # noqa: WPS214
         if not isinstance(value, self.value_type):
             name_repr = repr(self.name)
             if self.short_description:
-                name_repr = f'{self.short_description} ; {name_repr}'
+                name_repr = f"{self.short_description} ; {name_repr}"
             value_type = type(value)
             safe_value_repr = self.as_repr(value)
             message = (
-                f'Wrong value type for {name_repr} = {safe_value_repr}: expecting {self.value_type} got {value_type}'
+                f"Wrong value type for {name_repr} = {safe_value_repr}: expecting {self.value_type} got {value_type}"
             )
             raise InvalidAttributeError(
                 message=message,
@@ -346,9 +359,9 @@ class Attribute(Generic[T]):  # noqa: WPS214
         except ValidatorError as e:
             name_repr = repr(self.name)
             if self.short_description:
-                name_repr = f'{self.short_description} ; {name_repr}'
+                name_repr = f"{self.short_description} ; {name_repr}"
             safe_value_repr = self.as_repr(value)
-            message = f'Validation error for {name_repr} = {safe_value_repr}: {e}'
+            message = f"Validation error for {name_repr} = {safe_value_repr}: {e}"
             raise InvalidAttributeError(
                 message=message,
                 context=self,
@@ -389,7 +402,7 @@ class AttributesContainer(
             The attributes
         """
         attributes = OrderedDict()
-        for name, value in vars(cls).items():  # noqa: WPS421
+        for name, value in vars(cls).items():
             if isinstance(value, Attribute):
                 attributes[name] = value
         return attributes
@@ -441,12 +454,12 @@ class AttributesContainer(
                 errors[attribute.name] = e
         for extra_key, _ in self._extra.items():
             errors[extra_key] = UnsupportedAttributeError(
-                message='Unsupported attribute',
+                message="Unsupported attribute",
                 context=self,
             )
         if errors:
             raise AttributesError(
-                message='Validation failed',
+                message="Validation failed",
                 errors=errors,
                 context=self,
             )
@@ -479,11 +492,13 @@ class AttributesContainer(
         Returns:
             The string value
         """
-        joined_items = ', '.join([
-            f'{attr.name}={attr.as_repr(value=self.get_attribute_value(attribute=attr))}'  # noqa: WPS221
-            for attr, value in self._values.items()
-        ])
-        return f'{self.__class__.__name__}({joined_items})'
+        joined_items = ", ".join(
+            [
+                f"{attr.name}={attr.as_repr(value=self.get_attribute_value(attribute=attr))}"
+                for attr, value in self._values.items()
+            ]
+        )
+        return f"{self.__class__.__name__}({joined_items})"
 
     def __repr__(self) -> str:
         """
@@ -495,7 +510,7 @@ class AttributesContainer(
         return self.__str__()
 
 
-T_AC = TypeVar('T_AC', bound=AttributesContainer)
+T_AC = TypeVar("T_AC", bound=AttributesContainer)
 
 
 class AttributesContainerList(
@@ -540,9 +555,7 @@ class AttributesContainerList(
         """
         if obj is not None:
             super().append(
-                obj
-                if isinstance(obj, self.values_type)
-                else self.values_type(**obj),  # type: ignore
+                obj if isinstance(obj, self.values_type) else self.values_type(**obj),  # type: ignore
             )
 
     def validate(self) -> None:
@@ -558,10 +571,7 @@ class AttributesContainerList(
                 item_type = type(item)
                 item_repr = repr(item)
                 errors[str(i)] = InvalidAttributeError(
-                    message=(
-                        f'Expecting {self.values_type} for item {i} ; '
-                        + f'got {item_type} ({item_repr})'
-                    ),
+                    message=(f"Expecting {self.values_type} for item {i} ; " + f"got {item_type} ({item_repr})"),
                     context=self,
                 )
             elif isinstance(item, Validatable):
@@ -571,7 +581,7 @@ class AttributesContainerList(
                     errors[str(i)] = e
         if errors:
             raise AttributesError(
-                message='Validation failed',
+                message="Validation failed",
                 errors=errors,
                 context=self,
             )
@@ -592,10 +602,10 @@ class AttributesContainerList(
         return values
 
 
-KT = TypeVar('KT')
-VT = TypeVar('VT')
-EKT = TypeVar('EKT')
-EVT = TypeVar('EVT')
+KT = TypeVar("KT")
+VT = TypeVar("VT")
+EKT = TypeVar("EKT")
+EVT = TypeVar("EVT")
 
 
 class ExportableDict(OrderedDictType[KT, VT], Exportable[Dict[EKT, EVT]]):
@@ -622,7 +632,7 @@ class ExportableDict(OrderedDictType[KT, VT], Exportable[Dict[EKT, EVT]]):
             old: an old key
             new: a new key
         """
-        for _ in range(len(self)):  # noqa: WPS122, WPS518
+        for _ in range(len(self)):
             k, v = self.popitem(False)
             self[new if old == k else k] = v
 
@@ -665,7 +675,7 @@ class AttributesContainerDict(
                 errors[key] = e
         if errors:
             raise AttributesError(
-                message='Invalid items',
+                message="Invalid items",
                 context=self,
                 errors=errors,
             )
@@ -692,7 +702,7 @@ class AttributesContainerDict(
                 errors[key] = e
         if errors:
             raise AttributesError(
-                message='Validation failed',
+                message="Validation failed",
                 errors=errors,
                 context=self,
             )
@@ -716,10 +726,11 @@ class AttributesContainerDict(
 StrAttributeType = Union[Optional[str], Attribute[str]]
 BoolAttributeType = Union[Optional[bool], Attribute[bool]]
 
-ET = TypeVar('ET')
+LT = TypeVar("LT")
+ET = TypeVar("ET")
 
 
-class ExportableList(List[T], Exportable[List[ET]]):
+class ExportableList(List[LT], Exportable[List[ET]]):
     """A list."""
 
     def export(self) -> List[ET]:

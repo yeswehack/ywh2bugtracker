@@ -37,7 +37,7 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 
 ## Requirements
 
-- `python` >= 3.7,<=3.9
+- `python` >=3.7,<=3.12
 - [`pip`](https://pip.pypa.io/en/stable/installing/)
 
 ## Supported trackers
@@ -49,6 +49,10 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 
 ## Changelog
 
+- v2.8:
+    - improved Python versions support (>=3.7 to <=3.12)
+    - removed the GUI from the default installation (use `pip install 'ywh2bt[gui]'` to include the GUI)
+    - fixed an issue with github when the title of an issue is longer than 255 characters
 - v2.7:
     - added synchronization of "fix verification" logs when "Upload status updates" is checked
     - fixed an issue with jira when scope contains special markdown characters
@@ -102,6 +106,7 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 ### Installation
 
 - `make install` (or `poetry install`): creates a virtualenv and install dependencies
+- `make install-with-gui` (or `poetry install --extras=gui`): creates a virtualenv and install dependencies, including the gui
 
 ### Usage
 

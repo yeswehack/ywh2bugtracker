@@ -14,7 +14,6 @@ from ywh2bt.core.state.state import State
 
 
 class TestState(unittest.TestCase):
-
     def test_encrypt(self) -> None:
         @dataclass
         class MyState(State):
@@ -27,15 +26,15 @@ class TestState(unittest.TestCase):
                 return asdict(self)
 
         state = MyState(
-            foo='state-foo',
+            foo="state-foo",
             bar=1_011,
             baz={
-                'key1': 'val1',
-                'key2': 'val2',
+                "key1": "val1",
+                "key2": "val2",
             },
             qux=False,
         )
-        key = '42069'
+        key = "42069"
         encrypted = StateEncryptor.encrypt(
             state=state,
             key=key,
@@ -59,21 +58,21 @@ class TestState(unittest.TestCase):
                 return asdict(self)
 
         state = MyState(
-            foo='state-foo',
+            foo="state-foo",
             bar=1_011,
             baz={
-                'key1': 'val1',
-                'key2': 'val2',
+                "key1": "val1",
+                "key2": "val2",
             },
             qux=False,
         )
-        key = '42069'
+        key = "42069"
         encrypted = StateEncryptor.encrypt(
             state=state,
             key=key,
         )
         decrypted_state = StateDecryptor.decrypt(
-            encrypted_state=f'The state is encrypted and put somewhere in the message. {encrypted}. Here it was.',
+            encrypted_state=f"The state is encrypted and put somewhere in the message. {encrypted}. Here it was.",
             key=key,
             state_type=MyState,
         )

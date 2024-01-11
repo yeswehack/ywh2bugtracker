@@ -1,10 +1,28 @@
 """Models and functions used for root configurations GUI."""
 from __future__ import annotations
 
-from typing import Any, List, Optional, Tuple, cast
+from typing import (
+    Any,
+    List,
+    Optional,
+    Tuple,
+    cast,
+)
 
-from PySide2.QtCore import QFileInfo, QSettings, Qt, Signal
-from PySide2.QtWidgets import QBoxLayout, QFileDialog, QInputDialog, QMessageBox, QTabWidget, QWidget
+from PySide6.QtCore import (
+    QFileInfo,
+    QSettings,
+    Qt,
+    Signal,
+)
+from PySide6.QtWidgets import (
+    QBoxLayout,
+    QFileDialog,
+    QInputDialog,
+    QMessageBox,
+    QTabWidget,
+    QWidget,
+)
 
 from ywh2bt.core.core import AVAILABLE_FORMATS
 from ywh2bt.core.exceptions import CoreException
@@ -15,7 +33,7 @@ from ywh2bt.gui.widgets.root_configuration_widget import RootConfigurationWidget
 from ywh2bt.gui.widgets.typing import as_signal_instance
 
 
-class RootConfigurationsWidget(QWidget, ErrorDialogMixin):  # noqa: WPS214
+class RootConfigurationsWidget(QWidget, ErrorDialogMixin):
     """
     Root configurations GUI.
 
@@ -70,7 +88,7 @@ class RootConfigurationsWidget(QWidget, ErrorDialogMixin):  # noqa: WPS214
         empty_widget: QWidget,
     ) -> None:
         layout = QBoxLayout(
-            QBoxLayout.LeftToRight,
+            QBoxLayout.Direction.LeftToRight,
             self,
         )
 
@@ -79,9 +97,9 @@ class RootConfigurationsWidget(QWidget, ErrorDialogMixin):  # noqa: WPS214
 
         self._auto_show_hide_tabs()
 
-        layout.addWidget(self._empty_widget, Qt.AlignCenter)
+        layout.addWidget(self._empty_widget, Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self._tab_widget)
-        layout.setMargin(0)
+        layout.setContentsMargins(0, 0, 0, 0)
 
     def _create_tab_widget(
         self,
@@ -119,12 +137,12 @@ class RootConfigurationsWidget(QWidget, ErrorDialogMixin):  # noqa: WPS214
             return
         reply = QMessageBox.question(
             self,
-            f'Close {entry.name}',
-            'This configuration has unsaved changes. Close anyway?',
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No,
+            f"Close {entry.name}",
+            "This configuration has unsaved changes. Close anyway?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
         )
-        if reply == QMessageBox.Yes:
+        if reply == QMessageBox.StandardButton.Yes:
             self._on_entry_close_accepted(
                 entry=entry,
             )
@@ -156,19 +174,19 @@ class RootConfigurationsWidget(QWidget, ErrorDialogMixin):  # noqa: WPS214
         """Create a new configuration."""
         selected_format, ok = QInputDialog().getItem(
             self,
-            'Select format',
-            'Format:',
+            "Select format",
+            "Format:",
             list(AVAILABLE_FORMATS.keys()),
             0,
-            False,  # noqa: WPS425
+            False,
         )
         if not ok:
             return
         self.add_entry(
             entry=RootConfigurationEntry(
-                name='New configuration',
-                raw='',
-                original_raw='',
+                name="New configuration",
+                raw="",
+                original_raw="",
                 raw_format=selected_format,
             ),
         )
@@ -195,12 +213,12 @@ class RootConfigurationsWidget(QWidget, ErrorDialogMixin):  # noqa: WPS214
             return
         reply = QMessageBox.question(
             self,
-            f'Reload {entry.name}',
-            f'Reload {entry.file.info.filePath()} from disk?\nUnsaved changes will be lost.',
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No,
+            f"Reload {entry.name}",
+            f"Reload {entry.file.info.filePath()} from disk?\nUnsaved changes will be lost.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
         )
-        if reply == QMessageBox.No:
+        if reply == QMessageBox.StandardButton.No:
             return
         self._try_open_configuration(
             file_info=entry.file.info,
@@ -213,8 +231,8 @@ class RootConfigurationsWidget(QWidget, ErrorDialogMixin):  # noqa: WPS214
         last_opened_dir = self._get_last_opened_dir()
         file_path, chosen_filter = QFileDialog.getOpenFileName(
             self,
-            'Open file',
-            last_opened_dir,
+            "Open file",
+            last_opened_dir or "",
             self._file_format_dialog_filters.get_filters_string(),
         )
         if not file_path:
@@ -224,8 +242,8 @@ class RootConfigurationsWidget(QWidget, ErrorDialogMixin):  # noqa: WPS214
         )
         if chosen_format is None:
             return None
-        self._settings.setValue('last_opened_file', file_path)
-        self._settings.setValue('last_opened_file_format', chosen_format)
+        self._settings.setValue("last_opened_file", file_path)
+        self._settings.setValue("last_opened_file_format", chosen_format)
         return file_path, chosen_format
 
     def _try_open_configuration(
@@ -241,8 +259,8 @@ class RootConfigurationsWidget(QWidget, ErrorDialogMixin):  # noqa: WPS214
         except CoreException as e:
             self.show_exception_dialog(
                 parent=self,
-                text='Open error',
-                informative_text='Unable to open configuration',
+                text="Open error",
+                informative_text=f"Unable to open configuration {file_info.filePath()}",
                 exception=e,
             )
             return
@@ -250,12 +268,29 @@ class RootConfigurationsWidget(QWidget, ErrorDialogMixin):  # noqa: WPS214
             entry=entry,
         )
 
+    def try_open_configuration_file(
+        self,
+        file_path: str,
+        file_format: str,
+    ) -> None:
+        return self._try_open_configuration(
+            file_info=QFileInfo(file_path),
+            file_format=file_format,
+        )
+
     def _get_last_opened_dir(
         self,
-    ) -> str:
-        return QFileInfo(
-            cast(str, self._settings.value('last_opened_file')),
-        ).dir().path()
+    ) -> Optional[str]:
+        last_opened_file = self._settings.value("last_opened_file")
+        if not last_opened_file:
+            return None
+        return (
+            QFileInfo(
+                cast(str, last_opened_file),
+            )
+            .dir()
+            .path()
+        )
 
     def add_entry(
         self,
@@ -369,9 +404,12 @@ class RootConfigurationsWidget(QWidget, ErrorDialogMixin):  # noqa: WPS214
     def _get_current_entry_widget(
         self,
     ) -> RootConfigurationWidget:
-        return cast(RootConfigurationWidget, self._tab_widget.widget(
-            self._tab_widget.currentIndex(),
-        ))
+        return cast(
+            RootConfigurationWidget,
+            self._tab_widget.widget(
+                self._tab_widget.currentIndex(),
+            ),
+        )
 
     def _get_same_file_entry(
         self,
@@ -417,9 +455,9 @@ class RootConfigurationsWidget(QWidget, ErrorDialogMixin):  # noqa: WPS214
         self,
         entry: RootConfigurationEntry,
     ) -> None:
-        color = Qt.black
+        color = Qt.GlobalColor.black
         if not entry.configuration or not entry.configuration.is_valid():
-            color = Qt.red
+            color = Qt.GlobalColor.red
         tab_index = self._get_tab_index_for_entry(
             entry=entry,
         )
@@ -458,5 +496,5 @@ def _tab_title(
 ) -> str:
     tab_title = entry.name
     if entry.has_changed():
-        tab_title = f'* {tab_title}'
+        tab_title = f"* {tab_title}"
     return tab_title

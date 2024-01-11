@@ -2,7 +2,7 @@
 from datetime import datetime
 from typing import cast
 
-from PySide2.QtCore import (
+from PySide6.QtCore import (
     QObject,
     QThread,
     Signal,
@@ -85,7 +85,7 @@ class TesterThread(QThread):
             self._log_entry_available_signal.emit(
                 LogEntry(
                     date_time=datetime.now(),
-                    context=f'{self._entry.name}',
+                    context=f"{self._entry.name}",
                     message=error_to_string(
                         error=e,
                     ),
@@ -115,7 +115,7 @@ class _TesterListener(TesterListener):
         self._log_entry_available_signal.emit(
             LogEntry(
                 date_time=datetime.now(),
-                context=f'{self._entry.name}',
+                context=f"{self._entry.name}",
                 message=message,
                 log_type=log_type,
             ),
@@ -133,7 +133,7 @@ class _TesterListener(TesterListener):
         event: TesterEvent,
     ) -> None:
         self._log_message(
-            message=f'Unhandled event {event}',
+            message=f"Unhandled event {event}",
         )
 
     @_on_event.register
@@ -142,7 +142,7 @@ class _TesterListener(TesterListener):
         event: TesterStartEvent,
     ) -> None:
         self._log_message(
-            message='Starting test',
+            message="Starting test",
         )
 
     @_on_event.register
@@ -152,7 +152,7 @@ class _TesterListener(TesterListener):
     ) -> None:
         self._log_message(
             log_type=LogType.success,
-            message='Test done',
+            message="Test done",
         )
 
     @_on_event.register
@@ -161,7 +161,7 @@ class _TesterListener(TesterListener):
         event: TesterStartYesWeHackEvent,
     ) -> None:
         self._log_message(
-            message=f'Testing YesWeHack {event.yeswehack_name}',
+            message=f"Testing YesWeHack {event.yeswehack_name}",
         )
 
     @_on_event.register
@@ -171,7 +171,7 @@ class _TesterListener(TesterListener):
     ) -> None:
         self._log_message(
             log_type=LogType.success,
-            message=f'YesWeHack {event.yeswehack_name}: OK',
+            message=f"YesWeHack {event.yeswehack_name}: OK",
         )
 
     @_on_event.register
@@ -180,7 +180,7 @@ class _TesterListener(TesterListener):
         event: TesterStartTrackerEvent,
     ) -> None:
         self._log_message(
-            message=f'Testing tracker {event.tracker_name}',
+            message=f"Testing tracker {event.tracker_name}",
         )
 
     @_on_event.register
@@ -190,5 +190,5 @@ class _TesterListener(TesterListener):
     ) -> None:
         self._log_message(
             log_type=LogType.success,
-            message=f'Tracker {event.tracker_name}: OK',
+            message=f"Tracker {event.tracker_name}: OK",
         )

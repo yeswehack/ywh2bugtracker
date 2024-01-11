@@ -1,14 +1,26 @@
 """Models and functions used for data loading/saving."""
-from abc import ABC, abstractmethod
-from typing import Any, Generic, TextIO, TypeVar
+from abc import (
+    ABC,
+    abstractmethod,
+)
+from typing import (
+    Any,
+    Generic,
+    TextIO,
+    TypeVar,
+)
 
 from ywh2bt.core.configuration.error import BaseAttributeError
 from ywh2bt.core.configuration.root import RootConfiguration
 from ywh2bt.core.exceptions import CoreException
-from ywh2bt.core.serde import SerDe, SerDeError
+from ywh2bt.core.serde import (
+    SerDe,
+    SerDeError,
+)
 
-LoadType = TypeVar('LoadType')
-DumpType = TypeVar('DumpType')
+
+LoadType = TypeVar("LoadType")
+DumpType = TypeVar("DumpType")
 
 
 class LoaderError(CoreException):
@@ -81,7 +93,7 @@ class DataLoader(_BaseLoader[Any, Any]):
                 stream=stream,
             )
         except SerDeError as e:
-            raise LoaderError('Unable to deserialize data') from e
+            raise LoaderError("Unable to deserialize data") from e
         return data
 
     def save(
@@ -105,7 +117,7 @@ class DataLoader(_BaseLoader[Any, Any]):
                 stream=stream,
             )
         except SerDeError as e:
-            raise LoaderError('Unable to serialize data') from e
+            raise LoaderError("Unable to serialize data") from e
 
 
 class RootConfigurationLoader(_BaseLoader[RootConfiguration, RootConfiguration]):
@@ -148,11 +160,11 @@ class RootConfigurationLoader(_BaseLoader[RootConfiguration, RootConfiguration])
         )
         if not isinstance(data, dict):
             data_type = type(data)
-            raise LoaderError(f'Expecting {dict} for root configuration ; got {data_type}')
+            raise LoaderError(f"Expecting {dict} for root configuration ; got {data_type}")
         try:
             return RootConfiguration(**data)
         except BaseAttributeError as e:
-            raise LoaderError('Unable to load root configuration') from e
+            raise LoaderError("Unable to load root configuration") from e
 
     def save(
         self,

@@ -1,10 +1,20 @@
 """Models and functions used in schema documentation dialogs."""
-from typing import Any, Optional
+from typing import (
+    Any,
+    Optional,
+)
 
 import markdown
-from PySide2.QtGui import QKeySequence
-from PySide2.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
-from PySide2.QtWidgets import QAction, QMainWindow, QWidget
+from PySide6.QtGui import (
+    QAction,
+    QKeySequence,
+)
+from PySide6.QtWebEngineCore import QWebEnginePage
+from PySide6.QtWebEngineWidgets import QWebEngineView
+from PySide6.QtWidgets import (
+    QMainWindow,
+    QWidget,
+)
 
 from ywh2bt.core.schema.markdown import root_configuration_as_markdown
 from ywh2bt.gui.widgets.typing import as_signal_instance
@@ -30,6 +40,7 @@ class SchemaDocumentationDialog(QMainWindow):
         super().__init__(
             parent,
         )
+        self.setWindowTitle("ywh2bt - Schema documentation")
         self._init_ui()
 
     def _init_ui(
@@ -44,17 +55,17 @@ class SchemaDocumentationDialog(QMainWindow):
     ) -> None:
         bar = self.menuBar()
 
-        file_menu = bar.addMenu('&File')
-        file_menu.setObjectName('menu_file')
+        file_menu = bar.addMenu("&File")
+        file_menu.setObjectName("menu_file")
         file_menu.addAction(self._create_close_action())
 
     def _create_close_action(
         self,
     ) -> QAction:
-        action = QAction('&Close', self)
-        action.setObjectName('action_close')
-        action.setShortcuts(QKeySequence.Close)
-        action.setStatusTip('Close')
+        action = QAction("&Close", self)
+        action.setObjectName("action_close")
+        action.setShortcuts(QKeySequence.StandardKey.Close)
+        action.setStatusTip("Close")
         as_signal_instance(action.triggered).connect(
             self._on_close_triggered,
         )

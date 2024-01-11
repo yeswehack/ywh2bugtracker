@@ -1,11 +1,27 @@
 """Models used for the root configuration."""
-from typing import Any, Dict, Optional, Union, cast
+from typing import (
+    Any,
+    Dict,
+    Optional,
+    Union,
+    cast,
+)
 
-from ywh2bt.core.configuration.attribute import Attribute, AttributesContainer
+from ywh2bt.core.configuration.attribute import (
+    Attribute,
+    AttributesContainer,
+)
 from ywh2bt.core.configuration.error import AttributesError
-from ywh2bt.core.configuration.tracker import TrackerConfiguration, Trackers
+from ywh2bt.core.configuration.tracker import (
+    TrackerConfiguration,
+    Trackers,
+)
 from ywh2bt.core.configuration.validator import not_empty_validator
-from ywh2bt.core.configuration.yeswehack import Programs, YesWeHackConfigurations
+from ywh2bt.core.configuration.yeswehack import (
+    Programs,
+    YesWeHackConfigurations,
+)
+
 
 BugtrackersAttributeType = Union[
     Dict[str, TrackerConfiguration],
@@ -33,14 +49,14 @@ class RootConfiguration(AttributesContainer):
 
     bugtrackers: BugtrackersAttributeType = Attribute.create(
         value_type=Trackers,
-        short_description='Trackers',
-        description='Trackers to be synchronized with YesWeHack',
+        short_description="Trackers",
+        description="Trackers to be synchronized with YesWeHack",
         required=True,
         validator=not_empty_validator,
     )
     yeswehack: YesWeHackAttributeType = Attribute.create(
         value_type=YesWeHackConfigurations,
-        short_description='YesWeHack',
+        short_description="YesWeHack",
         required=True,
         validator=not_empty_validator,
     )
@@ -91,7 +107,7 @@ class RootConfiguration(AttributesContainer):
         if errors:
             if not super_error:
                 super_error = AttributesError(
-                    message='Validation error',
+                    message="Validation error",
                     errors={},
                     context=self,
                 )
@@ -112,7 +128,7 @@ class RootConfiguration(AttributesContainer):
                 programs=cast(Programs, yeswehack_config.programs or {}),
             )
             for key, error in config_errors.items():
-                errors[f'yeswehack.{yeswehack_name}.{key}'] = error
+                errors[f"yeswehack.{yeswehack_name}.{key}"] = error
         return errors
 
     def _ensure_bugtrackers_name(
@@ -126,8 +142,8 @@ class RootConfiguration(AttributesContainer):
                 continue
             for j, bugtracker_name in enumerate(program.bugtrackers_name):
                 if bugtracker_name not in trackers:
-                    errors[f'programs[{i}].bugtrackers_name[{j}]'] = AttributesError(
-                        message=f'Bugtracker not {repr(bugtracker_name)} declared in bugtrackers',
+                    errors[f"programs[{i}].bugtrackers_name[{j}]"] = AttributesError(
+                        message=f"Bugtracker not {repr(bugtracker_name)} declared in bugtrackers",
                         errors={},
                         context=self,
                     )

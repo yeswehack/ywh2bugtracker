@@ -2,7 +2,13 @@
 import json
 from io import StringIO
 from types import MappingProxyType
-from typing import Any, Dict, Mapping, Optional, Type
+from typing import (
+    Any,
+    Dict,
+    Mapping,
+    Optional,
+    Type,
+)
 
 from typing_extensions import Protocol
 
@@ -17,6 +23,7 @@ from ywh2bt.core.configuration.attribute import (
 from ywh2bt.core.configuration.root import RootConfiguration
 from ywh2bt.core.configuration.subtypable import SubtypableMetaclass
 from ywh2bt.core.schema.error import SchemaError
+
 
 Json = Dict[str, Any]
 
@@ -40,16 +47,16 @@ def root_configuration_as_json_schema() -> str:
             indent=2,
         )
     except TypeError as dump_error:
-        raise SchemaError('JSON dump error') from dump_error
+        raise SchemaError("JSON dump error") from dump_error
     return stream.getvalue()
 
 
 def _root_configuration_to_schema() -> Json:
     schema = {
-        '$schema': 'http://json-schema.org/draft-07/schema',
-        'title': 'Root configuration',
-        'description': 'Root configuration for ywh2bt synchronization',
-        'definitions': {},
+        "$schema": "http://json-schema.org/draft-07/schema",
+        "title": "Root configuration",
+        "description": "Root configuration for ywh2bt synchronization",
+        "definitions": {},
     }
     schema.update(
         _attributes_container_to_schema(
@@ -77,7 +84,7 @@ def _attribute_to_schema(
                 extra_properties=extra_properties,
                 as_ref=True,
             )
-    raise SchemaError(f'Unhandled {repr(value_type.__name__)}')
+    raise SchemaError(f"Unhandled {repr(value_type.__name__)}")
 
 
 def _attribute_to_base_schema(
@@ -85,17 +92,17 @@ def _attribute_to_base_schema(
 ) -> Json:
     schema = {}
     if attribute.short_description:
-        schema['title'] = attribute.short_description
+        schema["title"] = attribute.short_description
     if attribute.description:
-        schema['description'] = attribute.description
+        schema["description"] = attribute.description
     if attribute.deprecated:
-        description = schema.get('description')
+        description = schema.get("description")
         if description:
-            schema['description'] = f'(Deprecated)\n{description}'
+            schema["description"] = f"(Deprecated)\n{description}"
         else:
-            schema['description'] = '(Deprecated)'
+            schema["description"] = "(Deprecated)"
     if attribute.default is not None:
-        schema['default'] = attribute.default
+        schema["default"] = attribute.default
     return schema
 
 
@@ -124,20 +131,20 @@ def _attributes_container_to_schema(
         }
 
     schema: Json = {
-        'type': 'object',
+        "type": "object",
     }
     if properties:
-        schema['properties'] = properties
+        schema["properties"] = properties
     if required:
-        schema['required'] = required
-    schema['additionalProperties'] = False
+        schema["required"] = required
+    schema["additionalProperties"] = False
 
     if not as_ref:
         return schema
 
-    root_schema['definitions'][value_type.__name__] = schema
+    root_schema["definitions"][value_type.__name__] = schema
     return {
-        '$ref': f'#/definitions/{value_type.__name__}',
+        "$ref": f"#/definitions/{value_type.__name__}",
     }
 
 
@@ -148,14 +155,14 @@ def _attribute_container_dict_to_schema(
     as_ref: bool = False,
 ) -> Json:
     return {
-        'type': 'object',
-        'patternProperties': {
-            '.+': _get_pattern_properties(
+        "type": "object",
+        "patternProperties": {
+            ".+": _get_pattern_properties(
                 root_schema=root_schema,
                 attribute=attribute,
             ),
         },
-        'additionalProperties': False,
+        "additionalProperties": False,
     }
 
 
@@ -176,14 +183,14 @@ def _get_pattern_properties(
                         value_type=type_class,
                     ),
                     extra_properties={
-                        'type': {
-                            'const': type_name,
+                        "type": {
+                            "const": type_name,
                         },
                     },
                 ),
             )
         return {
-            'anyOf': any_of,
+            "anyOf": any_of,
         }
     return _attribute_to_schema(
         root_schema=root_schema,
@@ -203,8 +210,8 @@ def _attribute_container_list_to_schema(
     instance = value_type()  # type: ignore
     item_values_type = instance.values_type
     return {
-        'type': 'array',
-        'items': _attribute_to_schema(
+        "type": "array",
+        "items": _attribute_to_schema(
             root_schema=root_schema,
             attribute=Attribute.create(
                 value_type=item_values_type,
@@ -220,10 +227,10 @@ def _exportable_dict_to_schema(
     as_ref: bool = False,
 ) -> Json:
     return {
-        'type': 'object',
-        'patternProperties': {
-            '.*': {
-                'type': 'string',
+        "type": "object",
+        "patternProperties": {
+            ".*": {
+                "type": "string",
             },
         },
     }
@@ -236,9 +243,9 @@ def _exportable_list_to_schema(
     as_ref: bool = False,
 ) -> Json:
     return {
-        'type': 'array',
-        'items': {
-            'type': 'string',
+        "type": "array",
+        "items": {
+            "type": "string",
         },
     }
 
@@ -250,7 +257,7 @@ def _str_to_schema(
     as_ref: bool = False,
 ) -> Json:
     return {
-        'type': 'string',
+        "type": "string",
     }
 
 
@@ -261,12 +268,11 @@ def _bool_to_schema(
     as_ref: bool = False,
 ) -> Json:
     return {
-        'type': 'boolean',
+        "type": "boolean",
     }
 
 
 class _ToSchemaProtocol(Protocol):
-
     def __call__(
         self,
         root_schema: Json,
@@ -274,19 +280,21 @@ class _ToSchemaProtocol(Protocol):
         extra_properties: Optional[Json] = None,
         as_ref: bool = False,
     ) -> Json:
-        ...  # noqa: WPS428
+        ...
 
 
 TrackerClientClassesType = Mapping[
     Type[Any],
     _ToSchemaProtocol,
 ]
-type_to_schema_protocols: TrackerClientClassesType = MappingProxyType({
-    AttributesContainer: _attributes_container_to_schema,
-    AttributesContainerDict: _attribute_container_dict_to_schema,
-    AttributesContainerList: _attribute_container_list_to_schema,
-    ExportableDict: _exportable_dict_to_schema,
-    ExportableList: _exportable_list_to_schema,
-    str: _str_to_schema,
-    bool: _bool_to_schema,
-})
+type_to_schema_protocols: TrackerClientClassesType = MappingProxyType(
+    {
+        AttributesContainer: _attributes_container_to_schema,
+        AttributesContainerDict: _attribute_container_dict_to_schema,
+        AttributesContainerList: _attribute_container_list_to_schema,
+        ExportableDict: _exportable_dict_to_schema,
+        ExportableList: _exportable_list_to_schema,
+        str: _str_to_schema,
+        bool: _bool_to_schema,
+    }
+)

@@ -3,7 +3,8 @@
 MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MAKEFILE_DIR := $(patsubst %/,%,$(dir $(MAKEFILE_PATH)))
 
-FLAKE8_SRCS := ywh2bt/core ywh2bt/cli ywh2bt/gui ywh2bt/__init__.py ywh2bt/version.py stubs
+SRCS := ywh2bt
+FLAKE8_SRCS := ywh2bt/core ywh2bt/cli ywh2bt/gui ywh2bt/*.py stubs
 MYPY_SRCS := ywh2bt stubs
 DOCKER_TAG := ywh2bt
 PANDOC_DOCKER_IMAGE := pandoc-extended:latest
@@ -27,7 +28,7 @@ clean:  ## clean the project
 
 .PHONY: _install_no_root
 _install_no_root:
-	@poetry install --no-root
+	@poetry install --no-root --all-extras
 
 .PHONY: update-gui-resources-file
 update-gui-resources-file:  ## update the GUI resources file (qrc)
@@ -35,7 +36,7 @@ update-gui-resources-file:  ## update the GUI resources file (qrc)
 
 .PHONY: compile-gui-resources
 compile-gui-resources: update-gui-resources-file _install_no_root  ## compile the GUI resources
-	@poetry run pyside2-rcc ywh2bt/gui/resources.qrc -o ywh2bt/gui/resources.py
+	@poetry run pyside6-rcc ywh2bt/gui/resources.qrc -o ywh2bt/gui/resources.py
 
 .PHONY: build
 build: compile-gui-resources  ## build the project
@@ -46,28 +47,42 @@ install:  ## install the project locally
 	@poetry run pip uninstall --yes ywh2bt
 	@poetry install
 
+.PHONY: install-with-gui
+install-with-gui:  ## install the project locally, including the gui
+	@poetry run pip uninstall --yes ywh2bt
+	@poetry install --extras=gui
+
 .PHONY: tests
 tests: _install_no_root ## run the tests with the current python interpreter
-	@poetry run python -m unittest discover -s ywh2bt/tests -v
+	@poetry run python -m ywh2bt.tests.main
 
 .PHONY: tox
 tox: _install_no_root ## run the tests using tox
-	@poetry run tox
+	@poetry run tox run-parallel -vvv
 
-.PHONY: mypy
-mypy: ## check typing using mypy
-	@mkdir -p build/mypy
-	@poetry run mypy \
-		--html-report build/mypy \
-		$(MYPY_SRCS)
+.PHONY: typing mypy
+typing: _install_no_root ## check typing using mypy
+	@echo >&2 "Checking types with mypy (`poetry run dmypy --version`)"...
+	@poetry run dmypy stop || true  # stopping dmypy until https://github.com/python/mypy/issues/9655 is fixed
+	@poetry run dmypy run $(MYPY_SRCS)
+mypy: typing
 
-.PHONY: flake8
-flake8: ## check code violations using flake8
-	@mkdir -p build/flake8
-	@poetry run flake8 \
-		--format=html \
-		--htmldir=build/flake8 \
-		$(FLAKE8_SRCS)
+.PHONY: lint flake8
+lint: _install_no_root ## check code violations using flake8
+	@echo >&2 "Linting with flake8... (`poetry run flake8 --version | tr '\n' ' '`)"
+	@poetry run flake8 $(FLAKE8_SRCS)
+flake8: lint
+
+.PHONY: format
+format: ## format source code using isort/black
+	@echo >&2 Formatting with black...
+	@poetry run isort $(SRCS)
+	@poetry run black $(SRCS)
+
+.PHONY: format-check
+format-check: ## check source code formatting using isort/black
+	@poetry run isort --check $(SRCS)
+	@poetry run black --check $(SRCS)
 
 .PHONY: build-docker
 build-docker: ## build the docker image

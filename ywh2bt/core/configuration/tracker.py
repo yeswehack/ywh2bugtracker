@@ -5,10 +5,20 @@ import os
 import pkgutil
 import sys
 from importlib import import_module
-from typing import Any, Dict
+from typing import (
+    Any,
+    Dict,
+)
 
-from ywh2bt.core.configuration.attribute import AttributesContainer, AttributesContainerDict
-from ywh2bt.core.configuration.subtypable import Subtypable, SubtypableMetaclass, SubtypeError
+from ywh2bt.core.configuration.attribute import (
+    AttributesContainer,
+    AttributesContainerDict,
+)
+from ywh2bt.core.configuration.subtypable import (
+    Subtypable,
+    SubtypableMetaclass,
+    SubtypeError,
+)
 
 
 class TrackerConfiguration(AttributesContainer, Subtypable, metaclass=SubtypableMetaclass):
@@ -30,8 +40,8 @@ class TrackerConfiguration(AttributesContainer, Subtypable, metaclass=Subtypable
         tracker_type = self.__class__.get_subtype_name(self.__class__)
         if tracker_type is None:
             message = (
-                f'TrackerConfiguration {self.__class__} is not registered ; '
-                + 'use TrackerConfiguration.register_subtype() to register.'
+                f"TrackerConfiguration {self.__class__} is not registered ; "
+                + "use TrackerConfiguration.register_subtype() to register."
             )
             raise SubtypeError(
                 message=message,
@@ -49,16 +59,16 @@ class TrackerConfiguration(AttributesContainer, Subtypable, metaclass=Subtypable
         exported = {}
         tracker_type = self.__class__.get_subtype_name(self.__class__)
         if tracker_type:
-            exported['type'] = tracker_type
+            exported["type"] = tracker_type
         exported.update(super().export())
         return exported
 
 
 # import all defined trackers
-module_name = vars(sys.modules[__name__])['__package__']  # noqa: WPS421
+module_name = vars(sys.modules[__name__])["__package__"]
 dirname = os.path.dirname(__file__)
-for (_module_finder, name, _is_pkg) in pkgutil.iter_modules([f'{dirname}/trackers']):
-    import_module(f'{module_name}.trackers.{name}')
+for (_module_finder, name, _is_pkg) in pkgutil.iter_modules([f"{dirname}/trackers"]):
+    import_module(f"{module_name}.trackers.{name}")
 
 
 class Trackers(AttributesContainerDict[TrackerConfiguration]):

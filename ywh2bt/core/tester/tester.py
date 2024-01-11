@@ -15,12 +15,8 @@ from ywh2bt.core.configuration.yeswehack import (
     YesWeHackConfiguration,
     YesWeHackConfigurations,
 )
-from ywh2bt.core.factories.tracker_clients import (
-    TrackerClientsAbstractFactory,
-)
-from ywh2bt.core.factories.yeswehack_api_clients import (
-    YesWeHackApiClientsAbstractFactory,
-)
+from ywh2bt.core.factories.tracker_clients import TrackerClientsAbstractFactory
+from ywh2bt.core.factories.yeswehack_api_clients import YesWeHackApiClientsAbstractFactory
 from ywh2bt.core.tester.error import TesterError
 from ywh2bt.core.tester.listener import (
     NoOpTesterListener,
@@ -107,7 +103,7 @@ class Tester:
         try:
             yeswehack_client.test()
         except YesWeHackApiClientError as e:
-            raise TesterError(f'Test for yeswehack {yeswehack_name} has failed') from e
+            raise TesterError(f"Test for yeswehack {yeswehack_name} has failed") from e
         self._listener.on_event(
             event=TesterEndYesWeHackEvent(
                 yeswehack_name=yeswehack_name,
@@ -142,7 +138,7 @@ class Tester:
         try:
             tracker_client.test()
         except TrackerClientError as e:
-            raise TesterError(f'Test for bugtracker {bugtracker_name} has failed') from e
+            raise TesterError(f"Test for bugtracker {bugtracker_name} has failed") from e
         self._listener.on_event(
             event=TesterEndTrackerEvent(
                 tracker_name=bugtracker_name,

@@ -17,6 +17,7 @@ from typing import (
 )
 
 from ywh2bt.core.api.models.report import (
+    REPORT_STATUS_TRANSLATIONS,
     Attachment,
     CloseLog,
     CommentLog,
@@ -25,7 +26,6 @@ from ywh2bt.core.api.models.report import (
     FixVerifiedLog,
     Log,
     PriorityUpdateLog,
-    REPORT_STATUS_TRANSLATIONS,
     Report,
     RewardLog,
     StatusUpdateLog,
@@ -56,12 +56,8 @@ from ywh2bt.core.configuration.yeswehack import (
     YesWeHackConfiguration,
     YesWeHackConfigurations,
 )
-from ywh2bt.core.factories.tracker_clients import (
-    TrackerClientsAbstractFactory,
-)
-from ywh2bt.core.factories.yeswehack_api_clients import (
-    YesWeHackApiClientsAbstractFactory,
-)
+from ywh2bt.core.factories.tracker_clients import TrackerClientsAbstractFactory
+from ywh2bt.core.factories.yeswehack_api_clients import YesWeHackApiClientsAbstractFactory
 from ywh2bt.core.markdown import markdown_to_ywh
 from ywh2bt.core.state.decrypt import StateDecryptor
 from ywh2bt.core.state.encrypt import StateEncryptor
@@ -193,7 +189,7 @@ class Synchronizer:
     ) -> List[Report]:
         program_slug = cast(str, program.slug)
         filters = {
-            'filter[trackingStatus][0]': 'AFI',
+            "filter[trackingStatus][0]": "AFI",
         }
         synchronize_options = cast(SynchronizeOptions, program.synchronize_options)
         feedback_options = cast(FeedbackOptions, program.feedback_options)
@@ -211,7 +207,7 @@ class Synchronizer:
             ),
         )
         if include_tracked:
-            filters['filter[trackingStatus][1]'] = 'T'
+            filters["filter[trackingStatus][1]"] = "T"
         try:
             return yeswehack_client.get_program_reports(
                 slug=program_slug,
@@ -219,7 +215,7 @@ class Synchronizer:
             )
         except YesWeHackApiClientError as e:
             raise SynchronizerError(
-                f'Unable to get AFI/T reports for program {program_slug}',
+                f"Unable to get AFI/T reports for program {program_slug}",
             ) from e
 
     def _send_reports_to_trackers(
@@ -311,11 +307,10 @@ class Synchronizer:
                 is_created_issue=is_created_issue,
                 is_existing_issue=synchronize_report_result.is_existing_issue,
                 new_report_status=synchronize_report_result.new_report_status,
-                tracking_status_updated=report.tracking_status != 'T' or not is_created_issue,
+                tracking_status_updated=report.tracking_status != "T" or not is_created_issue,
                 tracker_issue=synchronize_report_result.send_logs_result.tracker_issue,
                 issue_added_comments=[
-                    comment.comment_id
-                    for comment in synchronize_report_result.send_logs_result.added_comments or []
+                    comment.comment_id for comment in synchronize_report_result.send_logs_result.added_comments or []
                 ],
                 report_added_comments=synchronize_report_result.download_comments_result.downloaded_comments or [],
             ),
@@ -403,9 +398,9 @@ class ReportSynchronizer:
             tracker_issue = self._create_tracker_issue()
         if not isinstance(tracker_issue, TrackerIssue):
             raise SynchronizerError(
-                f'Unable to create new or get existing issue for #{self._report.report_id} in {self._tracker_name}',
+                f"Unable to create new or get existing issue for #{self._report.report_id} in {self._tracker_name}",
             )
-        if self._report.tracking_status != 'T' or not is_created_issue:
+        if self._report.tracking_status != "T" or not is_created_issue:
             self._update_tracking_status(
                 tracker_issue=tracker_issue,
             )
@@ -465,8 +460,8 @@ class ReportSynchronizer:
         tracker_issue_state: TrackerIssueState,
     ) -> str:
         if tracker_issue.closed:
-            return 'Unchanged (closed)' if tracker_issue_state.closed else 'Opened -> Closed'
-        return 'Closed -> Opened' if tracker_issue_state.closed else 'Unchanged (opened)'
+            return "Unchanged (closed)" if tracker_issue_state.closed else "Opened -> Closed"
+        return "Closed -> Opened" if tracker_issue_state.closed else "Unchanged (opened)"
 
     def _get_tracker_issue_from_logs(
         self,
@@ -487,7 +482,7 @@ class ReportSynchronizer:
             )
         except TrackerClientError as send_error:
             raise SynchronizerError(
-                f'Unable to send report #{self._report.report_id} to {self._tracker_name}',
+                f"Unable to send report #{self._report.report_id} to {self._tracker_name}",
             ) from send_error
         return tracker_issue
 
@@ -502,7 +497,7 @@ class ReportSynchronizer:
         try:
             self._yeswehack_client.put_report_tracking_status(
                 report=self._report,
-                status='T',
+                status="T",
                 tracker_name=self._tracker_name,
                 issue_id=tracker_issue.issue_id,
                 issue_url=tracker_issue.issue_url,
@@ -510,7 +505,7 @@ class ReportSynchronizer:
             )
         except YesWeHackApiClientError as tracking_status_error:
             raise SynchronizerError(
-                f'Unable to update tracking status for report #{self._report.report_id}',
+                f"Unable to update tracking status for report #{self._report.report_id}",
             ) from tracking_status_error
 
     def _get_last_tracker_update_log(
@@ -519,7 +514,7 @@ class ReportSynchronizer:
         for log in reversed(self._report.logs):
             if isinstance(log, TrackerUpdateLog):
                 state = StateDecryptor.decrypt(
-                    encrypted_state=log.tracker_token or '',
+                    encrypted_state=log.tracker_token or "",
                     key=self._report.report_id,
                     state_type=TrackerIssueState,
                 )
@@ -554,25 +549,29 @@ class ReportSynchronizer:
         log: Log,
     ) -> bool:
         synchronize_options = self._synchronize_options
-        return any((
-            isinstance(log, CloseLog) and synchronize_options.upload_status_updates,
-            isinstance(log, CommentLog) and synchronize_options.upload_public_comments and not log.private,
+        return any(
             (
-                isinstance(log, CommentLog) and synchronize_options.upload_private_comments
-                and log.log_type == 'comment'
-                and log.private
-            ),
-            (
-                isinstance(log, CommentLog) and synchronize_options.upload_assign_comments
-                and log.log_type == 'assign'
-                and log.private
-            ),
-            isinstance(log, CvssUpdateLog) and synchronize_options.upload_cvss_updates,
-            isinstance(log, DetailsUpdateLog) and synchronize_options.upload_details_updates,
-            isinstance(log, PriorityUpdateLog) and synchronize_options.upload_priority_updates,
-            isinstance(log, RewardLog) and synchronize_options.upload_rewards,
-            isinstance(log, (StatusUpdateLog, FixVerifiedLog)) and synchronize_options.upload_status_updates,
-        ))
+                isinstance(log, CloseLog) and synchronize_options.upload_status_updates,
+                isinstance(log, CommentLog) and synchronize_options.upload_public_comments and not log.private,
+                (
+                    isinstance(log, CommentLog)
+                    and synchronize_options.upload_private_comments
+                    and log.log_type == "comment"
+                    and log.private
+                ),
+                (
+                    isinstance(log, CommentLog)
+                    and synchronize_options.upload_assign_comments
+                    and log.log_type == "assign"
+                    and log.private
+                ),
+                isinstance(log, CvssUpdateLog) and synchronize_options.upload_cvss_updates,
+                isinstance(log, DetailsUpdateLog) and synchronize_options.upload_details_updates,
+                isinstance(log, PriorityUpdateLog) and synchronize_options.upload_priority_updates,
+                isinstance(log, RewardLog) and synchronize_options.upload_rewards,
+                isinstance(log, (StatusUpdateLog, FixVerifiedLog)) and synchronize_options.upload_status_updates,
+            )
+        )
 
     def _send_logs(
         self,
@@ -586,7 +585,7 @@ class ReportSynchronizer:
             )
         except TrackerClientError as send_error:
             raise SynchronizerError(
-                f'Unable to send logs for #{self._report.report_id} to {self._tracker_name}',
+                f"Unable to send logs for #{self._report.report_id} to {self._tracker_name}",
             ) from send_error
 
     def _download_comments(
@@ -627,7 +626,7 @@ class ReportSynchronizer:
             )
         except TrackerClientError as issue_comments_error:
             raise SynchronizerError(
-                f'Unable to get issue comments for #{tracker_issue.issue_id}',
+                f"Unable to get issue comments for #{tracker_issue.issue_id}",
             ) from issue_comments_error
 
     def _download_comment(
@@ -664,7 +663,7 @@ class ReportSynchronizer:
             )
         except YesWeHackApiClientError as tracker_message_error:
             raise SynchronizerError(
-                f'Unable to download comment {tracker_comment.comment_id} for report #{self._report.report_id}',
+                f"Unable to download comment {tracker_comment.comment_id} for report #{self._report.report_id}",
             ) from tracker_message_error
 
     def _post_report_tracker_update(
@@ -705,7 +704,7 @@ class ReportSynchronizer:
                 )
             except YesWeHackApiClientError as tracker_update_error:
                 raise SynchronizerError(
-                    f'Unable to post tracker update for report #{self._report.report_id}',
+                    f"Unable to post tracker update for report #{self._report.report_id}",
                 ) from tracker_update_error
 
     def _update_report_status(
@@ -716,17 +715,17 @@ class ReportSynchronizer:
         if not self._feedback_options.issue_closed_to_report_afv:
             return None
         condition = tracker_issue.closed and not tracker_issue_state.closed
-        ask_verif_status = 'ask_verif'
+        ask_verif_status = "ask_verif"
         if condition and self._report.status != ask_verif_status:
             status_updated = self._put_report_status(
                 status=ask_verif_status,
-                comment='\n'.join(
+                comment="\n".join(
                     (
-                        'Hello,',
-                        'A fix has been deployed for this vulnerability.',
-                        'Could you please verify that you cannot reproduce the bug nor bypass the fix?',
-                        'Thanks for your help,',
-                        'Regards,',
+                        "Hello,",
+                        "A fix has been deployed for this vulnerability.",
+                        "Could you please verify that you cannot reproduce the bug nor bypass the fix?",
+                        "Thanks for your help,",
+                        "Regards,",
                     ),
                 ),
             )
@@ -823,43 +822,37 @@ class SynchronizerMessageFormatter(AbstractSynchronizerMessageFormatter):
     """Message formatter for a synchronizer."""
 
     _tracking_status_update_template: Template = Template(
-        'Synchronized with bugtracker: ${tracker_url} on project : ${project}.'
-        + '\n'
-        + 'Tracked to [${tracker_type} #${issue_id}](${issue_url}).',
+        "Synchronized with bugtracker: ${tracker_url} on project : ${project}."
+        + "\n"
+        + "Tracked to [${tracker_type} #${issue_id}](${issue_url}).",
     )
     _synchronization_done_template: Template = Template(
-        'Synchronized with bugtracker: ${tracker_url} on project : ${project}.'
-        + '\n'
-        + 'Tracked to [${tracker_type} #${issue_id}](${issue_url}).'
-        + '\n'
-        + 'Report comments added to issue: ${issue_added_comment_count}'
-        + '\n'
-        + 'Issue comments added to report: ${report_added_comment_count}'
-        + '\n'
-        + 'Report status: ${report_status}'
-        + '\n'
-        + 'Issue status: ${issue_status}',
+        "Synchronized with bugtracker: ${tracker_url} on project : ${project}."
+        + "\n"
+        + "Tracked to [${tracker_type} #${issue_id}](${issue_url})."
+        + "\n"
+        + "Report comments added to issue: ${issue_added_comment_count}"
+        + "\n"
+        + "Issue comments added to report: ${report_added_comment_count}"
+        + "\n"
+        + "Report status: ${report_status}"
+        + "\n"
+        + "Issue status: ${issue_status}",
     )
     _download_comment_template: Template = Template(
-        'Comment from bugtracker:'
-        + '\n'
-        + 'Date: ${date}'
-        + '\n'
-        + 'Author: ${author}'
-        + '\n\n'
-        + '${comment}',
+        "Comment from bugtracker:" + "\n" + "Date: ${date}" + "\n" + "Author: ${author}" + "\n\n" + "${comment}",
     )
     _failed_attachments_template: Template = Template(
-        '**YWH2BT note:**'
-        + '\n*There was an issue while uploading the following attachments from the bugtracker*:'
-        + '\n\n'
-        + '${attachments}',
+        "**YWH2BT note:**"
+        + "\n*There was an issue while uploading the following attachments from the bugtracker*:"
+        + "\n\n"
+        + "${attachments}",
     )
     _failed_attachment_template: Template = Template(
-        '- ${filename} (size=${size}, mime=${mimetype})',
+        "- ${filename} (size=${size}, mime=${mimetype})",
     )
     _status_update_comment_template: Template = Template(
-        '${comment}',
+        "${comment}",
     )
 
     def format_tracking_status_update_message(
@@ -909,19 +902,19 @@ class SynchronizerMessageFormatter(AbstractSynchronizerMessageFormatter):
             a formatted message
         """
         tracker_issue = send_logs_result.tracker_issue
-        report_status = 'Unchanged'
+        report_status = "Unchanged"
         if new_report_status:
-            unknown_status_translation = 'Unknown'
+            unknown_status_translation = "Unknown"
             old_status, new_status = new_report_status
             old_status_translation = REPORT_STATUS_TRANSLATIONS.get(old_status, unknown_status_translation)
             new_status_translation = REPORT_STATUS_TRANSLATIONS.get(new_status, unknown_status_translation)
-            report_status = f'{old_status_translation} -> {new_status_translation}'
+            report_status = f"{old_status_translation} -> {new_status_translation}"
         return self._synchronization_done_template.substitute(
             tracker_type=tracker_type,
-            tracker_url=tracker_issue.tracker_url if tracker_issue else '',
-            project=tracker_issue.project if tracker_issue else '',
-            issue_id=tracker_issue.issue_id if tracker_issue else '',
-            issue_url=tracker_issue.issue_url if tracker_issue else '',
+            tracker_url=tracker_issue.tracker_url if tracker_issue else "",
+            project=tracker_issue.project if tracker_issue else "",
+            issue_id=tracker_issue.issue_id if tracker_issue else "",
+            issue_url=tracker_issue.issue_url if tracker_issue else "",
             issue_added_comment_count=len(send_logs_result.added_comments),
             report_added_comment_count=len(download_comments_result.downloaded_comments),
             report_status=report_status,
@@ -964,9 +957,9 @@ class SynchronizerMessageFormatter(AbstractSynchronizerMessageFormatter):
                     ),
                 )
             formatted_failed_attachments = self._failed_attachments_template.substitute(
-                attachments='\n'.join(formatted_attachments),
+                attachments="\n".join(formatted_attachments),
             )
-            formatted_comment = f'{formatted_comment}\n\n{formatted_failed_attachments}'
+            formatted_comment = f"{formatted_comment}\n\n{formatted_failed_attachments}"
         return formatted_comment
 
     def format_status_update_comment(
@@ -997,7 +990,7 @@ class SynchronizerMessageFormatter(AbstractSynchronizerMessageFormatter):
                 issue_state=issue_state,
                 last_state=last_state,
             )
-        return 'created'
+        return "created"
 
     def _string_state_for_update(
         self,
@@ -1007,12 +1000,12 @@ class SynchronizerMessageFormatter(AbstractSynchronizerMessageFormatter):
         string_state = []
         if issue_state != last_state:
             if last_state:
-                string_state.append('closed' if last_state.closed else 'opened')
+                string_state.append("closed" if last_state.closed else "opened")
             else:
-                string_state.append('???')
-            string_state.append(' -> ')
-            string_state.append('closed' if issue_state.closed else 'opened')
-        return ''.join(string_state)
+                string_state.append("???")
+            string_state.append(" -> ")
+            string_state.append("closed" if issue_state.closed else "opened")
+        return "".join(string_state)
 
 
 @dataclass

@@ -1,7 +1,11 @@
 """Models and functions used for states encryption."""
 import base64
 import json
-from typing import Any, Dict, Tuple
+from typing import (
+    Any,
+    Dict,
+    Tuple,
+)
 
 from ywh2bt.core.crypt.encrypt import Encryptor
 from ywh2bt.core.crypt.error import CryptError
@@ -44,12 +48,12 @@ class StateEncryptor:
                 ),
             )
         except CryptError as e:
-            raise StateError(f'Unable to encrypt state {state}') from e
+            raise StateError(f"Unable to encrypt state {state}") from e
         encrypted_base64 = base64.b64encode(
             encrypted_data,
         )
-        encrypted = encrypted_base64.decode('utf-8')
-        return f'[YWH2BT:S:{encrypted}]'
+        encrypted = encrypted_base64.decode("utf-8")
+        return f"[YWH2BT:S:{encrypted}]"
 
     @classmethod
     def _as_bytes(
@@ -59,7 +63,7 @@ class StateEncryptor:
         json_string = cls._as_json_string(
             state=state,
         )
-        return json_string.encode('utf-8')
+        return json_string.encode("utf-8")
 
     @classmethod
     def _as_json_string(
@@ -73,7 +77,7 @@ class StateEncryptor:
                 ),
             )
         except (TypeError, ValueError) as e:
-            raise StateError(f'Unable to serialize state {state}') from e
+            raise StateError(f"Unable to serialize state {state}") from e
 
     @classmethod
     def _as_meta(

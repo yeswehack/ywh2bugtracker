@@ -1,5 +1,8 @@
 """Models for errors."""
-from typing import Any, Dict
+from typing import (
+    Any,
+    Dict,
+)
 
 from ywh2bt.core.exceptions import CoreException
 
@@ -35,7 +38,7 @@ class BaseAttributeError(CoreException):
         """
         message_repr = repr(self.message)
         context_repr = repr(self.context)
-        return f'{self.__class__.__name__}({message_repr}, context={context_repr})'
+        return f"{self.__class__.__name__}({message_repr}, context={context_repr})"
 
 
 class MissingAttributeError(BaseAttributeError):
@@ -88,7 +91,7 @@ class AttributesError(BaseAttributeError):
         """
         message_repr = repr(self.message)
         errors_repr = repr(self.errors)
-        return f'{self.__class__.__name__}({message_repr}, errors={errors_repr})'
+        return f"{self.__class__.__name__}({message_repr}, errors={errors_repr})"
 
     def __str__(self) -> str:
         """
@@ -100,4 +103,4 @@ class AttributesError(BaseAttributeError):
         Returns:
             The string value
         """
-        return f'{self.message}'
+        return f"{self.message}"

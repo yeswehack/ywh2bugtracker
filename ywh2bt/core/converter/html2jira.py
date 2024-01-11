@@ -12,6 +12,7 @@ import sys
 import urllib.parse as urlparse
 from textwrap import wrap
 
+
 # Use Unicode characters instead of their ascii psuedo-replacements
 UNICODE_SNOB = 0
 
@@ -110,12 +111,7 @@ def hn(tag):
 
 def dumb_property_dict(style):
     """returns a hash of css attributes"""
-    out = dict(
-        [
-            (x.strip(), y.strip())
-            for x, y in [z.split(":", 1) for z in style.split(";") if ":" in z]
-        ]
-    )
+    out = dict([(x.strip(), y.strip()) for x, y in [z.split(":", 1) for z in style.split(";") if ":" in z]])
     return out
 
 
@@ -133,9 +129,7 @@ def dumb_css_parser(data):
     # support older pythons
     elements = [x.split("{") for x in data.split("}") if "{" in x.strip()]
     try:
-        elements = dict(
-            [(a.strip(), dumb_property_dict(b)) for a, b in elements]
-        )
+        elements = dict([(a.strip(), dumb_property_dict(b)) for a, b in elements])
     except ValueError:
         elements = {}  # not that important
 
@@ -302,9 +296,7 @@ class HTML2Jira(HTMLParser.HTMLParser):
             except NameError:
                 nbsp = chr(32)
         try:
-            self.outtext = self.outtext.replace(
-                unicode("&nbsp_place_holder;"), nbsp
-            )
+            self.outtext = self.outtext.replace(unicode("&nbsp_place_holder;"), nbsp)
         except NameError:
             self.outtext = self.outtext.replace("&nbsp_place_holder;", nbsp)
 
@@ -323,10 +315,10 @@ class HTML2Jira(HTMLParser.HTMLParser):
         self.handle_tag(tag, None, 0)
 
     def previousIndex(self, attrs):
-        """ returns the index of certain set of attributes (of a link) in the
-            self.a list
+        """returns the index of certain set of attributes (of a link) in the
+        self.a list
 
-            If the set of attributes is not found, returns None
+        If the set of attributes is not found, returns None
         """
         if "href" not in attrs:
             return None
@@ -338,11 +330,7 @@ class HTML2Jira(HTMLParser.HTMLParser):
 
             if ("href" in a) and a["href"] == attrs["href"]:
                 if ("title" in a) or ("title" in attrs):
-                    if (
-                        ("title" in a)
-                        and ("title" in attrs)
-                        and a["title"] == attrs["title"]
-                    ):
+                    if ("title" in a) and ("title" in attrs) and a["title"] == attrs["title"]:
                         match = True
                 else:
                     match = True
@@ -360,16 +348,10 @@ class HTML2Jira(HTMLParser.HTMLParser):
         parent_emphasis = google_text_emphasis(parent_style)
 
         # handle Google's text emphasis
-        strikethrough = (
-            "line-through" in tag_emphasis and self.hide_strikethrough
-        )
+        strikethrough = "line-through" in tag_emphasis and self.hide_strikethrough
         bold = "bold" in tag_emphasis and not "bold" in parent_emphasis
         italic = "italic" in tag_emphasis and not "italic" in parent_emphasis
-        fixed = (
-            google_fixed_width_font(tag_style)
-            and not google_fixed_width_font(parent_style)
-            and not self.pre
-        )
+        fixed = google_fixed_width_font(tag_style) and not google_fixed_width_font(parent_style) and not self.pre
 
         if start:
             # crossed-out text must be handled before other attributes
@@ -528,9 +510,7 @@ class HTML2Jira(HTMLParser.HTMLParser):
 
         if tag == "a" and not self.ignore_links:
             if start:
-                if ("href" in attrs) and not (
-                    self.skip_internal_links and attrs["href"].startswith("#")
-                ):
+                if ("href" in attrs) and not (self.skip_internal_links and attrs["href"].startswith("#")):
                     self.astack.append(attrs)
                     self.maybe_automatic_link = attrs["href"]
                 else:
@@ -713,21 +693,14 @@ class HTML2Jira(HTMLParser.HTMLParser):
                     self.out(" ")
                 self.space = 0
 
-            if self.a and (
-                (self.p_p == 2 and self.links_each_paragraph) or force == "end"
-            ):
+            if self.a and ((self.p_p == 2 and self.links_each_paragraph) or force == "end"):
                 if force == "end":
                     self.out("\n")
 
                 newa = []
                 for link in self.a:
                     if self.outcount > link["outcount"]:
-                        self.out(
-                            "   ["
-                            + str(link["count"])
-                            + "]: "
-                            + urlparse.urljoin(self.baseurl, link["href"])
-                        )
+                        self.out("   [" + str(link["count"]) + "]: " + urlparse.urljoin(self.baseurl, link["href"]))
                         if "title" in link:
                             self.out(" (" + link["title"] + ")")
                         self.out("\n")
@@ -818,9 +791,7 @@ class HTML2Jira(HTMLParser.HTMLParser):
         """calculate the nesting count of google doc lists"""
         nest_count = 0
         if "margin-left" in style:
-            nest_count = (
-                int(style["margin-left"][:-2]) // self.google_list_indent
-            )
+            nest_count = int(style["margin-left"][:-2]) // self.google_list_indent
         return nest_count
 
     def optwrap(self, text):
@@ -917,9 +888,7 @@ def skipwrap(para):
     # If the text begins with a single -, *, or +, followed by a space,
     # or an integer, followed by a ., followed by a space (in either
     # case optionally preceeded by whitespace), it's a list; don't wrap.
-    if ordered_list_matcher.match(stripped) or unordered_list_matcher.match(
-        stripped
-    ):
+    if ordered_list_matcher.match(stripped) or unordered_list_matcher.match(stripped):
         return True
     return False
 

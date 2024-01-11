@@ -66,9 +66,9 @@ class TrackerIssueState(State):
             the fields as a new dict
         """
         return {
-            'closed': self._closed,
-            'bugtracker_name': self._bugtracker_name,
-            'downloaded_comments': list(set(self._downloaded_comments)) if self._downloaded_comments else None,
+            "closed": self._closed,
+            "bugtracker_name": self._bugtracker_name,
+            "downloaded_comments": list(set(self._downloaded_comments)) if self._downloaded_comments else None,
         }
 
     @property
@@ -237,7 +237,7 @@ class SendLogsResult:
     added_comments: TrackerIssueComments
 
 
-T = TypeVar('T', bound=TrackerConfiguration)
+T = TypeVar("T", bound=TrackerConfiguration)
 
 
 class TrackerClient(TestableApiClient, ABC, Generic[T]):

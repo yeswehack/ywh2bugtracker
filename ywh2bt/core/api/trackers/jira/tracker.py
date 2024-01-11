@@ -12,12 +12,10 @@ from typing import (
 )
 from urllib.parse import quote
 
-from jira import (
-    Comment as JIRAComment,
-    Issue as JIRAIssue,
-    JIRA,
-    JIRAError,
-)
+from jira import JIRA
+from jira import Comment as JIRAComment
+from jira import Issue as JIRAIssue
+from jira import JIRAError
 from requests_toolbelt.multipart.encoder import CustomBytesIO  # type: ignore
 
 from ywh2bt.core.api.formatter.markdown import ReportMessageMarkdownFormatter
@@ -39,7 +37,8 @@ from ywh2bt.core.api.trackers.jira.formatter import JiraReportMessageFormatter
 from ywh2bt.core.configuration.trackers.jira import JiraConfiguration
 from ywh2bt.core.converter.jira2markdown import jira2markdown
 
-_RE_IMAGE = re.compile(pattern=r'!([^!|]+)(?:\|[^!]*)?!')
+
+_RE_IMAGE = re.compile(pattern=r"!([^!|]+)(?:\|[^!]*)?!")
 _TITLE_MAX_SIZE = 255
 _TEXT_MAX_SIZE = 32767
 
@@ -54,8 +53,8 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
     _jira: Optional[JIRA]
     _message_formatter: JiraReportMessageFormatter
 
-    _attachments_list_description_item_jira_template = Template('- [${name}|${url}]')
-    _attachments_list_description_item_markdown_template = Template('- [${name}](${url})')
+    _attachments_list_description_item_jira_template = Template("- [${name}|${url}]")
+    _attachments_list_description_item_markdown_template = Template("- [${name}](${url})")
 
     def __init__(
         self,
@@ -81,7 +80,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
         Returns:
             the type of the  tracker client
         """
-        return 'Jira'
+        return "Jira"
 
     def _build_tracker_issue(
         self,
@@ -118,7 +117,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
             return None
         return self._build_tracker_issue(
             issue_id=issue_id,
-            issue_url=jira_issue.permalink(),
+            issue_url=jira_issue.permalink(),  # type: ignore
             closed=self._issue_is_closed(
                 jira_issue=jira_issue,
             ),
@@ -129,7 +128,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
         jira_issue: JIRAIssue,
     ) -> bool:
         fields = jira_issue.fields
-        return fields.status is not None and fields.status.name == self.configuration.issue_closed_status
+        return fields.status is not None and cast(str, fields.status.name) == self.configuration.issue_closed_status
 
     def get_tracker_issue_comments(
         self,
@@ -184,7 +183,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
                 comment_attachments[jira_attachment.filename] = TrackerAttachment(
                     filename=jira_attachment.filename,
                     mime_type=jira_attachment.mimeType,
-                    content=jira_attachment.get(),
+                    content=jira_attachment.get(),  # type: ignore
                 )
         return TrackerIssueComment(
             created_at=self._parse_date(
@@ -216,15 +215,15 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
             report=report,
         )
         if len(title) > _TITLE_MAX_SIZE:
-            title = f'{title[:_TITLE_MAX_SIZE - 3]}...'
+            title = f"{title[:_TITLE_MAX_SIZE - 3]}..."
         description = self._message_formatter.format_report_description(
             report=report,
         ) + self._get_attachments_list_description(
-            title='*Attachments*:',
+            title="*Attachments*:",
             item_template=self._attachments_list_description_item_jira_template,
             attachments=report.attachments,
         )
-        markdown_description = ''
+        markdown_description = ""
         description_attachment = None
         if len(description) > _TEXT_MAX_SIZE:
             description_attachment = self._build_external_description_attachment(
@@ -233,20 +232,20 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
             markdown_description = ReportMessageMarkdownFormatter().format_report_description(
                 report=report,
             ) + self._get_attachments_list_description(
-                title='**Attachments**:',
+                title="**Attachments**:",
                 item_template=self._attachments_list_description_item_markdown_template,
                 attachments=report.attachments,
             )
             report_copy = deepcopy(report)
             report_copy.description_html = (
-                '<p>This report description is too large to fit into a JIRA issue. '
+                "<p>This report description is too large to fit into a JIRA issue. "
                 + f'See attachment <a href="{description_attachment.url}">{description_attachment.original_name}</a> '
-                + 'for more details.</p>'
+                + "for more details.</p>"
             )
             description = self._message_formatter.format_report_description(
                 report=report_copy,
             ) + self._get_attachments_list_description(
-                title='*Attachments*:',
+                title="*Attachments*:",
                 item_template=self._attachments_list_description_item_jira_template,
                 attachments=[
                     description_attachment,
@@ -255,7 +254,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
             )
         jira_issue = self._create_issue(
             title=title,
-            description='This issue is being synchronized. Please check back in a moment.',
+            description="This issue is being synchronized. Please check back in a moment.",
         )
         description, markdown_description = self._replace_attachments_references(
             uploads=self._upload_attachments(
@@ -268,7 +267,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
             ],
         )
         if description_attachment:
-            description_attachment.data_loader = lambda: bytes(markdown_description, 'utf-8')
+            description_attachment.data_loader = lambda: bytes(markdown_description, "utf-8")
             description = self._replace_attachments_references(
                 uploads=self._upload_attachments(
                     issue=jira_issue,
@@ -285,7 +284,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
         )
         return self._build_tracker_issue(
             issue_id=jira_issue.key,
-            issue_url=jira_issue.permalink(),
+            issue_url=jira_issue.permalink(),  # type: ignore
             closed=False,
         )
 
@@ -297,10 +296,10 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
             attachment_id=0,
             name=name,
             original_name=name,
-            mime_type='text/markdown',
+            mime_type="text/markdown",
             size=0,
-            url=f'http://tracker/external/{name}',
-            data_loader=lambda: bytes('', 'utf-8'),
+            url=f"http://tracker/external/{name}",
+            data_loader=lambda: bytes("", "utf-8"),
         )
 
     def send_logs(
@@ -351,7 +350,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
     ) -> datetime:
         return datetime.strptime(
             date,
-            '%Y-%m-%dT%H:%M:%S.%f%z',
+            "%Y-%m-%dT%H:%M:%S.%f%z",
         )
 
     def test(
@@ -370,7 +369,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
             )
         except JIRAError as e:
             raise JiraTrackerClientError(
-                f'Unable to get JIRA issue {issue_id} in project {self.configuration.project}',
+                f"Unable to get JIRA issue {issue_id} in project {self.configuration.project}",
             ) from e
 
     def _create_issue(
@@ -379,13 +378,13 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
         description: str,
     ) -> JIRAIssue:
         fields = {
-            'project': {
-                'key': self.configuration.project,
+            "project": {
+                "key": self.configuration.project,
             },
-            'summary': title,
-            'description': description,
-            'issuetype': {
-                'name': self.configuration.issuetype,
+            "summary": title,
+            "description": description,
+            "issuetype": {
+                "name": self.configuration.issuetype,
             },
         }
         try:
@@ -394,7 +393,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
             )
         except JIRAError as e:
             raise JiraTrackerClientError(
-                f'Unable to create JIRA issue for project {self.configuration.project}',
+                f"Unable to create JIRA issue for project {self.configuration.project}",
             ) from e
 
     def _add_comment(
@@ -402,36 +401,32 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
         issue: JIRAIssue,
         log: Log,
     ) -> JIRAComment:
-        comment_body = self._message_formatter.format_log(
-            log=log,
-        ) + self._get_attachments_list_description(
-            title='*Attachments*:',
+        comment_body = self._message_formatter.format_log(log=log,) + self._get_attachments_list_description(
+            title="*Attachments*:",
             item_template=self._attachments_list_description_item_jira_template,
             attachments=log.attachments,
         )
-        markdown_description = ''
+        markdown_description = ""
         body_attachment = None
         if len(comment_body) > _TEXT_MAX_SIZE:
             body_attachment = self._build_external_description_attachment(
-                name=f'comment-{log.log_id}-description.md',
+                name=f"comment-{log.log_id}-description.md",
             )
             markdown_description = ReportMessageMarkdownFormatter().format_log(
                 log=log,
             ) + self._get_attachments_list_description(
-                title='**Attachments**:',
+                title="**Attachments**:",
                 item_template=self._attachments_list_description_item_markdown_template,
                 attachments=log.attachments,
             )
             log_copy = deepcopy(log)
             log_copy.message_html = (
-                '<p>This comment is too large to fit into a JIRA comment. '
+                "<p>This comment is too large to fit into a JIRA comment. "
                 + f'See attachment <a href="{body_attachment.url}">{body_attachment.original_name}</a> '
-                + 'for more details.</p>'
+                + "for more details.</p>"
             )
-            comment_body = self._message_formatter.format_log(
-                log=log_copy,
-            ) + self._get_attachments_list_description(
-                title='*Attachments*:',
+            comment_body = self._message_formatter.format_log(log=log_copy,) + self._get_attachments_list_description(
+                title="*Attachments*:",
                 item_template=self._attachments_list_description_item_jira_template,
                 attachments=[
                     body_attachment,
@@ -449,7 +444,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
             ],
         )
         if body_attachment:
-            body_attachment.data_loader = lambda: bytes(markdown_description, 'utf-8')
+            body_attachment.data_loader = lambda: bytes(markdown_description, "utf-8")
             comment_body = self._replace_attachments_references(
                 uploads=self._upload_attachments(
                     issue=issue,
@@ -462,13 +457,16 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
                 ],
             )[0]
         try:
-            return self._get_client().add_comment(
-                issue=str(issue),
-                body=comment_body,
+            return cast(
+                JIRAComment,
+                self._get_client().add_comment(
+                    issue=str(issue),
+                    body=comment_body,
+                ),
             )
         except JIRAError as e:
             raise JiraTrackerClientError(
-                f'Unable to add JIRA comment for issue {issue} in project {self.configuration.project}',
+                f"Unable to add JIRA comment for issue {issue} in project {self.configuration.project}",
             ) from e
 
     def _upload_attachments_and_substitute_references(
@@ -521,11 +519,11 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
                 )
             except JIRAError as e:
                 raise JiraTrackerClientError(
-                    f'Unable to upload attachments for project {self.configuration.project} to JIRA',
+                    f"Unable to upload attachments for project {self.configuration.project} to JIRA",
                 ) from e
             issue_attachment_url = quote(
                 issue_attachment.content,
-                safe=':/?&=',
+                safe=":/?&=",
             )
             uploads.append(
                 (
@@ -544,7 +542,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
         attachments_lines = []
         if attachments:
             attachments_lines = [
-                '',
+                "",
                 title,
             ]
             for attachment in attachments:
@@ -554,8 +552,8 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
                         url=attachment.url,
                     ),
                 )
-            attachments_lines.append('')
-        return '\n'.join(attachments_lines)
+            attachments_lines.append("")
+        return "\n".join(attachments_lines)
 
     def _get_client(
         self,
@@ -576,11 +574,11 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
                     cast(str, configuration.password),
                 ),
                 options={
-                    'verify': configuration.verify,
+                    "verify": configuration.verify,
                 },
             )
         except JIRAError as e:
-            raise JiraTrackerClientError('Unable to connect to JIRA') from e
+            raise JiraTrackerClientError("Unable to connect to JIRA") from e
 
     def _ensure_auth(
         self,
@@ -588,4 +586,4 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
         try:
             self._get_client().myself()
         except JIRAError as e:
-            raise JiraTrackerClientError('Unable to authenticate to JIRA') from e
+            raise JiraTrackerClientError("Unable to authenticate to JIRA") from e

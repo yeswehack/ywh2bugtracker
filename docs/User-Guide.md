@@ -18,7 +18,7 @@ only regular outbound web connections need to be authorized on your server.
 
 # Requirements
 
-- `python` >= 3.7,<=3.9
+- `python` >=3.7,<=3.12
 - [`pip`](https://pip.pypa.io/en/stable/installing/)
 
 To use it on your program, while maintaining the maximum security, the tool requires you create a Personal Access Token
@@ -31,10 +31,22 @@ YWH2BT can be installed with `pip`, through the command:
 pip install ywh2bt
 ```
 
+Since the version 2.8.0, the default installation does not include the GUI anymore ;
+to include the GUI in the installation, execute the command:
+
+```sh
+pip install 'ywh2bt[gui]'
+```
+
 Or upgraded from a previously installed version:
 ```sh
 pip install ywh2bt --upgrade
 ```
+or
+```sh
+pip install 'ywh2bt[gui]' --upgrade
+```
+
 
 If you need to deploy only the command line version on a server, a runnable docker image is also available.
 You can install it with:
@@ -66,7 +78,7 @@ See `docker run yeswehack/ywh2bugtracker -h` or `docker run yeswehack/ywh2bugtra
 ## GUI
 
 The Graphical User Interface provides assistance to create, modify and validate/test configurations. 
-It also allows synchronization with bug trackers.
+It also allows synchronization with bug trackers. See the [installation section](#installation) for how to install the GUI.
 
 To run it, simply type `ywh2bt-gui` in a shell.
 

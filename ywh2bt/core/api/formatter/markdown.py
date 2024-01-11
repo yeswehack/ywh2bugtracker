@@ -6,7 +6,8 @@ from string import Template
 from ywh2bt.core.api.formatter.formatter import ReportMessageFormatter
 from ywh2bt.core.html import ywh_html_to_markdown
 
-REPORT_TITLE_TEMPLATE = '${local_id} : ${title}'
+
+REPORT_TITLE_TEMPLATE = "${local_id} : ${title}"
 REPORT_DESCRIPTION_TEMPLATE = """
 | Title | ${local_id} : ${title} |
 |-------|---------------------|

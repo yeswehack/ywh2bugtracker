@@ -14,7 +14,7 @@ class ValidatorError(Exception):
     """A class representing a validator error."""
 
 
-T = TypeVar('T', contravariant=True)
+T = TypeVar("T", contravariant=True)
 
 
 class ValidatorProtocol(Protocol[T]):
@@ -30,25 +30,25 @@ class ValidatorProtocol(Protocol[T]):
         Args:
             value: the value to be validated
         """
-        ...  # noqa: WPS428
+        ...
 
 
 url_validator_regex = re.compile(
-    '^(?:http|ftp)s?://' +  # http:// or https://
-    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' +  # domain...
-    'localhost|' +  # localhost...
-    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' +  # ...or ip
-    r'(?::\d+)?' +  # optional port
-    r'(?:/?|[/?]\S+)$',
+    "^(?:http|ftp)s?://"
+    + r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"  # http:// or https://
+    + "localhost|"  # domain...
+    + r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # localhost...
+    + r"(?::\d+)?"  # ...or ip
+    + r"(?:/?|[/?]\S+)$",  # optional port
     re.IGNORECASE,
 )
 
 host_validator_regex = re.compile(
-    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' +  # domain...
-    'localhost|' +  # localhost...
-    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' +  # ...or ip
-    r'(?::\d+)?$', +  # optional port
-    re.IGNORECASE,
+    r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"
+    + "localhost|"  # domain...
+    + r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # localhost...
+    + r"(?::\d+)?$",  # ...or ip
+    +re.IGNORECASE,  # optional port
 )
 
 
@@ -69,7 +69,7 @@ def url_validator(
         string=value,
     )
     if not matches:
-        raise ValidatorError(f'{repr(value)} is not a valid url')
+        raise ValidatorError(f"{repr(value)} is not a valid url")
 
 
 def host_validator(
@@ -89,7 +89,7 @@ def host_validator(
         string=value,
     )
     if not matches:
-        raise ValidatorError(f'{repr(value)} is not a valid host')
+        raise ValidatorError(f"{repr(value)} is not a valid host")
 
 
 def not_empty_validator(
@@ -105,7 +105,7 @@ def not_empty_validator(
         ValidatorError: if the value is empty
     """
     if value is not False and not value:
-        raise ValidatorError(f'{repr(value)} is empty')
+        raise ValidatorError(f"{repr(value)} is empty")
 
 
 def length_one_validator(
@@ -121,10 +121,10 @@ def length_one_validator(
         ValidatorError: if the value does not have a length of one
     """
     if not isinstance(value, Sized):
-        raise ValidatorError(f'{repr(value)} does not have a length')
+        raise ValidatorError(f"{repr(value)} does not have a length")
     length = len(value)
     if length != 1:
-        raise ValidatorError(f'{repr(value)} does not have a length of one (length={length})')
+        raise ValidatorError(f"{repr(value)} does not have a length of one (length={length})")
 
 
 def not_blank_validator(
@@ -140,7 +140,7 @@ def not_blank_validator(
         ValidatorError: if the value is blank
     """
     if not value.strip():
-        raise ValidatorError(f'{repr(value)} is blank')
+        raise ValidatorError(f"{repr(value)} is blank")
 
 
 def dict_has_non_blank_key_validator(
@@ -156,11 +156,11 @@ def dict_has_non_blank_key_validator(
         a validator
     """
 
-    def validator(  # noqa: WPS430
+    def validator(
         value: Dict[Any, Any],
     ) -> None:
-        key_value = value.get(key, '')
+        key_value = value.get(key, "")
         if not isinstance(key_value, str) or not key_value.strip():
-            raise ValidatorError(f'{repr(value)} must contain non-blank string key {repr(key)}')
+            raise ValidatorError(f"{repr(value)} must contain non-blank string key {repr(key)}")
 
     return validator

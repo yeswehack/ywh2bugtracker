@@ -1,7 +1,10 @@
 """Models and functions used for listening to events."""
 from abc import ABC
 from dataclasses import dataclass
-from typing import Generic, TypeVar
+from typing import (
+    Generic,
+    TypeVar,
+)
 
 
 @dataclass
@@ -9,7 +12,7 @@ class Event(ABC):
     """A base event."""
 
 
-E = TypeVar('E', bound=Event, contravariant=True)
+E = TypeVar("E", bound=Event, contravariant=True)
 
 
 class Listener(Generic[E], ABC):

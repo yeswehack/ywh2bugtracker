@@ -1,10 +1,8 @@
 """Models and functions used for manipulating html data."""
 import re
 from copy import deepcopy
-from html import (
-    escape as html_escape,
-    unescape as html_unescape,
-)
+from html import escape as html_escape
+from html import unescape as html_unescape
 from typing import (
     Iterator,
     List,
@@ -43,25 +41,22 @@ def ywh_html_to_markdown(
         html=html,
     )
     for language in languages:
-        offset = markdown[offset:].index('[code]') + 6 + offset
+        offset = markdown[offset:].index("[code]") + 6 + offset
         markdown = markdown[:offset] + language + markdown[offset:]
-    return markdown.replace(
-        '[code]',
-        '```',
-    ).replace(
-        '[/code]',
-        '```',
+    return markdown.replace("[code]", "```",).replace(
+        "[/code]",
+        "```",
     )
 
 
 def _extract_language_codes(
     html: str,
 ) -> Iterator[str]:
-    soup = BeautifulSoup(html, 'lxml')
-    for pre in soup.findAll('pre'):
+    soup = BeautifulSoup(html, "lxml")
+    for pre in soup.findAll("pre"):
         for code in pre:
-            class_attribute = code.attrs.get('class', [''])[0]
-            yield class_attribute.replace('language-', '')
+            class_attribute = code.attrs.get("class", [""])[0]
+            yield class_attribute.replace("language-", "")
 
 
 def html_to_markdown(
@@ -96,7 +91,7 @@ def cleanup_ywh_redirects_from_html(
     Returns:
         the cleaned html
     """
-    redirect_base_re = re.escape(f'{ywh_domain}/redirect?url=')
+    redirect_base_re = re.escape(f"{ywh_domain}/redirect?url=")
 
     pattern = re.compile(f'"(https?://{redirect_base_re}[^ "]*)"')
     redirect_urls = pattern.findall(html)
@@ -106,7 +101,7 @@ def cleanup_ywh_redirects_from_html(
         )
         html = html.replace(
             redirect_url,
-            html_escape(real_url or ''),
+            html_escape(real_url or ""),
         )
     return html
 
@@ -125,9 +120,9 @@ def cleanup_ywh_redirects_from_text(
     Returns:
         the cleaned text
     """
-    redirect_base_re = re.escape(f'{ywh_domain}/redirect?url=')
+    redirect_base_re = re.escape(f"{ywh_domain}/redirect?url=")
 
-    pattern = re.compile(fr'(https?://{redirect_base_re}\S*)\b')
+    pattern = re.compile(rf"(https?://{redirect_base_re}\S*)\b")
     redirect_urls = pattern.findall(text)
     for redirect_url in redirect_urls:
         real_url = _extract_real_url_from_redirect(
@@ -135,7 +130,7 @@ def cleanup_ywh_redirects_from_text(
         )
         text = text.replace(
             redirect_url,
-            real_url or '',
+            real_url or "",
         )
     return text
 
@@ -145,8 +140,8 @@ def _extract_real_url_from_redirect(
 ) -> Optional[str]:
     parse_result = urlsplit(unquote(redirect_url))
     params = parse_qs(parse_result.query)
-    if 'url' in params:
-        return cast(List[str], params.get('url'))[0]
+    if "url" in params:
+        return cast(List[str], params.get("url"))[0]
     return None
 
 
@@ -171,18 +166,15 @@ def cleanup_attachments_and_urls_from_html(
         parsed_url = urlsplit(attachment.url)
         attachments_domains.add(parsed_url.netloc)
         clean_attachment = deepcopy(attachment)
-        clean_attachment.url = f'{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}'
+        clean_attachment.url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         clean_attachments.append(clean_attachment)
         clean_attachments_urls.append(clean_attachment.url)
-    domains_base_re = '|'.join([
-        re.escape(domain)
-        for domain in attachments_domains
-    ])
+    domains_base_re = "|".join([re.escape(domain) for domain in attachments_domains])
     pattern = re.compile(f'"(https?://(?:{domains_base_re})[^ "]*)"')
     html_urls = pattern.findall(html)
     for html_url in html_urls:
         parsed_html_url = urlsplit(html_url)
-        clean_html_url = f'{parsed_html_url.scheme}://{parsed_html_url.netloc}{parsed_html_url.path}'
+        clean_html_url = f"{parsed_html_url.scheme}://{parsed_html_url.netloc}{parsed_html_url.path}"
         if clean_html_url in clean_attachments_urls:
             html = html.replace(
                 html_url,

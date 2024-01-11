@@ -5,6 +5,7 @@ from pathlib import Path
 from string import Template
 from typing import Generator
 
+
 resources_file_template_contents = """<!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource>
@@ -15,9 +16,9 @@ resources_file_template_contents = """<!DOCTYPE RCC>
 resources_file_template = Template(resources_file_template_contents)
 
 resources_file_line_template = Template(
-    '<file>${path}</file>',
+    "<file>${path}</file>",
 )
-resources_file_line_glue = '\n        '
+resources_file_line_glue = "\n        "
 
 
 def update() -> None:
@@ -26,17 +27,17 @@ def update() -> None:
     content = _make_file_content(
         base_dir=base_dir,
     )
-    file_path = f'{base_dir}/resources.qrc'
-    with open(file_path, 'w') as f:
+    file_path = f"{base_dir}/resources.qrc"
+    with open(file_path, "w") as f:
         f.write(content)
-    sys.stdout.write(f'{file_path} updated.')
-    sys.stdout.write('\n')
+    sys.stdout.write(f"{file_path} updated.")
+    sys.stdout.write("\n")
 
 
 def _make_file_content(
     base_dir: str,
 ) -> str:
-    resources_dir = 'resources'
+    resources_dir = "resources"
     resources = _find_resources(
         base_dir=os.path.join(
             base_dir,
@@ -45,7 +46,7 @@ def _make_file_content(
     )
     lines = map(
         lambda path: resources_file_line_template.substitute(
-            path=f'{resources_dir}/{path}',
+            path=f"{resources_dir}/{path}",
         ),
         resources,
     )
@@ -57,11 +58,11 @@ def _make_file_content(
 def _find_resources(
     base_dir: str,
 ) -> Generator[str, None, None]:
-    for path in Path(base_dir).rglob('*'):
+    for path in Path(base_dir).rglob("*"):
         if not path.is_file():
             continue
         yield str(path.relative_to(base_dir))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     update()

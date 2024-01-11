@@ -50,7 +50,8 @@ from ywh2bt.core.api.trackers.servicenow.model import (
 )
 from ywh2bt.core.configuration.trackers.servicenow import ServiceNowConfiguration
 
-_RE_INLINE_ATTACHMENT = re.compile(pattern=r'(!?\[([^\]]+)]\(([^)]+)\))')
+
+_RE_INLINE_ATTACHMENT = re.compile(pattern=r"(!?\[([^\]]+)]\(([^)]+)\))")
 _TEXT_MAX_SIZE = 32767  # ServiceNow has no defined limit but API sometime times out with big contents
 
 _MODEL_NOT_EQUALS_LIMIT = 100
@@ -84,10 +85,10 @@ class ServiceNowAsyncTrackerClient:
     _servicenow_client: Client
     _message_formatter: ServiceNowReportMessageFormatter
 
-    _attachments_list_description_item_markdown_template = Template('- [${name}](${url})')
+    _attachments_list_description_item_markdown_template = Template("- [${name}](${url})")
 
-    _incident_attachment_prefix: str = 'incident_'
-    _comment_attachment_prefix: str = 'comment_'
+    _incident_attachment_prefix: str = "incident_"
+    _comment_attachment_prefix: str = "comment_"
 
     def __init__(
         self,
@@ -118,7 +119,7 @@ class ServiceNowAsyncTrackerClient:
         closed: bool,
     ) -> TrackerIssue:
         return TrackerIssue(
-            tracker_url=f'https://{cast(str, self._configuration.host)}',
+            tracker_url=f"https://{cast(str, self._configuration.host)}",
             project=cast(str, self._configuration.host),
             issue_id=issue_id,
             issue_url=issue_url,
@@ -130,7 +131,7 @@ class ServiceNowAsyncTrackerClient:
         sys_id: str,
     ) -> str:
         host = cast(str, self._configuration.host)
-        return f'https://{host}/nav_to.do?uri=%2Fincident.do%3Fsys_id%3D{sys_id}'  # noqa: WPS323
+        return f"https://{host}/nav_to.do?uri=%2Fincident.do%3Fsys_id%3D{sys_id}"
 
     async def get_tracker_issue(
         self,
@@ -151,12 +152,12 @@ class ServiceNowAsyncTrackerClient:
         if incident_data is None:
             return None
         issue_url = self._build_incident_url(
-            sys_id=incident_data['sys_id'],
+            sys_id=incident_data["sys_id"],
         )
         return self._build_tracker_issue(
             issue_id=issue_id,
             issue_url=issue_url,
-            closed=incident_data['state'].value.lower() == 'closed',
+            closed=incident_data["state"].value.lower() == "closed",
         )
 
     async def _get_servicenow_incident(
@@ -165,7 +166,7 @@ class ServiceNowAsyncTrackerClient:
     ) -> Optional[Record]:
         async with IncidentModel(
             self._servicenow_client,
-            table_name='incident',
+            table_name="incident",
         ) as incident_model:
             try:
                 incident_response = await incident_model.get_one(IncidentModel.sys_id == incident_id)
@@ -193,16 +194,18 @@ class ServiceNowAsyncTrackerClient:
         )
         if incident_data is None:
             return []
-        incident_sys_id = cast(str, incident_data['sys_id'])
+        incident_sys_id = cast(str, incident_data["sys_id"])
         wrapped_items: List[RecordWrapper] = []
         wrapped_items += map(
-            CommentRecordWrapper, await self._get_incident_journal_comments(
+            CommentRecordWrapper,
+            await self._get_incident_journal_comments(
                 incident_sys_id=incident_sys_id,
                 exclude_comments=exclude_comments,
             ),
         )
         wrapped_items += map(
-            AttachmentRecordWrapper, await self._get_incident_attachments(
+            AttachmentRecordWrapper,
+            await self._get_incident_attachments(
                 incident_sys_id=incident_sys_id,
                 exclude_comments=exclude_comments,
             ),
@@ -269,24 +272,24 @@ class ServiceNowAsyncTrackerClient:
         exclude_comments: Optional[List[str]] = None,
     ) -> List[Record]:
         journal_condition = JournalModel.element_id.equals(incident_sys_id)
-        journal_condition &= JournalModel.element.equals('comments')
+        journal_condition &= JournalModel.element.equals("comments")
         # limited pre-filter on query because API url might be too long
         for exclude_comment in (exclude_comments or [])[:_MODEL_NOT_EQUALS_LIMIT]:
             journal_condition &= JournalModel.sys_id.not_equals(exclude_comment)
         journal_query = select(journal_condition).order_asc(JournalModel.sys_created_on)
         async with JournalModel(
             self._servicenow_client,
-            table_name='sys_journal_field',
+            table_name="sys_journal_field",
         ) as journal_model:
             try:
                 records = list(cast(Iterable[Record], await journal_model.get(journal_query)))
             except AiosnowException as journal_exception:
                 raise ServiceNowTrackerClientError(
-                    f'Unable to get journal comments for incident {incident_sys_id}',
+                    f"Unable to get journal comments for incident {incident_sys_id}",
                 ) from journal_exception
         return self._exclude_from_list(
             records=records,
-            record_property='sys_id',
+            record_property="sys_id",
             exclude=set(exclude_comments or []),
         )
 
@@ -295,7 +298,7 @@ class ServiceNowAsyncTrackerClient:
         incident_sys_id: str,
         exclude_comments: Optional[List[str]] = None,
     ) -> List[Record]:
-        attachment_condition = InMemoryAttachmentModel.table_name.equals('incident')
+        attachment_condition = InMemoryAttachmentModel.table_name.equals("incident")
         attachment_condition &= InMemoryAttachmentModel.table_sys_id.equals(incident_sys_id)
         # limited pre-filter on query because API url might be too long
         for exclude_comment in (exclude_comments or [])[:_MODEL_NOT_EQUALS_LIMIT]:
@@ -303,17 +306,17 @@ class ServiceNowAsyncTrackerClient:
         attachment_query = select(attachment_condition).order_asc(InMemoryAttachmentModel.sys_created_on)
         async with InMemoryAttachmentModel(
             self._servicenow_client,
-            table_name='incident',
+            table_name="incident",
         ) as attachment_model:
             try:
                 records = list(cast(Iterable[Record], await attachment_model.get(attachment_query)))
             except AiosnowException as attachment_exception:
                 raise ServiceNowTrackerClientError(
-                    f'Unable to get attachments for incident {incident_sys_id}',
+                    f"Unable to get attachments for incident {incident_sys_id}",
                 ) from attachment_exception
         return self._exclude_from_list(
             records=records,
-            record_property='sys_id',
+            record_property="sys_id",
             exclude=set(exclude_comments or []),
         )
 
@@ -322,10 +325,10 @@ class ServiceNowAsyncTrackerClient:
         comment_data: Record,
     ) -> TrackerIssueComment:
         return TrackerIssueComment(
-            created_at=comment_data['sys_created_on'],
-            author=comment_data['sys_created_by'],
-            comment_id=comment_data['sys_id'],
-            body=comment_data['value'],
+            created_at=comment_data["sys_created_on"],
+            author=comment_data["sys_created_by"],
+            comment_id=comment_data["sys_id"],
+            body=comment_data["value"],
             attachments={},
         )
 
@@ -335,26 +338,26 @@ class ServiceNowAsyncTrackerClient:
     ) -> TrackerIssueComment:
         async with InMemoryAttachmentModel(
             self._servicenow_client,
-            table_name='incident',
+            table_name="incident",
         ) as attachment_model:
             try:
                 attachment_content = await attachment_model.download(
-                    InMemoryAttachmentModel.sys_id == cast(str, attachment_data['sys_id']),
+                    InMemoryAttachmentModel.sys_id == cast(str, attachment_data["sys_id"]),
                 )
             except AiosnowException as attachment_exception:
                 raise ServiceNowTrackerClientError(
                     f'Unable to download attachment for incident {attachment_data["sys_id"]}',
                 ) from attachment_exception
-        file_name = cast(str, attachment_data['file_name'])
+        file_name = cast(str, attachment_data["file_name"])
         return TrackerIssueComment(
-            created_at=attachment_data['sys_created_on'],
-            author=attachment_data['sys_created_by'],
-            comment_id=attachment_data['sys_id'],
-            body=f'Attachment:\n![{file_name}]({file_name})',
+            created_at=attachment_data["sys_created_on"],
+            author=attachment_data["sys_created_by"],
+            comment_id=attachment_data["sys_id"],
+            body=f"Attachment:\n![{file_name}]({file_name})",
             attachments={
                 file_name: TrackerAttachment(
                     filename=file_name,
-                    mime_type=cast(str, attachment_data['content_type']),
+                    mime_type=cast(str, attachment_data["content_type"]),
                     content=attachment_content,
                 ),
             },
@@ -379,12 +382,12 @@ class ServiceNowAsyncTrackerClient:
         description = self._message_formatter.format_report_description(
             report=report,
         ) + self._get_attachments_list_description(
-            title='Attachments:',
+            title="Attachments:",
             item_template=self._attachments_list_description_item_markdown_template,
             file_name_prefix=self._incident_attachment_prefix,
             attachments=report.attachments,
         )
-        markdown_description = ''
+        markdown_description = ""
         description_attachment = None
         if len(description) > _TEXT_MAX_SIZE:
             description_attachment = self._build_external_description_attachment(
@@ -393,16 +396,16 @@ class ServiceNowAsyncTrackerClient:
             markdown_description = ReportMessageMarkdownFormatter().format_report_description(
                 report=report,
             ) + self._get_attachments_list_description(
-                title='**Attachments**:',
+                title="**Attachments**:",
                 item_template=self._attachments_list_description_item_markdown_template,
                 file_name_prefix=self._incident_attachment_prefix,
                 attachments=report.attachments,
             )
             report_copy = deepcopy(report)
             report_copy.description_html = (
-                '<p>This report description is too big to fit into a ServiceNow issue. '
+                "<p>This report description is too big to fit into a ServiceNow issue. "
                 + f'See attachment <a href="{description_attachment.url}">{description_attachment.original_name}</a> '
-                + 'for more details.</p>'
+                + "for more details.</p>"
             )
             description = self._replace_inline_attachments(
                 attachments=[
@@ -411,8 +414,9 @@ class ServiceNowAsyncTrackerClient:
                 file_name_prefix=self._incident_attachment_prefix,
                 content=self._message_formatter.format_report_description(
                     report=report_copy,
-                ) + self._get_attachments_list_description(
-                    title='Attachments:',
+                )
+                + self._get_attachments_list_description(
+                    title="Attachments:",
                     item_template=self._attachments_list_description_item_markdown_template,
                     file_name_prefix=self._incident_attachment_prefix,
                     attachments=[
@@ -431,7 +435,7 @@ class ServiceNowAsyncTrackerClient:
         )
         attachments = report.attachments
         if description_attachment:
-            description_attachment.data_loader = lambda: bytes(markdown_description, 'utf-8')
+            description_attachment.data_loader = lambda: bytes(markdown_description, "utf-8")
             description = self._replace_attachments_references(
                 attachments=report.attachments,
                 file_name_prefix=self._incident_attachment_prefix,
@@ -447,11 +451,11 @@ class ServiceNowAsyncTrackerClient:
             short_description=short_description,
             description=description,
         )
-        sys_id = incident_data['sys_id']
+        sys_id = incident_data["sys_id"]
         await self._upload_attachments(
             attachments=attachments,
             file_name_prefix=self._incident_attachment_prefix,
-            table_name='incident',
+            table_name="incident",
             record_sys_id=sys_id,
         )
         issue_url = self._build_incident_url(
@@ -471,10 +475,10 @@ class ServiceNowAsyncTrackerClient:
             attachment_id=0,
             name=name,
             original_name=name,
-            mime_type='text/markdown',
+            mime_type="text/markdown",
             size=0,
-            url=f'http://tracker/external/{name}',
-            data_loader=lambda: bytes('', 'utf-8'),
+            url=f"http://tracker/external/{name}",
+            data_loader=lambda: bytes("", "utf-8"),
         )
 
     async def _create_incident(
@@ -484,17 +488,17 @@ class ServiceNowAsyncTrackerClient:
     ) -> Record:
         async with IncidentModel(
             self._servicenow_client,
-            table_name='incident',
+            table_name="incident",
         ) as incident_model:
             try:
                 incident_response = await incident_model.create(
                     {
-                        'description': description,
-                        'short_description': short_description,
+                        "description": description,
+                        "short_description": short_description,
                     },
                 )
             except AiosnowException as incident_create_exception:
-                raise ServiceNowTrackerClientError('Unable to create incident') from incident_create_exception
+                raise ServiceNowTrackerClientError("Unable to create incident") from incident_create_exception
         return _as_dict(incident_response.data)
 
     async def _upload_attachments(
@@ -515,12 +519,12 @@ class ServiceNowAsyncTrackerClient:
                     attachment_response = await attachment_model.upload(
                         table_name=table_name,
                         record_sys_id=record_sys_id,
-                        file_name=f'{file_name_prefix}{attachment.original_name}',
+                        file_name=f"{file_name_prefix}{attachment.original_name}",
                         content_type=attachment.mime_type,
                         content=attachment.data,
                     )
-                    sys_id = _as_dict(attachment_response.data)['sys_id']
-                    view_url = f'https://{host}/sys_attachment.do?view=false&sys_id={sys_id}'
+                    sys_id = _as_dict(attachment_response.data)["sys_id"]
+                    view_url = f"https://{host}/sys_attachment.do?view=false&sys_id={sys_id}"
                     uploaded_attachments.append(
                         (
                             attachment.url,
@@ -529,7 +533,7 @@ class ServiceNowAsyncTrackerClient:
                     )
         except AiosnowException as attachment_upload_exception:
             raise ServiceNowTrackerClientError(
-                f'Unable to upload attachments to {table_name}',
+                f"Unable to upload attachments to {table_name}",
             ) from attachment_upload_exception
         return uploaded_attachments
 
@@ -543,7 +547,7 @@ class ServiceNowAsyncTrackerClient:
         attachments_lines = []
         if attachments:
             attachments_lines = [
-                '',
+                "",
                 title,
             ]
             for attachment in attachments:
@@ -553,10 +557,10 @@ class ServiceNowAsyncTrackerClient:
                         url=attachment.url,
                     ),
                 )
-            attachments_lines.append('')
+            attachments_lines.append("")
         return self._replace_inline_attachments(
             attachments=attachments,
-            content='\n'.join(attachments_lines),
+            content="\n".join(attachments_lines),
             file_name_prefix=file_name_prefix,
         )
 
@@ -585,14 +589,14 @@ class ServiceNowAsyncTrackerClient:
         )
         if data is None:
             raise ServiceNowTrackerClientError(
-                f'ServiceNow incident {tracker_issue.issue_id} not found',
+                f"ServiceNow incident {tracker_issue.issue_id} not found",
             )
         incident_data = data
         tracker_comments = SendLogsResult(
             tracker_issue=tracker_issue,
             added_comments=[],
         )
-        if incident_data['state'].value.lower() == 'closed':
+        if incident_data["state"].value.lower() == "closed":
             return tracker_comments
         for log in logs:
             comment_data, comment = await self._add_comment(
@@ -601,9 +605,9 @@ class ServiceNowAsyncTrackerClient:
             )
             tracker_comments.added_comments.append(
                 TrackerIssueComment(
-                    created_at=comment_data['sys_created_on'],
-                    author=comment_data['sys_created_by'],
-                    comment_id=comment_data['sys_id'],
+                    created_at=comment_data["sys_created_on"],
+                    author=comment_data["sys_created_by"],
+                    comment_id=comment_data["sys_id"],
                     body=comment,
                     attachments={},
                 ),
@@ -615,34 +619,32 @@ class ServiceNowAsyncTrackerClient:
         incident_data: Record,
         log: Log,
     ) -> Tuple[Record, str]:
-        incident_id = cast(str, incident_data['sys_id'])
-        comment = self._message_formatter.format_log(
-            log=log,
-        ) + self._get_attachments_list_description(
-            title='Attachments:',
+        incident_id = cast(str, incident_data["sys_id"])
+        comment = self._message_formatter.format_log(log=log,) + self._get_attachments_list_description(
+            title="Attachments:",
             item_template=self._attachments_list_description_item_markdown_template,
             file_name_prefix=self._incident_attachment_prefix,
             attachments=log.attachments,
         )
-        markdown_comment = ''
+        markdown_comment = ""
         comment_attachment = None
         if len(comment) > _TEXT_MAX_SIZE:
             comment_attachment = self._build_external_description_attachment(
-                name=f'comment-{log.log_id}-description.md',
+                name=f"comment-{log.log_id}-description.md",
             )
             markdown_comment = ReportMessageMarkdownFormatter().format_log(
                 log=log,
             ) + self._get_attachments_list_description(
-                title='**Attachments**:',
+                title="**Attachments**:",
                 item_template=self._attachments_list_description_item_markdown_template,
                 file_name_prefix=self._comment_attachment_prefix,
                 attachments=log.attachments,
             )
             log_copy = deepcopy(log)
             log_copy.message_html = (
-                '<p>This comment is too big to fit into a ServiceNow comment. '
+                "<p>This comment is too big to fit into a ServiceNow comment. "
                 + f'See attachment <a href="{comment_attachment.url}">{comment_attachment.original_name}</a> '
-                + 'for more details.</p>'
+                + "for more details.</p>"
             )
             comment = self._replace_inline_attachments(
                 attachments=[
@@ -651,8 +653,9 @@ class ServiceNowAsyncTrackerClient:
                 file_name_prefix=self._incident_attachment_prefix,
                 content=self._message_formatter.format_log(
                     log=log_copy,
-                ) + self._get_attachments_list_description(
-                    title='Attachments:',
+                )
+                + self._get_attachments_list_description(
+                    title="Attachments:",
                     item_template=self._attachments_list_description_item_markdown_template,
                     file_name_prefix=self._comment_attachment_prefix,
                     attachments=[
@@ -671,7 +674,7 @@ class ServiceNowAsyncTrackerClient:
         )
         attachments = log.attachments
         if comment_attachment:
-            comment_attachment.data_loader = lambda: bytes(markdown_comment, 'utf-8')
+            comment_attachment.data_loader = lambda: bytes(markdown_comment, "utf-8")
             comment = self._replace_attachments_references(
                 attachments=log.attachments,
                 file_name_prefix=self._incident_attachment_prefix,
@@ -685,13 +688,13 @@ class ServiceNowAsyncTrackerClient:
             ]
         async with IncidentModel(
             self._servicenow_client,
-            table_name='incident',
+            table_name="incident",
         ) as incident_model:
             try:
                 await incident_model.update(
                     IncidentModel.sys_id == incident_id,
                     {
-                        'comments': comment,
+                        "comments": comment,
                     },
                 )
             except AiosnowException as incident_update_exception:
@@ -705,8 +708,8 @@ class ServiceNowAsyncTrackerClient:
         await self._upload_attachments(
             attachments=attachments,
             file_name_prefix=self._comment_attachment_prefix,
-            table_name='incident',
-            record_sys_id=incident_data['sys_id'],
+            table_name="incident",
+            record_sys_id=incident_data["sys_id"],
         )
         return comment_data, comment
 
@@ -735,7 +738,7 @@ class ServiceNowAsyncTrackerClient:
         inline_attachments = _RE_INLINE_ATTACHMENT.findall(content)
         for match, attachment_name, url in inline_attachments:
             if url in attachment_urls:
-                content = content.replace(match, f'{file_name_prefix}{attachment_name}')
+                content = content.replace(match, f"{file_name_prefix}{attachment_name}")
         return content
 
     async def _get_incident_comment_id(
@@ -745,10 +748,10 @@ class ServiceNowAsyncTrackerClient:
     ) -> Record:
         async with JournalModel(
             self._servicenow_client,
-            table_name='sys_journal_field',
+            table_name="sys_journal_field",
         ) as journal_model:
             condition = JournalModel.element_id.equals(incident_id)
-            condition &= JournalModel.element.equals('comments')
+            condition &= JournalModel.element.equals("comments")
             condition &= JournalModel.value.equals(
                 self._escape_query_term_separator(
                     term=comment,
@@ -758,7 +761,7 @@ class ServiceNowAsyncTrackerClient:
                 journal_response = await journal_model.get_one(condition)
             except AiosnowException as journal_comment_exception:
                 raise ServiceNowTrackerClientError(
-                    f'Unable to get comment from incident {incident_id}',
+                    f"Unable to get comment from incident {incident_id}",
                 ) from journal_comment_exception
             return _as_dict(journal_response.data)
 
@@ -775,18 +778,18 @@ class ServiceNowAsyncTrackerClient:
         # If the credentials are not valid, the query will fail.
         async with UserModel(
             self._servicenow_client,
-            table_name='sys_user',
+            table_name="sys_user",
         ) as user_model:
             try:
                 await user_model.get_one(UserModel.user_name == self._configuration.login)
             except AiosnowException as user_exception:
-                raise ServiceNowTrackerClientError('User not found') from user_exception
+                raise ServiceNowTrackerClientError("User not found") from user_exception
 
     def _escape_query_term_separator(
         self,
         term: str,
     ) -> str:
-        return term.replace('^', '^^')
+        return term.replace("^", "^^")
 
 
 class ServiceNowTrackerClient(TrackerClient[ServiceNowConfiguration]):
@@ -821,7 +824,7 @@ class ServiceNowTrackerClient(TrackerClient[ServiceNowConfiguration]):
         Returns:
             the type of the tracker client
         """
-        return 'ServiceNow'
+        return "ServiceNow"
 
     def get_tracker_issue(
         self,
@@ -915,7 +918,7 @@ class ServiceNowTrackerClient(TrackerClient[ServiceNowConfiguration]):
 def _sort_key_wrapped_sys_created_on(
     wrapped: RecordWrapper,
 ) -> datetime.datetime:
-    return cast(datetime.datetime, wrapped.data['sys_created_on'])
+    return cast(datetime.datetime, wrapped.data["sys_created_on"])
 
 
 ResponseDataType = Union[List[Any], Record, bytes]
@@ -923,11 +926,11 @@ ResponseDataType = Union[List[Any], Record, bytes]
 
 def _as_optional_dict(data: Optional[ResponseDataType]) -> Optional[Record]:
     if data is not None and not isinstance(data, dict):
-        raise ServiceNowTrackerClientError(f'Expecting dict, got {type(data)}')
+        raise ServiceNowTrackerClientError(f"Expecting dict, got {type(data)}")
     return data
 
 
 def _as_dict(data: Optional[ResponseDataType]) -> Record:
     if not isinstance(data, dict):
-        raise ServiceNowTrackerClientError(f'Expecting non-empty dict, got {type(data)}')
+        raise ServiceNowTrackerClientError(f"Expecting non-empty dict, got {type(data)}")
     return data

@@ -2,10 +2,16 @@
 import json
 from functools import partial
 from string import Template
-from typing import Any, Callable, Dict, List
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+)
 
 from ywh2bt.core.schema.error import SchemaError
 from ywh2bt.core.schema.json import root_configuration_as_json_schema
+
 
 Json = Dict[str, Any]
 
@@ -24,8 +30,8 @@ def root_configuration_as_markdown() -> str:
     try:
         schema: Json = json.loads(json_schema_str)
     except TypeError as load_error:
-        raise SchemaError('JSON load error') from load_error
-    return '\n'.join(
+        raise SchemaError("JSON load error") from load_error
+    return "\n".join(
         _schema_to_markdown(
             schema=schema,
         ),
@@ -35,14 +41,14 @@ def root_configuration_as_markdown() -> str:
 def _schema_to_markdown(
     schema: Json,
 ) -> List[str]:
-    ref = schema.get('$ref')
+    ref = schema.get("$ref")
     if ref:
         return [
-            Template('* **Reference**: [`${reference}`](#${reference})').substitute(
-                reference=ref.replace('#/definitions/', ''),
+            Template("* **Reference**: [`${reference}`](#${reference})").substitute(
+                reference=ref.replace("#/definitions/", ""),
             ),
         ]
-    any_of = schema.get('anyOf')
+    any_of = schema.get("anyOf")
     if any_of:
         return _extract_any_of(
             any_of=any_of,
@@ -50,11 +56,11 @@ def _schema_to_markdown(
     output = _extract_attributes(
         schema=schema,
         attributes={
-            'title': Template('* **Title**: ${value}'),
-            'description': Template('* **Description**: ${value}'),
-            'type': Template('* **Type**: `${value}`'),
-            'const': Template('* **Required constant value**: `${value}`'),
-            'default': Template('* **Default value**: `${value}`'),
+            "title": Template("* **Title**: ${value}"),
+            "description": Template("* **Description**: ${value}"),
+            "type": Template("* **Type**: `${value}`"),
+            "const": Template("* **Required constant value**: `${value}`"),
+            "default": Template("* **Default value**: `${value}`"),
         },
     )
     output.extend(
@@ -100,26 +106,26 @@ def _extract_attributes(
 def _extract_properties(
     schema: Json,
 ) -> List[str]:
-    required = schema.get('required', [])
+    required = schema.get("required", [])
     properties = []
-    for property_name, property_schema in schema.get('properties', {}).items():
-        properties.append(f'- `{property_name}`')
+    for property_name, property_schema in schema.get("properties", {}).items():
+        properties.append(f"- `{property_name}`")
         properties.extend(
             _prefix_lines(
-                '    ',
+                "    ",
                 _schema_to_markdown(
                     schema=property_schema,
                 ),
             ),
         )
         if property_name in required:
-            properties.append('    * **Required**: True')
+            properties.append("    * **Required**: True")
     if not properties:
         return []
     return [
-        '* **Properties**:',
+        "* **Properties**:",
         *_prefix_lines(
-            '    ',
+            "    ",
             properties,
         ),
     ]
@@ -130,9 +136,9 @@ def _extract_properties_patterns(
 ) -> List[str]:
     return _extract_list(
         schema=schema,
-        attribute_name='patternProperties',
-        block_label='* **Properties patterns**:',
-        item_name_template=Template('- **Pattern**: `${item_name}`'),
+        attribute_name="patternProperties",
+        block_label="* **Properties patterns**:",
+        item_name_template=Template("- **Pattern**: `${item_name}`"),
     )
 
 
@@ -141,8 +147,8 @@ def _extract_definitions(
 ) -> List[str]:
     return _extract_list(
         schema=schema,
-        attribute_name='definitions',
-        block_label='* **Definitions**:',
+        attribute_name="definitions",
+        block_label="* **Definitions**:",
         item_name_template=Template('- <a name="${item_name}">`${item_name}`</a>:'),
     )
 
@@ -150,13 +156,13 @@ def _extract_definitions(
 def _extract_items(
     schema: Json,
 ) -> List[str]:
-    items = schema.get('items')
+    items = schema.get("items")
     if not items:
         return []
     return [
-        '* **Items**:',
+        "* **Items**:",
         *_prefix_lines(
-            '    ',
+            "    ",
             _schema_to_markdown(
                 schema=items,
             ),
@@ -175,7 +181,7 @@ def _extract_list(
         items.append(item_name_template.substitute(item_name=item_name))
         items.extend(
             _prefix_lines(
-                '    ',
+                "    ",
                 _schema_to_markdown(
                     schema=item_schema,
                 ),
@@ -186,7 +192,7 @@ def _extract_list(
     return [
         block_label,
         *_prefix_lines(
-            '    ',
+            "    ",
             items,
         ),
     ]
@@ -196,15 +202,17 @@ def _extract_any_of(
     any_of: List[Json],
 ) -> List[str]:
     output = [
-        '* Any of:',
+        "* Any of:",
     ]
     for any_of_entry in any_of:
         output.extend(
             _prefix_lines(
-                '    ',
-                list(_schema_to_markdown(
-                    schema=any_of_entry,
-                )),
+                "    ",
+                list(
+                    _schema_to_markdown(
+                        schema=any_of_entry,
+                    )
+                ),
             ),
         )
     return output
@@ -214,17 +222,19 @@ def _prefix(
     prefix: str,
     string: str,
 ) -> str:
-    return f'{prefix}{string}'
+    return f"{prefix}{string}"
 
 
 def _prefix_lines(
     prefix: str,
     lines: List[str],
 ) -> List[str]:
-    return list(map(
-        _prefixer(prefix),
-        lines,
-    ))
+    return list(
+        map(
+            _prefixer(prefix),
+            lines,
+        )
+    )
 
 
 def _prefixer(

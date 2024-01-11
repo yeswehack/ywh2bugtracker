@@ -11,13 +11,14 @@ from aiosnow import (
     TableModel,
 )
 from aiosnow.models import BaseTableModel
-from aiosnow.models._schema import fields  # noqa: WPS436
+from aiosnow.models._schema import fields
 from aiosnow.models.attachment.schema import AttachmentModelSchema
 from aiosnow.query import Condition
 from aiosnow.request import (
     Response,
     methods,
 )
+
 
 Record = Dict[str, Any]
 
@@ -69,7 +70,7 @@ class InMemoryAttachmentModel(BaseTableModel, AttachmentModelSchema):
 
     @property
     def _api_url(self) -> str:
-        return f'{self._client.base_url}/api/now/attachment'
+        return f"{self._client.base_url}/api/now/attachment"
 
     async def download(
         self,
@@ -87,7 +88,7 @@ class InMemoryAttachmentModel(BaseTableModel, AttachmentModelSchema):
         meta = await self.get_one(selection)
         data = await self.request(
             methods.GET,
-            url=meta['download_link'],
+            url=meta["download_link"],
             resolve=False,
             decode=False,
         )
@@ -116,14 +117,14 @@ class InMemoryAttachmentModel(BaseTableModel, AttachmentModelSchema):
         """
         return await self.request(
             methods.POST,
-            url=f'{self._api_url}/file',
+            url=f"{self._api_url}/file",
             params={
-                'table_name': table_name,
-                'table_sys_id': record_sys_id,
-                'file_name': file_name,
+                "table_name": table_name,
+                "table_sys_id": record_sys_id,
+                "file_name": file_name,
             },
             headers={
-                'Content-type': content_type,
+                "Content-type": content_type,
             },
             payload=content,
         )

@@ -2,10 +2,23 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Any, List, Optional, Set, cast
+from typing import (
+    Any,
+    List,
+    Optional,
+    Set,
+    Union,
+)
 
-from PySide2.QtCore import QAbstractTableModel, QItemSelection, QModelIndex, Qt, Signal
-from PySide2.QtWidgets import (
+from PySide6.QtCore import (
+    QAbstractTableModel,
+    QItemSelection,
+    QModelIndex,
+    QPersistentModelIndex,
+    Qt,
+    Signal,
+)
+from PySide6.QtWidgets import (
     QAbstractItemView,
     QHBoxLayout,
     QHeaderView,
@@ -21,10 +34,10 @@ from ywh2bt.gui.widgets import constants
 from ywh2bt.gui.widgets.typing import as_signal_instance
 
 
-class ExportableListWidget(QWidget):  # noqa: WPS214
+class ExportableListWidget(QWidget):
     """Exportable list GUI."""
 
-    dataChanged: Signal = Signal(ExportableList)  # noqa: WPS115, N815
+    dataChanged: Signal = Signal(ExportableList)  # noqa: N815
 
     _table: QTableView
     _add_button: QPushButton
@@ -66,16 +79,16 @@ class ExportableListWidget(QWidget):  # noqa: WPS214
 
         layout.addWidget(self._table)
         layout.addLayout(buttons_layout)
-        layout.setMargin(0)
+        layout.setContentsMargins(0, 0, 0, 0)
 
     def _create_table(
         self,
     ) -> QTableView:
         widget = QTableView(self)
         widget.horizontalHeader().hide()
-        widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        widget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         widget.setEditTriggers(
-            QAbstractItemView.AllEditTriggers,
+            QAbstractItemView.EditTrigger.AllEditTriggers,
         )
         return widget
 
@@ -83,7 +96,7 @@ class ExportableListWidget(QWidget):  # noqa: WPS214
         self,
     ) -> QPushButton:
         widget = QPushButton(
-            '+',
+            "+",
             self,
         )
         widget.setFixedSize(constants.SMALL_BUTTON_SIZE)
@@ -96,7 +109,7 @@ class ExportableListWidget(QWidget):  # noqa: WPS214
         self,
     ) -> QPushButton:
         widget = QPushButton(
-            '-',
+            "-",
             self,
         )
         widget.setFixedSize(constants.SMALL_BUTTON_SIZE)
@@ -192,9 +205,7 @@ class ExportableListWidget(QWidget):  # noqa: WPS214
         self,
     ) -> Set[int]:
         selection_model = self._table.selectionModel()
-        return set({
-            index.row() for index in selection_model.selectedIndexes()
-        })
+        return set({index.row() for index in selection_model.selectedIndexes()})
 
 
 class ExportableListModel(QAbstractTableModel):
@@ -248,7 +259,7 @@ class ExportableListModel(QAbstractTableModel):
         )
         if any(return_conditions):
             return None
-        if role in {Qt.DisplayRole, Qt.EditRole}:
+        if role in {Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole}:
             return self._exportable_list[index.row()]
         return None
 
@@ -269,7 +280,7 @@ class ExportableListModel(QAbstractTableModel):
         Returns:
             True if the data has been set, otherwise False
         """
-        if self._exportable_list is None or not index.isValid() or role != Qt.EditRole:
+        if self._exportable_list is None or not index.isValid() or role != Qt.ItemDataRole.EditRole:
             return False
         if self._exportable_list[index.row()] == value:
             return False
@@ -294,7 +305,7 @@ class ExportableListModel(QAbstractTableModel):
 
     def columnCount(  # type: ignore # noqa: N802
         self,
-        index: QModelIndex,
+        index: Union[QModelIndex, QPersistentModelIndex],
     ) -> int:
         """
         Get the number of columns in the underlying exportable list, which is always 1.
@@ -309,8 +320,8 @@ class ExportableListModel(QAbstractTableModel):
 
     def flags(
         self,
-        index: QModelIndex,
-    ) -> Qt.ItemFlags:
+        index: Union[QModelIndex, QPersistentModelIndex],
+    ) -> Qt.ItemFlag:
         """
         Get the flags for the given index.
 
@@ -321,9 +332,8 @@ class ExportableListModel(QAbstractTableModel):
             The flags
         """
         if not index.isValid():
-            return Qt.ItemIsEnabled
-
-        return cast(Qt.ItemFlags, super().flags(index) | Qt.ItemIsEditable)
+            return Qt.ItemFlag.ItemIsEnabled
+        return super().flags(index) | Qt.ItemFlag.ItemIsEditable
 
     def insertRows(  # type: ignore # noqa: N802
         self,
@@ -371,7 +381,7 @@ class ExportableListModel(QAbstractTableModel):
     ) -> str:
         n = 1
         while True:
-            value = f'New entry {base_index + n}'
+            value = f"New entry {base_index + n}"
             if value not in self._exportable_list:
                 return value
             n += 1
@@ -398,7 +408,7 @@ class ExportableListModel(QAbstractTableModel):
             row,
             row + count - 1,
         )
-        for _ in range(count):  # noqa: WPS122
+        for _ in range(count):
             self._exportable_list.pop(row)
         self.endRemoveRows()
         return True

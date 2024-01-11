@@ -25,4 +25,4 @@ def validate(
     try:
         configuration.validate()
     except BaseAttributeError as e:
-        raise CliError('Invalid configuration') from e
+        raise CliError("Invalid configuration") from e

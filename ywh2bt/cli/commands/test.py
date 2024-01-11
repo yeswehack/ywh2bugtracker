@@ -30,7 +30,7 @@ def test(
     try:
         configuration.validate()
     except BaseAttributeError as validation_error:
-        raise CliError('Invalid configuration') from validation_error
+        raise CliError("Invalid configuration") from validation_error
     tester = Tester(
         configuration=configuration,
         yes_we_hack_api_clients_factory=YesWeHackApiClientsFactory(),
@@ -40,4 +40,4 @@ def test(
     try:
         tester.test()
     except TesterError as testing_error:
-        raise CliError('Testing error') from testing_error
+        raise CliError("Testing error") from testing_error

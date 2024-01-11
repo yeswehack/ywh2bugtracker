@@ -7,9 +7,8 @@ from ywh2bt.core.crypt.key import Key
 
 
 class TestCrypt(unittest.TestCase):
-
     def test_en_de(self) -> None:
-        original_message = '''
+        original_message = """
         Did you ever hear the tragedy of Darth Plagueis The Wise?
         I thought not.
         It’s not a story the Jedi would tell you.
@@ -23,9 +22,9 @@ class TestCrypt(unittest.TestCase):
         Unfortunately, he taught his apprentice everything he knew, then his apprentice killed him in his sleep.
         Ironic.
         He could save others from death, but not himself.
-        '''
+        """
         key = Key(key_bytes=token_bytes(128))
-        encoding = 'utf-8'
+        encoding = "utf-8"
         encrypted_bytes = Encryptor(key=key).encrypt(str.encode(original_message, encoding))
         decrypted_bytes = Decryptor(key=key).decrypt(encrypted_bytes)
         decrypted_message = decrypted_bytes.decode(encoding)

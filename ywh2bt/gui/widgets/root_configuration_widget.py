@@ -1,11 +1,24 @@
 """Models and functions used for root configuration GUI."""
 from datetime import datetime
 from io import StringIO
-from typing import Any, Optional, Tuple, cast
+from typing import (
+    Any,
+    Optional,
+    Tuple,
+    cast,
+)
 
-from PySide2.QtCore import QFileInfo, QSettings, Signal
-from PySide2.QtGui import QFontDatabase, QFontMetrics, Qt
-from PySide2.QtWidgets import (
+from PySide6.QtCore import (
+    QFileInfo,
+    QSettings,
+    Signal,
+)
+from PySide6.QtGui import (
+    QFontDatabase,
+    QFontMetrics,
+    Qt,
+)
+from PySide6.QtWidgets import (
     QFileDialog,
     QMessageBox,
     QPlainTextEdit,
@@ -18,7 +31,10 @@ from PySide2.QtWidgets import (
 )
 
 from ywh2bt.core.configuration.root import RootConfiguration
-from ywh2bt.core.core import AVAILABLE_FORMATS, get_root_configuration_loader
+from ywh2bt.core.core import (
+    AVAILABLE_FORMATS,
+    get_root_configuration_loader,
+)
 from ywh2bt.core.error import print_error
 from ywh2bt.core.exceptions import CoreException
 from ywh2bt.core.loader import RootConfigurationLoader
@@ -26,8 +42,15 @@ from ywh2bt.gui.dialog.error import ErrorDialogMixin
 from ywh2bt.gui.dialog.file import FileFormatDialogFilters
 from ywh2bt.gui.hashing import file_checksum
 from ywh2bt.gui.widgets.attribute.attributes_container_widget import AttributesContainerWidget
-from ywh2bt.gui.widgets.logs_widget import LogEntry, LogType, LogsWidget
-from ywh2bt.gui.widgets.root_configuration_entry import RootConfigurationEntry, RootConfigurationEntryFile
+from ywh2bt.gui.widgets.logs_widget import (
+    LogEntry,
+    LogsWidget,
+    LogType,
+)
+from ywh2bt.gui.widgets.root_configuration_entry import (
+    RootConfigurationEntry,
+    RootConfigurationEntryFile,
+)
 from ywh2bt.gui.widgets.thread.synchronizer import SynchronizerThread
 from ywh2bt.gui.widgets.thread.tester import TesterThread
 from ywh2bt.gui.widgets.typing import as_signal_instance
@@ -127,12 +150,12 @@ class RootConfigurationWidget(QWidget, ErrorDialogMixin):
             self._wrap_in_scroll_area(
                 widget=self._edit_tab_widget,
             ),
-            'Configuration',
+            "Configuration",
         )
         raw_tab_widget = self._create_raw_tab_widget()
         self._tab_widget.addTab(
             raw_tab_widget,
-            f'Raw ({self._entry.raw_format})',
+            f"Raw ({self._entry.raw_format})",
         )
 
         self._logs_widget = LogsWidget(self)
@@ -168,15 +191,15 @@ class RootConfigurationWidget(QWidget, ErrorDialogMixin):
         self,
     ) -> QSplitter:
         splitter = QSplitter(
-            Qt.Vertical,
+            Qt.Orientation.Vertical,
             self,
         )
         splitter.addWidget(self._tab_widget)
         splitter.addWidget(self._logs_widget)
         splitter.addWidget(self._progress_bar)
-        splitter.setCollapsible(0, False)  # noqa: WPS425
-        splitter.setCollapsible(1, False)  # noqa: WPS425
-        splitter.setCollapsible(2, False)  # noqa: WPS425
+        splitter.setCollapsible(0, False)
+        splitter.setCollapsible(1, False)
+        splitter.setCollapsible(2, False)
         splitter.setStretchFactor(0, 98)
         splitter.setStretchFactor(1, 1)
         splitter.setStretchFactor(2, 1)
@@ -215,13 +238,13 @@ class RootConfigurationWidget(QWidget, ErrorDialogMixin):
 
     def _create_raw_widget(
         self,
-    ) -> QWidget:
+    ) -> QPlainTextEdit:
         widget = QPlainTextEdit(self)
-        font = QFontDatabase.systemFont(QFontDatabase.FixedFont)
+        font = QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
         font.setFixedPitch(True)
         metrics = QFontMetrics(font)
         widget.setFont(font)
-        widget.setTabStopDistance(2 * metrics.width(' '))
+        widget.setTabStopDistance(2 * metrics.horizontalAdvance(" "))
         as_signal_instance(widget.textChanged).connect(
             self._on_raw_changed,
         )
@@ -264,7 +287,7 @@ class RootConfigurationWidget(QWidget, ErrorDialogMixin):
         else:
             self._log(
                 log_type=LogType.success,
-                message='Valid',
+                message="Valid",
             )
 
     def _on_log_entry_available(
@@ -311,9 +334,13 @@ class RootConfigurationWidget(QWidget, ErrorDialogMixin):
     def _get_last_opened_dir(
         self,
     ) -> str:
-        return QFileInfo(
-            cast(str, self._settings.value('last_opened_file')),
-        ).dir().path()
+        return (
+            QFileInfo(
+                cast(str, self._settings.value("last_opened_file")),
+            )
+            .dir()
+            .path()
+        )
 
     def save(
         self,
@@ -346,7 +373,7 @@ class RootConfigurationWidget(QWidget, ErrorDialogMixin):
         )
         self._log(
             log_type=LogType.success,
-            message=f'{self._entry.name} saved',
+            message=f"{self._entry.name} saved",
         )
 
     def save_as(
@@ -457,18 +484,18 @@ class RootConfigurationWidget(QWidget, ErrorDialogMixin):
     ) -> bool:
         error_message = None
         if entry.configuration is None:
-            error_message = 'Are you sure you want to save an empty configuration?'
+            error_message = "Are you sure you want to save an empty configuration?"
         elif not entry.configuration.is_valid():
-            error_message = 'Are you sure you want to save an invalid configuration?'
+            error_message = "Are you sure you want to save an invalid configuration?"
         if error_message:
             reply = QMessageBox.question(
                 self,
-                f'Save {entry.name}',
+                f"Save {entry.name}",
                 error_message,
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No,
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
             )
-            if reply == QMessageBox.No:
+            if reply == QMessageBox.StandardButton.No:
                 return False
         return True
 
@@ -491,7 +518,8 @@ class RootConfigurationWidget(QWidget, ErrorDialogMixin):
             new_file = self._prompt_new_file(
                 format_filters=self._file_format_dialog_filters.get_filters_string_for(
                     format_name=self._entry.raw_format,
-                ) or '',
+                )
+                or "",
             )
             if not new_file:
                 return None
@@ -506,12 +534,12 @@ class RootConfigurationWidget(QWidget, ErrorDialogMixin):
             return False
         reply = QMessageBox.question(
             self,
-            f'Overwrite {entry.name}',
-            f'{entry.file.info.filePath()} has changed on the disk.\nOverwrite?',
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No,
+            f"Overwrite {entry.name}",
+            f"{entry.file.info.filePath()} has changed on the disk.\nOverwrite?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
         )
-        return reply == QMessageBox.Yes
+        return reply == QMessageBox.StandardButton.Yes
 
     def _prompt_new_file(
         self,
@@ -520,9 +548,9 @@ class RootConfigurationWidget(QWidget, ErrorDialogMixin):
         last_opened_dir = self._get_last_opened_dir()
         file_path, chosen_filter = QFileDialog.getSaveFileName(
             self,
-            'New file',
+            "New file",
             last_opened_dir,
-            format_filters or '',
+            format_filters or "",
         )
         if not file_path or not chosen_filter:
             return None
@@ -547,7 +575,7 @@ class RootConfigurationWidget(QWidget, ErrorDialogMixin):
         if not loader:
             return False
         try:
-            with open(file_path, 'w') as destination_file:
+            with open(file_path, "w") as destination_file:
                 loader.save(
                     data=entry.configuration,
                     stream=destination_file,
@@ -555,8 +583,8 @@ class RootConfigurationWidget(QWidget, ErrorDialogMixin):
         except (IOError, CoreException) as save_error:
             self.show_exception_dialog(
                 parent=self,
-                text='Save error',
-                informative_text=f'Unable to save file:\n{file_path}',
+                text="Save error",
+                informative_text=f"Unable to save file:\n{file_path}",
                 exception=save_error,
             )
             return False
@@ -573,8 +601,8 @@ class RootConfigurationWidget(QWidget, ErrorDialogMixin):
         except CoreException as loader_error:
             self.show_exception_dialog(
                 parent=self,
-                text='Loader error',
-                informative_text=f'Unable to get loader for {file_format}',
+                text="Loader error",
+                informative_text=f"Unable to get loader for {file_format}",
                 exception=loader_error,
             )
         return None

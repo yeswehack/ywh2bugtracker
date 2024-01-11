@@ -2,7 +2,7 @@
 from datetime import datetime
 from typing import cast
 
-from PySide2.QtCore import (
+from PySide6.QtCore import (
     QObject,
     QThread,
     Signal,
@@ -86,7 +86,7 @@ class SynchronizerThread(QThread):
             self._log_entry_available_signal.emit(
                 LogEntry(
                     date_time=datetime.now(),
-                    context=f'{self._entry.name}',
+                    context=f"{self._entry.name}",
                     message=error_to_string(
                         error=e,
                     ),
@@ -116,7 +116,7 @@ class _SynchronizerListener(SynchronizerListener):
         self._log_entry_available_signal.emit(
             LogEntry(
                 date_time=datetime.now(),
-                context=f'{self._entry.name}',
+                context=f"{self._entry.name}",
                 message=message,
                 log_type=log_type,
             ),
@@ -134,7 +134,7 @@ class _SynchronizerListener(SynchronizerListener):
         event: SynchronizerEvent,
     ) -> None:
         self._log_message(
-            message=f'Unhandled event {event}',
+            message=f"Unhandled event {event}",
         )
 
     @_on_event.register
@@ -143,7 +143,7 @@ class _SynchronizerListener(SynchronizerListener):
         event: SynchronizerStartEvent,
     ) -> None:
         self._log_message(
-            message='Starting synchronization...',
+            message="Starting synchronization...",
         )
 
     @_on_event.register
@@ -153,7 +153,7 @@ class _SynchronizerListener(SynchronizerListener):
     ) -> None:
         self._log_message(
             log_type=LogType.success,
-            message='Synchronization done.',
+            message="Synchronization done.",
         )
 
     @_on_event.register
@@ -178,7 +178,7 @@ class _SynchronizerListener(SynchronizerListener):
         reports_count = len(event.reports)
         self._log_message(
             log_type=LogType.success,
-            message=f'{reports_count} report(s) fetched.',
+            message=f"{reports_count} report(s) fetched.",
         )
 
     @_on_event.register
@@ -188,9 +188,9 @@ class _SynchronizerListener(SynchronizerListener):
     ) -> None:
         report = event.report
         if report.title:
-            report_details = f'#{report.report_id} ({report.title})'
+            report_details = f"#{report.report_id} ({report.title})"
         else:
-            report_details = f'#{report.report_id}'
+            report_details = f"#{report.report_id}"
         self._log_message(
             message=f'Processing report {report_details} with "{event.tracker_name}"...',
         )
@@ -204,7 +204,7 @@ class _SynchronizerListener(SynchronizerListener):
         issue_added_comment_count = len(event.issue_added_comments)
         if not tracker_issue or not event.is_existing_issue:
             issue_details = [
-                'does not exist anymore',
+                "does not exist anymore",
             ]
         else:
             issue_details = [
@@ -212,31 +212,31 @@ class _SynchronizerListener(SynchronizerListener):
             ]
             if event.is_created_issue:
                 if issue_added_comment_count:
-                    issue_details.append('updated')
+                    issue_details.append("updated")
             else:
-                issue_details.append('added')
+                issue_details.append("added")
             if issue_added_comment_count:
-                issue_details.append(f'{issue_added_comment_count} comment(s) added')
+                issue_details.append(f"{issue_added_comment_count} comment(s) added")
         report_added_comment_count = len(event.report_added_comments)
         report_details = []
         if report_added_comment_count:
-            report_details.append(f'{report_added_comment_count} comment(s) added')
+            report_details.append(f"{report_added_comment_count} comment(s) added")
         report_details.append(f'tracking status {"updated" if event.tracking_status_updated else "unchanged"}')
         if event.new_report_status:
             old_status, new_status = event.new_report_status
-            old_status_translation = REPORT_STATUS_TRANSLATIONS.get(old_status, 'Unknown')
-            new_status_translation = REPORT_STATUS_TRANSLATIONS.get(new_status, 'Unknown')
+            old_status_translation = REPORT_STATUS_TRANSLATIONS.get(old_status, "Unknown")
+            new_status_translation = REPORT_STATUS_TRANSLATIONS.get(new_status, "Unknown")
             report_details.append(f'status "{old_status_translation}" -> "{new_status_translation}"')
-        message = ' | '.join(
+        message = " | ".join(
             (
                 f'issue => {" ; ".join(issue_details)}',
                 f'report => {" ; ".join(report_details)}',
             ),
         )
         if event.report.title:
-            report_description = f'#{event.report.report_id} ({event.report.title})'
+            report_description = f"#{event.report.report_id} ({event.report.title})"
         else:
-            report_description = f'#{event.report.report_id}'
+            report_description = f"#{event.report.report_id}"
         self._log_message(
             log_type=LogType.success,
             message=f'Processed report {report_description} with "{event.tracker_name}": {message}.',

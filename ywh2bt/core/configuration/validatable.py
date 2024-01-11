@@ -1,5 +1,8 @@
 """Models and classes related to validatable objects."""
-from abc import ABC, abstractmethod
+from abc import (
+    ABC,
+    abstractmethod,
+)
 
 from ywh2bt.core.exceptions import CoreException
 

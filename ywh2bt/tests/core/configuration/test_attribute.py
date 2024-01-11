@@ -5,14 +5,16 @@ from ywh2bt.core.configuration.attribute import (
     Attribute,
     AttributesContainer,
     AttributesContainerDict,
-    AttributesContainerList
+    AttributesContainerList,
 )
-from ywh2bt.core.configuration.error import AttributesError, BaseAttributeError
+from ywh2bt.core.configuration.error import (
+    AttributesError,
+    BaseAttributeError,
+)
 from ywh2bt.core.configuration.validator import ValidatorError
 
 
 class TestAttribute(unittest.TestCase):
-
     def test_attribute_validate_wrong_type(self) -> None:
         attr = Attribute.create(
             value_type=str,
@@ -29,7 +31,7 @@ class TestAttribute(unittest.TestCase):
             attr.validate(value=None)
 
     def test_attribute_validator_fail(self) -> None:
-        def validator(value: str) -> None:  # noqa: WPS430
+        def validator(value: str) -> None:
             raise ValidatorError()
 
         attr = Attribute.create(
@@ -37,32 +39,31 @@ class TestAttribute(unittest.TestCase):
             validator=validator,
         )
         with self.assertRaises(BaseAttributeError):
-            attr.validate(value='123')
+            attr.validate(value="123")
 
     def test_str_attribute_as_repr(self) -> None:
         attr = Attribute.create(
             value_type=str,
         )
-        self.assertEqual("'my value'", attr.as_repr('my value'))
+        self.assertEqual("'my value'", attr.as_repr("my value"))
 
     def test_int_attribute_as_repr(self) -> None:
         attr = Attribute.create(
             value_type=int,
         )
-        self.assertEqual('123', attr.as_repr(123))
+        self.assertEqual("123", attr.as_repr(123))
 
     def test_attribute_as_repr_secret(self) -> None:
         attr = Attribute.create(
             value_type=str,
             secret=True,
         )
-        self.assertEqual("<secret-str '***'>", attr.as_repr('my value'))
+        self.assertEqual("<secret-str '***'>", attr.as_repr("my value"))
 
 
 class TestAttributesContainer(unittest.TestCase):
-
     def test_secret(self) -> None:
-        class Container(AttributesContainer):  # noqa: WPS431
+        class Container(AttributesContainer):
             not_sec = Attribute.create(
                 value_type=str,
                 secret=False,
@@ -73,28 +74,28 @@ class TestAttributesContainer(unittest.TestCase):
             )
 
         instance = Container()
-        instance.not_sec = 'my-login'
-        instance.sec = 'my-password'
+        instance.not_sec = "my-login"
+        instance.sec = "my-password"
         string = str(instance)
-        self.assertIn('my-login', string)
-        self.assertNotIn('my-password', string)
+        self.assertIn("my-login", string)
+        self.assertNotIn("my-password", string)
 
     def test_default(self) -> None:
-        class Container(AttributesContainer):  # noqa: WPS431
+        class Container(AttributesContainer):
             field = Attribute.create(
                 value_type=str,
-                default='default-value',
+                default="default-value",
             )
 
         instance = Container()
-        self.assertEqual('default-value', instance.field)
-        instance.field = 'foo'
-        self.assertEqual('foo', instance.field)
+        self.assertEqual("default-value", instance.field)
+        instance.field = "foo"
+        self.assertEqual("foo", instance.field)
         instance.field = None
-        self.assertEqual('default-value', instance.field)
+        self.assertEqual("default-value", instance.field)
 
     def test_validate_wrong_type(self) -> None:
-        class Container(AttributesContainer):  # noqa: WPS431
+        class Container(AttributesContainer):
             field = Attribute.create(
                 value_type=str,
             )
@@ -105,7 +106,7 @@ class TestAttributesContainer(unittest.TestCase):
             instance.validate()
 
     def test_validate_required_no_default(self) -> None:
-        class Container(AttributesContainer):  # noqa: WPS431
+        class Container(AttributesContainer):
             field = Attribute.create(
                 value_type=str,
                 required=True,
@@ -117,11 +118,11 @@ class TestAttributesContainer(unittest.TestCase):
             instance.validate()
 
     def test_validate_required(self) -> None:
-        class Container(AttributesContainer):  # noqa: WPS431
+        class Container(AttributesContainer):
             field = Attribute.create(
                 value_type=str,
                 required=True,
-                default='foo',
+                default="foo",
             )
 
         instance = Container()
@@ -129,10 +130,10 @@ class TestAttributesContainer(unittest.TestCase):
         instance.validate()
 
     def test_validate_validator(self) -> None:
-        def validator(value: str) -> None:  # noqa: WPS430
+        def validator(value: str) -> None:
             pass
 
-        class Container(AttributesContainer):  # noqa: WPS431
+        class Container(AttributesContainer):
             field = Attribute.create(
                 value_type=str,
                 required=True,
@@ -140,14 +141,14 @@ class TestAttributesContainer(unittest.TestCase):
             )
 
         instance = Container()
-        instance.field = 'foo'
+        instance.field = "foo"
         instance.validate()
 
     def test_validate_validator_error(self) -> None:
-        def validator(value: str) -> None:  # noqa: WPS430
+        def validator(value: str) -> None:
             raise ValidatorError()
 
-        class Container(AttributesContainer):  # noqa: WPS431
+        class Container(AttributesContainer):
             field = Attribute.create(
                 value_type=str,
                 required=True,
@@ -155,17 +156,17 @@ class TestAttributesContainer(unittest.TestCase):
             )
 
         instance = Container()
-        instance.field = 'foo'
+        instance.field = "foo"
         with self.assertRaises(AttributesError):
             instance.validate()
 
     def test_export(self) -> None:
-        class ChildAttributesContainer(AttributesContainer):  # noqa: WPS431
+        class ChildAttributesContainer(AttributesContainer):
             field = Attribute.create(
                 value_type=str,
             )
 
-        class Container(AttributesContainer):  # noqa: WPS431
+        class Container(AttributesContainer):
             str_field = Attribute.create(
                 value_type=str,
             )
@@ -180,21 +181,21 @@ class TestAttributesContainer(unittest.TestCase):
             )
 
         child_instance = ChildAttributesContainer()
-        child_instance.field = 'bar'
+        child_instance.field = "bar"
 
         instance = Container()
-        instance.str_field = 'foo'
+        instance.str_field = "foo"
         instance.int_field = 123
         instance.bool_field = False
         instance.sub_field = child_instance
         exported = instance.export()
         self.assertEqual(
             dict(
-                str_field='foo',
+                str_field="foo",
                 int_field=123,
                 bool_field=False,
                 sub_field=dict(
-                    field='bar',
+                    field="bar",
                 ),
             ),
             exported,
@@ -216,7 +217,7 @@ class TestAttributesContainerList(unittest.TestCase):
 
     def test_validate(self) -> None:
         child_instance = self.ChildContainer()
-        child_instance.field = 'foo'
+        child_instance.field = "foo"
         instance = self.Container()
         instance.append(child_instance)
         instance.validate()
@@ -231,9 +232,9 @@ class TestAttributesContainerList(unittest.TestCase):
 
     def test_export(self) -> None:
         child_instance1 = self.ChildContainer()
-        child_instance1.field = 'foo'
+        child_instance1.field = "foo"
         child_instance2 = self.ChildContainer()
-        child_instance2.field = 'bar'
+        child_instance2.field = "bar"
         instance = self.Container()
         instance.append(child_instance1)
         instance.append(child_instance2)
@@ -241,10 +242,10 @@ class TestAttributesContainerList(unittest.TestCase):
         self.assertEqual(
             [
                 dict(
-                    field='foo',
+                    field="foo",
                 ),
                 dict(
-                    field='bar',
+                    field="bar",
                 ),
             ],
             exported,
@@ -266,13 +267,13 @@ class TestAttributesContainerDict(unittest.TestCase):
 
     def test_validate(self) -> None:
         child1 = self.ChildContainer()
-        child1.field = 'foo'
+        child1.field = "foo"
         child2 = self.ChildContainer()
-        child2.field = 'bar'
+        child2.field = "bar"
 
         instance = self.Container()
-        instance['child1'] = child1
-        instance['child2'] = child2
+        instance["child1"] = child1
+        instance["child2"] = child2
 
         instance.validate()
 
@@ -280,29 +281,29 @@ class TestAttributesContainerDict(unittest.TestCase):
         child_instance = self.ChildContainer()
         child_instance.field = 123
         instance = self.Container()
-        instance['child'] = child_instance
+        instance["child"] = child_instance
         with self.assertRaises(AttributesError):
             instance.validate()
 
     def test_export(self) -> None:
         child1 = self.ChildContainer()
-        child1.field = 'foo'
+        child1.field = "foo"
         child2 = self.ChildContainer()
-        child2.field = 'bar'
+        child2.field = "bar"
 
         instance = self.Container()
-        instance['child1'] = child1
-        instance['child2'] = child2
+        instance["child1"] = child1
+        instance["child2"] = child2
 
         exported = instance.export()
 
         self.assertEqual(
             dict(
                 child1=dict(
-                    field='foo',
+                    field="foo",
                 ),
                 child2=dict(
-                    field='bar',
+                    field="bar",
                 ),
             ),
             exported,

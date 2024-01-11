@@ -1,9 +1,15 @@
 """Models and functions used for Yaml data SerDe."""
-from typing import Any, TextIO
+from typing import (
+    Any,
+    TextIO,
+)
 
-from ruamel.yaml import YAML  # type: ignore
+from ruamel.yaml import YAML
 
-from ywh2bt.core.serde import SerDe, SerDeError
+from ywh2bt.core.serde import (
+    SerDe,
+    SerDeError,
+)
 
 
 class YamlSerDe(SerDe):
@@ -31,7 +37,7 @@ class YamlSerDe(SerDe):
                 stream=stream,
             )
         except Exception as e:
-            raise SerDeError('YAML dump error') from e
+            raise SerDeError("YAML dump error") from e
 
     def deserialize_from_stream(
         self,
@@ -53,4 +59,4 @@ class YamlSerDe(SerDe):
         try:
             return yaml.load(stream.read())
         except Exception as e:
-            raise SerDeError('YAML load error') from e
+            raise SerDeError("YAML load error") from e

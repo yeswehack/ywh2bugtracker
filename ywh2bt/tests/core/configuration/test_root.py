@@ -15,39 +15,38 @@ from ywh2bt.core.configuration.yeswehack import (
 
 
 class TestRoot(unittest.TestCase):
-
     def test_validate(self) -> None:
         root = RootConfiguration(
             bugtrackers=Trackers(
                 my_gitlab=GitLabConfiguration(
-                    token='gl-token',
-                    project='my-project',
+                    token="gl-token",
+                    project="my-project",
                 ),
                 my_github=GitHubConfiguration(
-                    token='gh-token',
-                    project='project',
+                    token="gh-token",
+                    project="project",
                 ),
             ),
             yeswehack=YesWeHackConfigurations(
                 my_ywh=YesWeHackConfiguration(
-                    api_url='http://example.com',
-                    pat='e2d00087-a2fa-4fe2-ac1c-7abf1da2a036',
+                    api_url="http://example.com",
+                    pat="e2d00087-a2fa-4fe2-ac1c-7abf1da2a036",
                     verify=True,
                     programs=Programs(
                         [
                             Program(
-                                slug='1-pgm',
+                                slug="1-pgm",
                                 bugtrackers_name=Bugtrackers(
                                     [
-                                        'my_gitlab',
+                                        "my_gitlab",
                                     ],
                                 ),
                             ),
                             Program(
-                                slug='1-pgm',
+                                slug="1-pgm",
                                 bugtrackers_name=Bugtrackers(
                                     [
-                                        'my_github',
+                                        "my_github",
                                     ],
                                 ),
                             ),
@@ -62,23 +61,23 @@ class TestRoot(unittest.TestCase):
         root = RootConfiguration(
             bugtrackers=Trackers(
                 my_gitlab=GitLabConfiguration(
-                    token='gl-token',
-                    project='my-project',
+                    token="gl-token",
+                    project="my-project",
                 ),
             ),
             yeswehack=YesWeHackConfigurations(
                 my_ywh=YesWeHackConfiguration(
-                    api_url='http://example.com',
-                    pat='e2d00087-a2fa-4fe2-ac1c-7abf1da2a036',
+                    api_url="http://example.com",
+                    pat="e2d00087-a2fa-4fe2-ac1c-7abf1da2a036",
                     verify=True,
                     programs=Programs(
                         [
                             Program(
-                                slug='1-pgm',
+                                slug="1-pgm",
                                 bugtrackers_name=Bugtrackers(
                                     [
-                                        'my_gitlab',
-                                        'my_github',
+                                        "my_gitlab",
+                                        "my_github",
                                     ],
                                 ),
                             ),
@@ -95,17 +94,17 @@ class TestRoot(unittest.TestCase):
             bugtrackers=Trackers(),
             yeswehack=YesWeHackConfigurations(
                 my_ywh=YesWeHackConfiguration(
-                    api_url='http://example.com',
-                    pat='e2d00087-a2fa-4fe2-ac1c-7abf1da2a036',
+                    api_url="http://example.com",
+                    pat="e2d00087-a2fa-4fe2-ac1c-7abf1da2a036",
                     verify=True,
                     programs=Programs(
                         [
                             Program(
-                                slug='1-pgm',
+                                slug="1-pgm",
                                 bugtrackers_name=Bugtrackers(
                                     [
-                                        'my_gitlab',
-                                        'my_github',
+                                        "my_gitlab",
+                                        "my_github",
                                     ],
                                 ),
                             ),

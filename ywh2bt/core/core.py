@@ -1,6 +1,12 @@
 """Models and functions used for loading/writing configuration files."""
 from dataclasses import dataclass
-from typing import Dict, OrderedDict, Set, TextIO, Type
+from typing import (
+    Dict,
+    OrderedDict,
+    Set,
+    TextIO,
+    Type,
+)
 
 from ywh2bt.core.configuration.error import BaseAttributeError
 from ywh2bt.core.configuration.root import RootConfiguration
@@ -23,27 +29,31 @@ class AvailableFormat:
     extensions: Set[str]
 
 
-AVAILABLE_FORMATS: Dict[str, AvailableFormat] = OrderedDict[str, AvailableFormat]({
-    'yaml': AvailableFormat(
-        ser_de=YamlSerDe,
-        extensions={
-            'yaml',
-            'yml',
-        },
-    ),
-    'json': AvailableFormat(
-        ser_de=JsonSerDe,
-        extensions={
-            'json',
-        },
-    ),
-})
+AVAILABLE_FORMATS: Dict[str, AvailableFormat] = OrderedDict[str, AvailableFormat](
+    {
+        "yaml": AvailableFormat(
+            ser_de=YamlSerDe,
+            extensions={
+                "yaml",
+                "yml",
+            },
+        ),
+        "json": AvailableFormat(
+            ser_de=JsonSerDe,
+            extensions={
+                "json",
+            },
+        ),
+    }
+)
 
-AVAILABLE_SCHEMA_DUMP_FORMATS: Dict[str, SchemaDumpProtocol] = OrderedDict[str, SchemaDumpProtocol]({
-    'text': root_configuration_as_text,
-    'markdown': root_configuration_as_markdown,
-    'json': root_configuration_as_json_schema,
-})
+AVAILABLE_SCHEMA_DUMP_FORMATS: Dict[str, SchemaDumpProtocol] = OrderedDict[str, SchemaDumpProtocol](
+    {
+        "text": root_configuration_as_text,
+        "markdown": root_configuration_as_markdown,
+        "json": root_configuration_as_json_schema,
+    }
+)
 
 
 def get_root_configuration_loader(
@@ -84,7 +94,7 @@ def get_serde(
     available_format = AVAILABLE_FORMATS.get(file_format)
     if available_format:
         return available_format.ser_de()
-    raise CoreException(f'Unsupported file format {file_format}.')
+    raise CoreException(f"Unsupported file format {file_format}.")
 
 
 def load_configuration(
@@ -108,20 +118,20 @@ def load_configuration(
         file_format=config_format,
     )
     try:
-        with open(config_file, 'r') as f:
+        with open(config_file, "r") as f:
             return loader.load(
                 stream=f,
             )
     except FileNotFoundError as e:
-        raise CoreException('Configuration file not found') from e
+        raise CoreException("Configuration file not found") from e
     except BaseAttributeError as e:
-        raise CoreException('Configuration invalid') from e
+        raise CoreException("Configuration invalid") from e
 
 
 def write_message(
     stream: TextIO,
     message: str,
-    end: str = '\n',
+    end: str = "\n",
 ) -> None:
     """
     Write a message on the stream.

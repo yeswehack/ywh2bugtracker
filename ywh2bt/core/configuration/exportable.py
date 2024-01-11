@@ -1,8 +1,15 @@
 """Models and classes related to exportable objects."""
-from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from abc import (
+    ABC,
+    abstractmethod,
+)
+from typing import (
+    Generic,
+    TypeVar,
+)
 
-T = TypeVar('T')
+
+T = TypeVar("T")
 
 
 class Exportable(Generic[T], ABC):

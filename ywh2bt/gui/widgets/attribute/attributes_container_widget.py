@@ -3,10 +3,21 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, Dict, Optional, Type, TypeVar, Union, cast
+from typing import (
+    Any,
+    Dict,
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+    cast,
+)
 
-from PySide2.QtCore import Qt, Signal
-from PySide2.QtWidgets import (
+from PySide6.QtCore import (
+    Qt,
+    Signal,
+)
+from PySide6.QtWidgets import (
     QFormLayout,
     QLabel,
     QLineEdit,
@@ -25,13 +36,20 @@ from ywh2bt.core.configuration.attribute import (
 )
 from ywh2bt.gui.widgets.attribute.attributes_container_dict_widget import AttributesContainerDictWidget
 from ywh2bt.gui.widgets.attribute.attributes_container_list_widget import AttributesContainerListWidget
-from ywh2bt.gui.widgets.attribute.exportable_dict_widget import ExportableDictModel, ExportableDictWidget
-from ywh2bt.gui.widgets.attribute.exportable_list_widget import ExportableListModel, ExportableListWidget
+from ywh2bt.gui.widgets.attribute.exportable_dict_widget import (
+    ExportableDictModel,
+    ExportableDictWidget,
+)
+from ywh2bt.gui.widgets.attribute.exportable_list_widget import (
+    ExportableListModel,
+    ExportableListWidget,
+)
 from ywh2bt.gui.widgets.hinted_check_box_widget import HintedCheckBoxWidget
 from ywh2bt.gui.widgets.secret_line_edit_widget import SecretLineEditWidget
 from ywh2bt.gui.widgets.typing import as_signal_instance
 
-T = TypeVar('T')
+
+T = TypeVar("T")
 
 
 class _WidgetCreationProtocol(Protocol):
@@ -40,7 +58,7 @@ class _WidgetCreationProtocol(Protocol):
         name: str,
         attribute: Attribute[Any],
     ) -> QWidget:
-        ...  # noqa: WPS428
+        ...
 
 
 class _WidgetUpdateProtocol(Protocol):
@@ -50,7 +68,7 @@ class _WidgetUpdateProtocol(Protocol):
         attribute: Attribute[Any],
         value: Any,
     ) -> QWidget:
-        ...  # noqa: WPS428
+        ...
 
 
 @dataclass
@@ -59,7 +77,7 @@ class _WidgetProtocols:
     update: _WidgetUpdateProtocol
 
 
-class AttributesContainerWidget(QWidget):  # noqa: WPS214
+class AttributesContainerWidget(QWidget):
     """A widget for editing AttributesContainer instances."""
 
     container_changed: Signal = Signal(AttributesContainer)
@@ -161,6 +179,7 @@ class AttributesContainerWidget(QWidget):  # noqa: WPS214
         self,
     ) -> QFormLayout:
         layout = QFormLayout()
+        layout.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         for name, attribute in self._container_class.get_attributes().items():
             label = self._create_label_widget(
                 name=name,
@@ -186,15 +205,15 @@ class AttributesContainerWidget(QWidget):  # noqa: WPS214
         attribute: Attribute[Any],
     ) -> QLabel:
         widget = QLabel(self)
-        widget.setTextFormat(Qt.RichText)
+        widget.setTextFormat(Qt.TextFormat.RichText)
         text = attribute.short_description or name
-        text = f'{text}:'
+        text = f"{text}:"
         if attribute.deprecated:
-            text = f'<i><s>{text}</s></i>'
+            text = f"<i><s>{text}</s></i>"
         if attribute.required:
-            text = f'<b>{text}</b>'
+            text = f"<b>{text}</b>"
         widget.setText(text)
-        widget.setObjectName(f'label_{name}')
+        widget.setObjectName(f"label_{name}")
         return widget
 
     def _get_tool_tip(
@@ -202,16 +221,16 @@ class AttributesContainerWidget(QWidget):  # noqa: WPS214
         attribute: Attribute[Any],
     ) -> Optional[str]:
         lines = []
-        description = ''
+        description = ""
         if attribute.description:
             description = attribute.description
         if attribute.deprecated:
-            description = f'(Deprecated)\n{description}' if description else '(Deprecated)'
+            description = f"(Deprecated)\n{description}" if description else "(Deprecated)"
         if description:
             lines.append(description)
         if attribute.default is not None:
-            lines.append(f'Default: {repr(attribute.default)}')
-        return '\n'.join(lines)
+            lines.append(f"Default: {repr(attribute.default)}")
+        return "\n".join(lines)
 
     def _create_field_widget(
         self,
@@ -230,12 +249,12 @@ class AttributesContainerWidget(QWidget):  # noqa: WPS214
         if not widget:
             widget = QLabel(self)
             widget.setWordWrap(True)
-            widget.setTextFormat(Qt.RichText)
-            widget.setStyleSheet('background-color: rgba(255, 0, 0, 50%);')
+            widget.setTextFormat(Qt.TextFormat.RichText)
+            widget.setStyleSheet("background-color: rgba(255, 0, 0, 50%);")
             widget.setText(
-                f'No field for type <b>{value_type.__name__}</b>',
+                f"No field for type <b>{value_type.__name__}</b>",
             )
-        widget.setObjectName(f'field_{name}')
+        widget.setObjectName(f"field_{name}")
 
         return widget
 
@@ -244,7 +263,7 @@ class AttributesContainerWidget(QWidget):  # noqa: WPS214
         name: str,
         widget_type: Type[T],
     ) -> T:
-        return cast(T, self.findChild(widget_type, f'field_{name}'))
+        return cast(T, self.findChild(widget_type, f"field_{name}"))
 
     def _update_attribute_widget(
         self,
@@ -553,7 +572,7 @@ class AttributesContainerWidget(QWidget):  # noqa: WPS214
         value: Any,
     ) -> QWidget:
         if attribute.secret:
-            widget = self._find_field_widget(
+            widget: Union[SecretLineEditWidget, QLineEdit] = self._find_field_widget(
                 name=name,
                 widget_type=SecretLineEditWidget,
             )
@@ -590,9 +609,9 @@ class AttributesContainerWidget(QWidget):  # noqa: WPS214
     ) -> HintedCheckBoxWidget:
         widget = HintedCheckBoxWidget(self)
         widget.setTristate(True)
-        default_hint = 'Yes' if attribute.default else 'No'
-        widget.set_state_hint(Qt.PartiallyChecked, f'Default: {default_hint}')
-        widget.setCheckState(Qt.PartiallyChecked)
+        default_hint = "Yes" if attribute.default else "No"
+        widget.set_state_hint(Qt.CheckState.PartiallyChecked, f"Default: {default_hint}")
+        widget.setCheckState(Qt.CheckState.PartiallyChecked)
         as_signal_instance(widget.stateChanged).connect(
             partial(
                 self._on_check_box_changed,
@@ -609,9 +628,9 @@ class AttributesContainerWidget(QWidget):  # noqa: WPS214
         attribute: Attribute[Any],
         value: Any,
     ) -> QWidget:
-        state = Qt.Checked if value else Qt.Unchecked
+        state = Qt.CheckState.Checked if value else Qt.CheckState.Unchecked
         if value == attribute.default:
-            state = Qt.PartiallyChecked
+            state = Qt.CheckState.PartiallyChecked
         widget = self._find_field_widget(
             name=name,
             widget_type=HintedCheckBoxWidget,
@@ -627,8 +646,8 @@ class AttributesContainerWidget(QWidget):  # noqa: WPS214
         state: Qt.CheckState,
     ) -> None:
         value = None
-        if state != Qt.PartiallyChecked:
-            value = state == Qt.Checked
+        if state != Qt.CheckState.PartiallyChecked:
+            value = state == Qt.CheckState.Checked
         self._on_attribute_value_changed(
             widget=widget,
             name=name,

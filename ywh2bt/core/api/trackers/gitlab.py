@@ -19,7 +19,7 @@ from gitlab import (  # type: ignore
     Gitlab,
     GitlabError,
 )
-from gitlab.v4.objects import (  # type: ignore
+from gitlab.v4.objects import (
     Project,
     ProjectIssue,
     ProjectIssueNote,
@@ -42,8 +42,10 @@ from ywh2bt.core.api.tracker import (
 )
 from ywh2bt.core.configuration.trackers.gitlab import GitLabConfiguration
 
-_RE_IMAGE = re.compile(pattern=r'!\[([^\]]+)]\(([^)]+)\)')
+
+_RE_IMAGE = re.compile(pattern=r"!\[([^\]]+)]\(([^)]+)\)")
 _RE_CONTENT_DISPOSITION_FILENAME = re.compile(pattern='filename="([^"]+)";?')
+_TITLE_MAX_SIZE = 255
 _TEXT_MAX_SIZE = 1000000
 
 
@@ -72,11 +74,11 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
         super().__init__(
             configuration=configuration,
         )
-        self._default_author_name = 'Anonymous'
+        self._default_author_name = "Anonymous"
         self._session = requests.Session()
         self._session.verify = configuration.verify
         self._gitlab = Gitlab(
-            url=configuration.url,
+            url=cast(str, configuration.url),
             private_token=configuration.token,
             session=self._session,
         )
@@ -90,7 +92,7 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
         Returns:
             the type of the  tracker client
         """
-        return 'GitLab'
+        return "GitLab"
 
     def _build_tracker_issue(
         self,
@@ -130,7 +132,7 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
         return self._build_tracker_issue(
             issue_id=issue_id,
             issue_url=gitlab_issue.web_url,
-            closed=gitlab_issue.state == 'closed',
+            closed=gitlab_issue.state == "closed",
         )
 
     def get_tracker_issue_comments(
@@ -179,12 +181,14 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
         title = self._message_formatter.format_report_title(
             report=report,
         )
+        if len(title) > _TITLE_MAX_SIZE:
+            title = f"{title[:_TITLE_MAX_SIZE - 3]}..."
         description = self._message_formatter.format_report_description(
             report=report,
         ) + self._get_attachments_list_description(
             attachments=report.attachments,
         )
-        external_description = ''
+        external_description = ""
         description_attachment = None
         if len(description) > _TEXT_MAX_SIZE:
             external_description = description
@@ -193,9 +197,9 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
             )
             report_copy = deepcopy(report)
             report_copy.description_html = (
-                '<p>This report description is too large to fit into a GitLab issue. '
+                "<p>This report description is too large to fit into a GitLab issue. "
                 + f'See attachment <a href="{description_attachment.url}">{description_attachment.original_name}</a> '
-                + 'for more details.</p>'
+                + "for more details.</p>"
             )
             description = self._message_formatter.format_report_description(
                 report=report_copy,
@@ -216,7 +220,7 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
             ],
         )
         if description_attachment:
-            description_attachment.data_loader = lambda: bytes(external_description, 'utf-8')
+            description_attachment.data_loader = lambda: bytes(external_description, "utf-8")
             description = self._replace_attachments_references(
                 uploads=self._upload_attachments(
                     gitlab_project=gitlab_project,
@@ -248,10 +252,10 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
             attachment_id=0,
             name=name,
             original_name=name,
-            mime_type='text/markdown',
+            mime_type="text/markdown",
             size=0,
-            url=f'http://tracker/external/{name}',
-            data_loader=lambda: bytes('', 'utf-8'),
+            url=f"http://tracker/external/{name}",
+            data_loader=lambda: bytes("", "utf-8"),
         )
 
     def _extract_comments(
@@ -284,7 +288,7 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
             created_at=self._parse_date(
                 date=gitlab_note.created_at,
             ),
-            author=gitlab_note.author.get('name', self._default_author_name),
+            author=gitlab_note.author.get("name", self._default_author_name),
             comment_id=str(gitlab_note.id),
             body=gitlab_body,
             attachments=comment_attachments,
@@ -294,14 +298,14 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
         self,
         path: str,
     ) -> Optional[TrackerAttachment]:
-        url = f'{self.configuration.url}/{self.configuration.project}/{path}'
+        url = f"{self.configuration.url}/{self.configuration.project}/{path}"
         try:
             response = requests.get(url)
         except requests.RequestException:
             return None
         if not response.ok:
             return None
-        content_disposition = response.headers.get('Content-Disposition')
+        content_disposition = response.headers.get("Content-Disposition")
         filename = None
         if content_disposition:
             match = _RE_CONTENT_DISPOSITION_FILENAME.search(content_disposition)
@@ -311,7 +315,7 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
             filename = os.path.basename(path)
         return TrackerAttachment(
             filename=filename,
-            mime_type=response.headers.get('Content-Type', 'text/plain'),
+            mime_type=response.headers.get("Content-Type", "text/plain"),
             content=response.content,
         )
 
@@ -344,7 +348,7 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
         )
         if not gitlab_issue:
             raise GitLabTrackerClientError(
-                f'GitLab issue {tracker_issue.issue_id} not found in project {self.configuration.project}',
+                f"GitLab issue {tracker_issue.issue_id} not found in project {self.configuration.project}",
             )
         for log in logs:
             gitlab_comment = self._add_comment(
@@ -357,7 +361,7 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
                     created_at=self._parse_date(
                         date=gitlab_comment.created_at,
                     ),
-                    author=gitlab_comment.author.get('name', self._default_author_name),
+                    author=gitlab_comment.author.get("name", self._default_author_name),
                     comment_id=str(gitlab_comment.id),
                     body=gitlab_comment.body,
                     attachments={},
@@ -371,7 +375,7 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
     ) -> datetime:
         return datetime.strptime(
             date,
-            '%Y-%m-%dT%H:%M:%S.%f%z',
+            "%Y-%m-%dT%H:%M:%S.%f%z",
         )
 
     def test(
@@ -386,18 +390,18 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
         try:
             self._gitlab.auth()
         except GitlabError as e:
-            raise GitLabTrackerClientError('Unable to log in with GitLab API client') from e
+            raise GitLabTrackerClientError("Unable to log in with GitLab API client") from e
 
     def _get_gitlab_project(
         self,
     ) -> Project:
         try:
             return self._gitlab.projects.get(
-                self.configuration.project,
+                cast(str, self.configuration.project),
             )
         except GitlabError as e:
             raise GitLabTrackerClientError(
-                f'Unable to get GitLab project {self.configuration.project}',
+                f"Unable to get GitLab project {self.configuration.project}",
             ) from e
 
     def _get_gitlab_issue(
@@ -409,12 +413,12 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
             gitlab_issues = gitlab_project.issues.list(all=False, as_list=False)
         except GitlabError as e:
             raise GitLabTrackerClientError(
-                f'Unable to get GitLab issues for project {self.configuration.project}',
+                f"Unable to get GitLab issues for project {self.configuration.project}",
             ) from e
         issue_id_int = int(issue_id)
         for gitlab_issue in gitlab_issues:
             if gitlab_issue.id == issue_id_int:
-                return gitlab_issue
+                return cast(ProjectIssue, gitlab_issue)
         return None
 
     def _replace_attachments_references(
@@ -426,7 +430,7 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
             referencing_texts = [
                 text.replace(
                     attachment.url,
-                    f'{self.configuration.url}/{self.configuration.project}{upload_url}',
+                    f"{self.configuration.url}/{self.configuration.project}{upload_url}",
                 )
                 for text in referencing_texts
             ]
@@ -441,13 +445,13 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
             return [
                 (
                     attachment,
-                    gitlab_project.upload(attachment.original_name, attachment.data)['url'],
+                    gitlab_project.upload(attachment.original_name, attachment.data)["url"],
                 )
                 for attachment in attachments
             ]
         except GitlabError as e:
             raise GitLabTrackerClientError(
-                f'Unable to upload attachments for project {self.configuration.project} to GitLab',
+                f"Unable to upload attachments for project {self.configuration.project} to GitLab",
             ) from e
 
     def _get_attachments_list_description(
@@ -457,15 +461,15 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
         attachments_lines = []
         if attachments:
             attachments_lines = [
-                '',
-                '**Attachments**:',
+                "",
+                "**Attachments**:",
             ]
             for attachment in attachments:
                 attachments_lines.append(
-                    f'- [{attachment.original_name}]({attachment.url})',
+                    f"- [{attachment.original_name}]({attachment.url})",
                 )
-            attachments_lines.append('')
-        return '\n'.join(attachments_lines)
+            attachments_lines.append("")
+        return "\n".join(attachments_lines)
 
     def _create_issue(
         self,
@@ -475,15 +479,15 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
         confidential: bool,
     ) -> ProjectIssue:
         issue_data = {
-            'title': title,
-            'description': description,
-            'confidential': confidential,
+            "title": title,
+            "description": description,
+            "confidential": confidential,
         }
         try:
-            return gitlab_project.issues.create(issue_data)
+            return cast(ProjectIssue, gitlab_project.issues.create(issue_data))
         except GitlabError as e:
             raise GitLabTrackerClientError(
-                f'Unable to create issue for project {self.configuration.project} to GitLab',
+                f"Unable to create issue for project {self.configuration.project} to GitLab",
             ) from e
 
     def _add_comment(
@@ -492,27 +496,23 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
         gitlab_issue: ProjectIssue,
         log: Log,
     ) -> ProjectIssueNote:
-        comment_body = self._message_formatter.format_log(
-            log=log,
-        ) + self._get_attachments_list_description(
+        comment_body = self._message_formatter.format_log(log=log,) + self._get_attachments_list_description(
             attachments=log.attachments,
         )
-        external_body = ''
+        external_body = ""
         body_attachment = None
         if len(comment_body) > _TEXT_MAX_SIZE:
             external_body = comment_body
             body_attachment = self._build_external_description_attachment(
-                name=f'comment-{log.log_id}-description.md',
+                name=f"comment-{log.log_id}-description.md",
             )
             log_copy = deepcopy(log)
             log_copy.message_html = (
-                '<p>This comment is too large to fit into a GitLab comment. '
+                "<p>This comment is too large to fit into a GitLab comment. "
                 + f'See attachment <a href="{body_attachment.url}">{body_attachment.original_name}</a> '
-                + 'for more details.</p>'
+                + "for more details.</p>"
             )
-            comment_body = self._message_formatter.format_log(
-                log=log_copy,
-            ) + self._get_attachments_list_description(
+            comment_body = self._message_formatter.format_log(log=log_copy,) + self._get_attachments_list_description(
                 attachments=[
                     body_attachment,
                     *log.attachments,
@@ -529,7 +529,7 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
             ],
         )
         if body_attachment:
-            body_attachment.data_loader = lambda: bytes(external_body, 'utf-8')
+            body_attachment.data_loader = lambda: bytes(external_body, "utf-8")
             comment_body = self._replace_attachments_references(
                 uploads=self._upload_attachments(
                     gitlab_project=gitlab_project,
@@ -542,12 +542,17 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
                 ],
             )[0]
         try:
-            return gitlab_issue.notes.create({
-                'body': comment_body,
-            })
+            return cast(
+                ProjectIssueNote,
+                gitlab_issue.notes.create(
+                    {
+                        "body": comment_body,
+                    }
+                ),
+            )
         except GitlabError as e:
             raise GitLabTrackerClientError(
-                f'Unable to add GitLab comment for issue {gitlab_issue} in project {self.configuration.project}',
+                f"Unable to add GitLab comment for issue {gitlab_issue} in project {self.configuration.project}",
             ) from e
 
     def _ensure_auth(
@@ -556,4 +561,4 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
         try:
             self._gitlab.auth()
         except GitlabError as e:
-            raise GitLabTrackerClientError('Unable to authenticate to GitLab') from e
+            raise GitLabTrackerClientError("Unable to authenticate to GitLab") from e

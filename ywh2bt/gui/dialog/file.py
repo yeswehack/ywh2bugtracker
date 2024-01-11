@@ -1,6 +1,10 @@
 """Models and functions used in file dialogs."""
 from string import Template
-from typing import Dict, Optional, Set
+from typing import (
+    Dict,
+    Optional,
+    Set,
+)
 
 from ywh2bt.core.core import AvailableFormat
 
@@ -20,7 +24,7 @@ class FileFormatDialogFilters:
         Args:
             formats: a dict of available core formats
         """
-        filter_template = Template('${name} files (${patterns})')
+        filter_template = Template("${name} files (${patterns})")
         filters = {}
         for name, available_format in formats.items():
             patterns = self._get_extensions_patterns(
@@ -37,7 +41,7 @@ class FileFormatDialogFilters:
         cls,
         extensions: Set[str],
     ) -> str:
-        template = Template('*.${extension}')
+        template = Template("*.${extension}")
         patterns = []
         for extension in extensions:
             patterns.append(
@@ -45,7 +49,7 @@ class FileFormatDialogFilters:
                     extension=extension,
                 ),
             )
-        return ' '.join(patterns)
+        return " ".join(patterns)
 
     def get_filters_string_for(
         self,
@@ -64,7 +68,7 @@ class FileFormatDialogFilters:
 
     def get_filters_string(
         self,
-        separator: str = ';;',
+        separator: str = ";;",
     ) -> str:
         """
         Get the filters.

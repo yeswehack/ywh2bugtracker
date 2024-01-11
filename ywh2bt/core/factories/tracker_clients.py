@@ -82,8 +82,8 @@ class TrackerClientsFactory(TrackerClientsAbstractFactory):
         )
         if not tracker_client_class:
             message = (
-                f'{configuration_class} does not have an associated tracker client ; '
-                + f'use {TrackerClientClassesRegistry.__name__}.register_tracker_client_class() to register.'
+                f"{configuration_class} does not have an associated tracker client ; "
+                + f"use {TrackerClientClassesRegistry.__name__}.register_tracker_client_class() to register."
             )
             raise CoreException(message)
         try:
@@ -91,7 +91,7 @@ class TrackerClientsFactory(TrackerClientsAbstractFactory):
                 configuration=configuration,
             )
         except TrackerClientError as e:
-            raise CoreException(f'Unable to create {configuration_class} API client') from e
+            raise CoreException(f"Unable to create {configuration_class} API client") from e
         return client
 
 

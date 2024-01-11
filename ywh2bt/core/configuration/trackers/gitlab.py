@@ -1,9 +1,20 @@
 """Models used for the configuration of a GitLab tracker."""
-from typing import Any, Optional, Text
+from typing import (
+    Any,
+    Optional,
+    Text,
+)
 
-from ywh2bt.core.configuration.attribute import Attribute, BoolAttributeType, StrAttributeType
+from ywh2bt.core.configuration.attribute import (
+    Attribute,
+    BoolAttributeType,
+    StrAttributeType,
+)
 from ywh2bt.core.configuration.tracker import TrackerConfiguration
-from ywh2bt.core.configuration.validator import not_blank_validator, url_validator
+from ywh2bt.core.configuration.validator import (
+    not_blank_validator,
+    url_validator,
+)
 
 
 class GitLabConfiguration(TrackerConfiguration):
@@ -11,36 +22,36 @@ class GitLabConfiguration(TrackerConfiguration):
 
     url: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='API URL',
-        description='Base URL of the GitLab server',
-        default='https://gitlab.com',
+        short_description="API URL",
+        description="Base URL of the GitLab server",
+        default="https://gitlab.com",
         validator=url_validator,
     )
     token: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='API token',
-        description='User private token for the GitLab API',
+        short_description="API token",
+        description="User private token for the GitLab API",
         required=True,
         secret=True,
         validator=not_blank_validator,
     )
     project: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description='Project path',
-        description='Path to the project on GitLab',
+        short_description="Project path",
+        description="Path to the project on GitLab",
         required=True,
         validator=not_blank_validator,
     )
     verify: BoolAttributeType = Attribute.create(
         value_type=bool,
-        short_description='Verify TLS',
+        short_description="Verify TLS",
         description="Verify server's TLS certificate",
         default=True,
     )
     confidential: BoolAttributeType = Attribute.create(
         value_type=bool,
-        short_description='Confidential issues',
-        description='Mark created issues as confidential',
+        short_description="Confidential issues",
+        description="Mark created issues as confidential",
         default=False,
     )
 
@@ -73,6 +84,6 @@ class GitLabConfiguration(TrackerConfiguration):
 
 
 TrackerConfiguration.register_subtype(
-    subtype_name='gitlab',
+    subtype_name="gitlab",
     subtype_class=GitLabConfiguration,
 )

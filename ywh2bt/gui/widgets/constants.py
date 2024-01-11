@@ -1,5 +1,6 @@
 """Misc. constants used in the GUI."""
-from PySide2.QtCore import QSize
+from PySide6.QtCore import QSize
+
 
 SMALL_BUTTON_WIDTH = 24
 SMALL_BUTTON_HEIGHT = 20

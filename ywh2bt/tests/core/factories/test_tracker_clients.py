@@ -27,10 +27,9 @@ class MyConfiguration(TrackerConfiguration):
 
 
 class MyTrackerClient(TrackerClient[MyConfiguration]):
-
     @property
     def tracker_type(self) -> str:
-        return 'My configuration'
+        return "My configuration"
 
     def get_tracker_issue(self, issue_id: str) -> Optional[TrackerIssue]:
         raise NotImplementedError()
@@ -53,7 +52,6 @@ class MyTrackerClient(TrackerClient[MyConfiguration]):
 
 
 class TestTrackerClients(TestCase):
-
     def tearDown(self) -> None:
         TrackerClientClassesRegistry.unregister_tracker_client_class(
             configuration_class=MyConfiguration,
@@ -61,7 +59,7 @@ class TestTrackerClients(TestCase):
 
     def test_get_tracker_client(self) -> None:
         TrackerConfiguration.register_subtype(
-            subtype_name='my',
+            subtype_name="my",
             subtype_class=MyConfiguration,
         )
         TrackerClientClassesRegistry.register_tracker_client_class(
@@ -75,7 +73,7 @@ class TestTrackerClients(TestCase):
 
     def test_get_tracker_client_not_registered(self) -> None:
         TrackerConfiguration.register_subtype(
-            subtype_name='my',
+            subtype_name="my",
             subtype_class=MyConfiguration,
         )
         factory = TrackerClientsFactory()

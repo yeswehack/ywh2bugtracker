@@ -1,13 +1,21 @@
 """Models and functions used for formatting reports data."""
 from string import Template
-from typing import Dict, Tuple, cast
+from typing import (
+    Dict,
+    Tuple,
+    cast,
+)
 
-from bs4 import BeautifulSoup, Tag  # type: ignore
+from bs4 import (  # type: ignore
+    BeautifulSoup,
+    Tag,
+)
 
 from ywh2bt.core.api.formatter.formatter import ReportMessageFormatter
 from ywh2bt.core.converter.html2jira import html2jira
 
-REPORT_TITLE_TEMPLATE = '${local_id} : ${title}'
+
+REPORT_TITLE_TEMPLATE = "${local_id} : ${title}"
 REPORT_DESCRIPTION_TEMPLATE = """
 || Title || ${local_id} : ${title} ||
 | Priority | ${priority_name} |
@@ -73,7 +81,7 @@ DETAILS_UPDATE_LOG_TEMPLATE = """
 ${details_lines}
 """
 DETAILS_UPDATE_LOG_LINE_TEMPLATE = """| *${updated_property}* | {noformat}${old_value}{noformat} | {noformat}${new_value}{noformat} |
-"""
+"""  # noqa: E501
 PRIORITY_UPDATE_LOG_TEMPLATE = """
 *Priority updated*:
 
@@ -89,44 +97,44 @@ ${comment}
 class JiraReportMessageFormatter(ReportMessageFormatter):
     """A report formatter to JIRA."""
 
-    _code_block_template = Template('{code${language}}\n${content}\n{code}')
+    _code_block_template = Template("{code${language}}\n${content}\n{code}")
 
     _code_block_languages = [
-        'actionscript',
-        'ada',
-        'applescript',
-        'bash',
-        'c',
-        'c#',
-        'c++',
-        'cpp',
-        'css',
-        'erlang',
-        'go',
-        'groovy',
-        'haskell',
-        'html',
-        'java',
-        'javascript',
-        'js',
-        'json',
-        'lua',
-        'none',
-        'nyan',
-        'objc',
-        'perl',
-        'php',
-        'python',
-        'r',
-        'rainbow',
-        'ruby',
-        'scala',
-        'sh',
-        'sql',
-        'swift',
-        'visualbasic',
-        'xml',
-        'yaml',
+        "actionscript",
+        "ada",
+        "applescript",
+        "bash",
+        "c",
+        "c#",
+        "c++",
+        "cpp",
+        "css",
+        "erlang",
+        "go",
+        "groovy",
+        "haskell",
+        "html",
+        "java",
+        "javascript",
+        "js",
+        "json",
+        "lua",
+        "none",
+        "nyan",
+        "objc",
+        "perl",
+        "php",
+        "python",
+        "r",
+        "rainbow",
+        "ruby",
+        "scala",
+        "sh",
+        "sql",
+        "swift",
+        "visualbasic",
+        "xml",
+        "yaml",
     ]
 
     def __init__(self) -> None:
@@ -206,13 +214,13 @@ class JiraReportMessageFormatter(ReportMessageFormatter):
     ) -> str:
         soup = BeautifulSoup(
             html,
-            features='lxml',
+            features="lxml",
         )
         clean_html = str(soup)
-        for img in soup.findAll('img'):
-            alt = img.attrs.get('alt', '')
-            src = img.attrs.get('src', '')
-            a = f'!{alt}|{src}!'
+        for img in soup.findAll("img"):
+            alt = img.attrs.get("alt", "")
+            src = img.attrs.get("src", "")
+            a = f"!{alt}|{src}!"
             clean_html = clean_html.replace(str(img), a)
         return clean_html
 
@@ -223,7 +231,7 @@ class JiraReportMessageFormatter(ReportMessageFormatter):
         return self._extract_code_blocks_from_soup(
             soup=BeautifulSoup(
                 html,
-                features='lxml',
+                features="lxml",
             ),
         )
 
@@ -233,14 +241,14 @@ class JiraReportMessageFormatter(ReportMessageFormatter):
     ) -> Tuple[str, Dict[str, str]]:
         clean_html = str(soup)
         code_blocks = {}
-        for idx, code_tag in enumerate(soup.findAll('code')):
-            block_id = f'{{yeswehack_code_section_{idx}}}'
+        for idx, code_tag in enumerate(soup.findAll("code")):
+            block_id = f"{{yeswehack_code_section_{idx}}}"
             language = self._extract_code_block_language(
                 code_tag=code_tag,
             )
             code_blocks[block_id] = self._code_block_template.substitute(
-                language=f':{language}' if language else '',
-                content=''.join(map(str, code_tag.contents)),
+                language=f":{language}" if language else "",
+                content="".join(map(str, code_tag.contents)),
             )
             clean_html = clean_html.replace(str(code_tag), block_id)
         return clean_html, code_blocks
@@ -249,8 +257,8 @@ class JiraReportMessageFormatter(ReportMessageFormatter):
         self,
         code_tag: Tag,
     ) -> str:
-        title = code_tag.attrs.get('class', '')
+        title = code_tag.attrs.get("class", "")
         if isinstance(title, list):
-            title = title[0] if title else ''
-        language = cast(str, title.lower().replace('language-', ''))
-        return language if language in self._code_block_languages else ''
+            title = title[0] if title else ""
+        language = cast(str, title.lower().replace("language-", ""))
+        return language if language in self._code_block_languages else ""

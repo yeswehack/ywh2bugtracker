@@ -25,7 +25,7 @@ class Key:
             CryptError: if an error occurred
         """
         if not isinstance(key_bytes, bytes):
-            raise CryptError(f'Key should be {bytes}. {type(key_bytes)} given.')
+            raise CryptError(f"Key should be {bytes}. {type(key_bytes)} given.")
         self._key_bytes = key_bytes
 
     def generator(
@@ -39,7 +39,7 @@ class Key:
         """
         idx = 0
         key_size = len(self._key_bytes)
-        while True:  # noqa: WPS457
+        while True:
             yield self._key_bytes[idx % key_size]
             idx += 1
 
@@ -52,7 +52,7 @@ class Key:
         Returns:
             The string representation of the key.
         """
-        return f'Key(size={len(self._key_bytes)})'
+        return f"Key(size={len(self._key_bytes)})"
 
     @classmethod
     def from_str(

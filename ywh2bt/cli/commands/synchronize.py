@@ -30,7 +30,7 @@ def synchronize(
     try:
         configuration.validate()
     except BaseAttributeError as validation_error:
-        raise CliError('Invalid configuration') from validation_error
+        raise CliError("Invalid configuration") from validation_error
     synchronizer = Synchronizer(
         configuration=configuration,
         yes_we_hack_api_clients_factory=YesWeHackApiClientsFactory(),
@@ -40,4 +40,4 @@ def synchronize(
     try:
         synchronizer.synchronize()
     except SynchronizerError as synchronization_error:
-        raise CliError('Synchronization error') from synchronization_error
+        raise CliError("Synchronization error") from synchronization_error

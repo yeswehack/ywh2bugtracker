@@ -1,5 +1,5 @@
 [flake8]
-htmltitle = ywh2bt: flake8 violations
+htmltitle = ywh2bt: flake8
 max-line-length = 120
 max-line-complexity = 15
 max-cognitive-score = 20
@@ -14,6 +14,7 @@ max-arguments = 12
 max-attributes = 10
 max-local-variables = 15
 max-raises = 5
+enable-extensions = G
 rst-roles =
     class,
     func,
@@ -21,22 +22,11 @@ rst-roles =
 ignore =
     # docstring
     I,
+    E203,
     N804,
     S106,
     W503,
     W504,
-    WPS110,
-    WPS111,
-    WPS204,
-    WPS226,
-    WPS237,
-    WPS305,
-    WPS306,
-    WPS322,
-    WPS338,
-    WPS432,
-    WPS601,
-    WPS615,
 
 exclude =
     ywh2bt/gui/resources.py

@@ -1,5 +1,8 @@
 """Models and functions used in error dialogs."""
-from PySide2.QtWidgets import QMessageBox, QWidget
+from PySide6.QtWidgets import (
+    QMessageBox,
+    QWidget,
+)
 
 from ywh2bt.core.error import error_to_string
 
@@ -49,8 +52,9 @@ class ErrorDialogMixin:
             detailed_text: a detailed text
         """
         dialog = QMessageBox(parent)
-        dialog.setIcon(QMessageBox.Critical)
-        dialog.setText(f'<b>{text}</b>')
+        dialog.setWindowTitle("ywh2bt - Error")
+        dialog.setIcon(QMessageBox.Icon.Critical)
+        dialog.setText(f"<b>{text}</b>")
         dialog.setInformativeText(informative_text)
         dialog.setDetailedText(detailed_text)
         dialog.show()

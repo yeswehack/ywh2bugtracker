@@ -10,12 +10,10 @@ from typing import (
 from urllib.parse import urlsplit
 
 import requests
-from yeswehack.api import (
-    Attachment as YesWeHackRawApiAttachment,
-    Log as YesWeHackRawApiLog,
-    Report as YesWeHackRawApiReport,
-    YesWeHack as YesWeHackRawApiClient,
-)
+from yeswehack.api import Attachment as YesWeHackRawApiAttachment
+from yeswehack.api import Log as YesWeHackRawApiLog
+from yeswehack.api import Report as YesWeHackRawApiReport
+from yeswehack.api import YesWeHack as YesWeHackRawApiClient
 from yeswehack.exceptions import APIError as YesWeHackRawAPiError
 
 from ywh2bt.core.api.client import TestableApiClient
@@ -30,9 +28,7 @@ from ywh2bt.core.api.models.report import (
     Log,
     Report,
 )
-from ywh2bt.core.configuration.yeswehack import (
-    YesWeHackConfiguration,
-)
+from ywh2bt.core.configuration.yeswehack import YesWeHackConfiguration
 from ywh2bt.core.exceptions import CoreException
 from ywh2bt.version import __VERSION__
 
@@ -85,18 +81,18 @@ class YesWeHackApiClient(TestableApiClient):
                 verify=configuration.verify,
                 lazy=True,
                 headers={
-                    'User-Agent': f'ywh2bt/{__VERSION__}',
+                    "User-Agent": f"ywh2bt/{__VERSION__}",
                 },
             )
         except (YesWeHackRawAPiError, requests.RequestException) as e:
-            raise YesWeHackApiClientError('Unable to initialize YesWeHack API client') from e
+            raise YesWeHackApiClientError("Unable to initialize YesWeHack API client") from e
         return client
 
     def _normalize_api_url(
         self,
         api_url: str,
     ) -> str:
-        return api_url[:-1] if api_url[-1] == '/' else api_url
+        return api_url[:-1] if api_url[-1] == "/" else api_url
 
     def _extract_yeswehack_domain(
         self,
@@ -104,7 +100,7 @@ class YesWeHackApiClient(TestableApiClient):
     ) -> str:
         result = urlsplit(url)
         # only keep 'xxx.yyy.zzz' from 'www.xxx.yyy.zzz'
-        _, domain = result.netloc.split('.', 1)
+        _, domain = result.netloc.split(".", 1)
         return domain
 
     def _ensure_login(
@@ -114,7 +110,7 @@ class YesWeHackApiClient(TestableApiClient):
             try:
                 success = self._raw_client.login()
             except (YesWeHackRawAPiError, requests.RequestException) as e:
-                raise YesWeHackApiClientError('Unable to log in with YesWeHack API client') from e
+                raise YesWeHackApiClientError("Unable to log in with YesWeHack API client") from e
             self._logged_in = success
 
     def get_program_reports(
@@ -143,7 +139,7 @@ class YesWeHackApiClient(TestableApiClient):
                 lazy=True,
             )
         except (YesWeHackRawAPiError, YesWeHackApiClientError, requests.RequestException) as e:
-            raise YesWeHackApiClientError(f'Unable to get reports for program {slug}') from e
+            raise YesWeHackApiClientError(f"Unable to get reports for program {slug}") from e
         return self._get_detailed_reports(
             raw_reports=raw_reports,
         )
@@ -169,7 +165,7 @@ class YesWeHackApiClient(TestableApiClient):
                 lazy=True,
             )
         except (YesWeHackRawAPiError, requests.RequestException, TypeError) as e:
-            raise YesWeHackApiClientError(f'Unable to get report #{report_id} details') from e
+            raise YesWeHackApiClientError(f"Unable to get report #{report_id} details") from e
         return self._map_raw_report(
             raw_report=raw_report,
         )
@@ -191,7 +187,7 @@ class YesWeHackApiClient(TestableApiClient):
                 raw_report=raw_report,
             )
         except TypeError as e:
-            raise YesWeHackApiClientError(f'Unable to map report #{raw_report.id}') from e
+            raise YesWeHackApiClientError(f"Unable to map report #{raw_report.id}") from e
 
     def _map_raw_attachment(
         self,
@@ -203,7 +199,7 @@ class YesWeHackApiClient(TestableApiClient):
                 raw_attachment=raw_attachment,
             )
         except TypeError as e:
-            raise YesWeHackApiClientError(f'Unable to map attachment #{raw_attachment}') from e
+            raise YesWeHackApiClientError(f"Unable to map attachment #{raw_attachment}") from e
 
     def _map_raw_logs(
         self,
@@ -215,7 +211,7 @@ class YesWeHackApiClient(TestableApiClient):
                 raw_logs=raw_logs,
             )
         except TypeError as e:
-            raise YesWeHackApiClientError(f'Unable to map logs #{raw_logs}') from e
+            raise YesWeHackApiClientError(f"Unable to map logs #{raw_logs}") from e
 
     def put_report_tracking_status(
         self,
@@ -250,24 +246,24 @@ class YesWeHackApiClient(TestableApiClient):
                 message=comment,
             )
         except (YesWeHackRawAPiError, requests.RequestException) as api_error:
-            raise YesWeHackApiClientError(f'Unable to update report #{report.report_id} tracking status') from api_error
+            raise YesWeHackApiClientError(f"Unable to update report #{report.report_id} tracking status") from api_error
         try:
             data = response.json()
         except JSONDecodeError as decode_error:
             raise YesWeHackApiClientError(
-                f'Unable to parse response after updating report #{report.report_id} tracking status',
+                f"Unable to parse response after updating report #{report.report_id} tracking status",
             ) from decode_error
         if not isinstance(data, dict):
             raise YesWeHackApiClientError(
                 (
-                    f'Expecting {dict} from response to report #{report.report_id} tracking status update ; '
-                    + f'got {type(data)}',
+                    f"Expecting {dict} from response to report #{report.report_id} tracking status update ; "
+                    + f"got {type(data)}",
                 ),
             )
-        if not response.ok or 'errors' in data:
-            message = data['message'] if 'message' in data and data['message'] else '[no error message]'
+        if not response.ok or "errors" in data:
+            message = data["message"] if "message" in data and data["message"] else "[no error message]"
             raise YesWeHackApiClientError(
-                f'Unable to update report #{report.report_id} tracking status: {message}',
+                f"Unable to update report #{report.report_id} tracking status: {message}",
             )
 
     def post_report_tracker_update(
@@ -303,24 +299,24 @@ class YesWeHackApiClient(TestableApiClient):
                 message=comment,
             )
         except (YesWeHackRawAPiError, requests.RequestException) as api_error:
-            raise YesWeHackApiClientError(f'Unable to send report #{report.report_id} tracker update') from api_error
+            raise YesWeHackApiClientError(f"Unable to send report #{report.report_id} tracker update") from api_error
         try:
             data = response.json()
         except JSONDecodeError as decode_error:
             raise YesWeHackApiClientError(
-                f'Unable to parse response after report #{report.report_id} tracker update',
+                f"Unable to parse response after report #{report.report_id} tracker update",
             ) from decode_error
         if not isinstance(data, dict):
             raise YesWeHackApiClientError(
                 (
-                    f'Expecting {dict} from response to report #{report.report_id} tracker update ; '
-                    + f'got {type(data)}',
+                    f"Expecting {dict} from response to report #{report.report_id} tracker update ; "
+                    + f"got {type(data)}",
                 ),
             )
-        if not response.ok or 'errors' in data:
-            message = data['message'] if 'message' in data and data['message'] else '[no error message]'
+        if not response.ok or "errors" in data:
+            message = data["message"] if "message" in data and data["message"] else "[no error message]"
             raise YesWeHackApiClientError(
-                f'Unable to update report #{report.report_id} tracker: {message}',
+                f"Unable to update report #{report.report_id} tracker: {message}",
             )
 
     def post_report_attachment(
@@ -354,7 +350,7 @@ class YesWeHackApiClient(TestableApiClient):
             )
         except (YesWeHackRawAPiError, requests.RequestException) as api_error:
             raise YesWeHackApiClientError(
-                f'Unable to send attachment {filename} to report #{report.report_id}',
+                f"Unable to send attachment {filename} to report #{report.report_id}",
             ) from api_error
         return self._map_raw_attachment(
             raw_attachment=attachment,
@@ -393,7 +389,7 @@ class YesWeHackApiClient(TestableApiClient):
                 attachments=attachments,
             )
         except (YesWeHackRawAPiError, requests.RequestException) as api_error:
-            raise YesWeHackApiClientError(f'Unable to send report #{report.report_id} tracker message') from api_error
+            raise YesWeHackApiClientError(f"Unable to send report #{report.report_id} tracker message") from api_error
 
     def put_status(
         self,
@@ -425,7 +421,7 @@ class YesWeHackApiClient(TestableApiClient):
                 attachments=attachments,
             )
         except (YesWeHackRawAPiError, requests.RequestException) as api_error:
-            raise YesWeHackApiClientError(f'Unable to update report #{report.report_id} status') from api_error
+            raise YesWeHackApiClientError(f"Unable to update report #{report.report_id} status") from api_error
         return self._map_raw_logs(
             raw_logs=raw_logs,
         )

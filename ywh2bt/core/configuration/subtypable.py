@@ -2,11 +2,19 @@
 from __future__ import annotations
 
 from abc import ABCMeta
-from typing import Any, Dict, Optional, Tuple, Type, cast
+from typing import (
+    Any,
+    Dict,
+    Optional,
+    Tuple,
+    Type,
+    cast,
+)
 
 from ywh2bt.core.configuration.error import BaseAttributeError
 
-SUBTYPE_MANAGER_ATTR_NAME = '__subtype_manager'
+
+SUBTYPE_MANAGER_ATTR_NAME = "__subtype_manager"
 
 
 class SubtypeError(BaseAttributeError):
@@ -111,7 +119,7 @@ class SubtypableMetaclass(ABCMeta):
             subtype_manager = SubtypableManager()
             namespace[SUBTYPE_MANAGER_ATTR_NAME] = subtype_manager
 
-        return super(SubtypableMetaclass, mcs).__new__(mcs, name, bases, namespace)  # noqa: WPS608
+        return super(SubtypableMetaclass, mcs).__new__(mcs, name, bases, namespace)
 
     def __call__(
         cls,
@@ -136,24 +144,24 @@ class SubtypableMetaclass(ABCMeta):
         # noqa: DAR101 cls
         """
         new_cls = cls
-        subtypes = getattr(cls, 'get_registered_subtypes')()  # noqa: B009
+        subtypes = getattr(cls, "get_registered_subtypes")()  # noqa: B009
         if Subtypable in cls.__bases__:
-            subtype_name = kwargs.pop('type', None)
+            subtype_name = kwargs.pop("type", None)
             if subtype_name:
                 if subtype_name in subtypes:
-                    new_cls = subtypes[subtype_name]  # noqa: WPS529
+                    new_cls = subtypes[subtype_name]
                 else:
                     raise SubtypeError(
-                        message=f'Subtype {repr(subtype_name)} is not supported.',
+                        message=f"Subtype {repr(subtype_name)} is not supported.",
                         context=None,
                     )
             else:
                 raise SubtypeError(
-                    message='No subtype provided.',
+                    message="No subtype provided.",
                     context=None,
                 )
         obj = cls.__new__(new_cls, *args, **kwargs)  # type: ignore
-        obj.__init__(*args, **kwargs)  # type: ignore  # noqa: WPS609
+        obj.__init__(*args, **kwargs)  # type: ignore
         return cast(Subtypable, obj)
 
 
@@ -198,7 +206,7 @@ class SubtypableManager:
         """
         if not issubclass(subtype_class, Subtypable):
             raise SubtypeError(
-                message=f'Class {subtype_class} is not a subclass of {Subtypable}.',
+                message=f"Class {subtype_class} is not a subclass of {Subtypable}.",
                 context=None,
             )
         self._subtypes[subtype_name] = subtype_class

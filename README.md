@@ -53,6 +53,7 @@ Since data is pulled from YWH platform to your server, only regular outbound web
     - improved Python versions support (>=3.7 to <=3.12)
     - removed the GUI from the default installation (use `pip install 'ywh2bt[gui]'` to include the GUI)
     - fixed an issue with github when the title of an issue is longer than 255 characters
+    - fixed an issue with jira image previews when multiple attached images have the same name
 - v2.7:
     - added synchronization of "fix verification" logs when "Upload status updates" is checked
     - fixed an issue with jira when scope contains special markdown characters

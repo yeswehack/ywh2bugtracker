@@ -56,6 +56,9 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
     _attachments_list_description_item_jira_template = Template("- [${name}|${url}]")
     _attachments_list_description_item_markdown_template = Template("- [${name}](${url})")
 
+    _report_attachment_name_prefix: str = "R"
+    _comment_attachment_name_prefix: str = "C"
+
     def __init__(
         self,
         configuration: JiraConfiguration,
@@ -222,6 +225,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
             title="*Attachments*:",
             item_template=self._attachments_list_description_item_jira_template,
             attachments=report.attachments,
+            unique_name_prefix=self._report_attachment_name_prefix,
         )
         markdown_description = ""
         description_attachment = None
@@ -235,6 +239,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
                 title="**Attachments**:",
                 item_template=self._attachments_list_description_item_markdown_template,
                 attachments=report.attachments,
+                unique_name_prefix=self._report_attachment_name_prefix,
             )
             report_copy = deepcopy(report)
             report_copy.description_html = (
@@ -251,6 +256,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
                     description_attachment,
                     *report.attachments,
                 ],
+                unique_name_prefix=self._report_attachment_name_prefix,
             )
         jira_issue = self._create_issue(
             title=title,
@@ -260,11 +266,13 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
             uploads=self._upload_attachments(
                 issue=jira_issue,
                 attachments=report.attachments,
+                unique_name_prefix=self._report_attachment_name_prefix,
             ),
             referencing_texts=[
                 description,
                 markdown_description,
             ],
+            unique_name_prefix=self._report_attachment_name_prefix,
         )
         if description_attachment:
             description_attachment.data_loader = lambda: bytes(markdown_description, "utf-8")
@@ -274,10 +282,12 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
                     attachments=[
                         description_attachment,
                     ],
+                    unique_name_prefix=self._report_attachment_name_prefix,
                 ),
                 referencing_texts=[
                     description,
                 ],
+                unique_name_prefix=self._report_attachment_name_prefix,
             )[0]
         jira_issue.update(
             description=description,
@@ -405,6 +415,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
             title="*Attachments*:",
             item_template=self._attachments_list_description_item_jira_template,
             attachments=log.attachments,
+            unique_name_prefix=self._comment_attachment_name_prefix,
         )
         markdown_description = ""
         body_attachment = None
@@ -418,6 +429,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
                 title="**Attachments**:",
                 item_template=self._attachments_list_description_item_markdown_template,
                 attachments=log.attachments,
+                unique_name_prefix=self._comment_attachment_name_prefix,
             )
             log_copy = deepcopy(log)
             log_copy.message_html = (
@@ -432,16 +444,19 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
                     body_attachment,
                     *log.attachments,
                 ],
+                unique_name_prefix=self._comment_attachment_name_prefix,
             )
         comment_body, markdown_description = self._replace_attachments_references(
             uploads=self._upload_attachments(
                 issue=issue,
                 attachments=log.attachments,
+                unique_name_prefix=self._comment_attachment_name_prefix,
             ),
             referencing_texts=[
                 comment_body,
                 markdown_description,
             ],
+            unique_name_prefix=self._comment_attachment_name_prefix,
         )
         if body_attachment:
             body_attachment.data_loader = lambda: bytes(markdown_description, "utf-8")
@@ -451,10 +466,12 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
                     attachments=[
                         body_attachment,
                     ],
+                    unique_name_prefix=self._comment_attachment_name_prefix,
                 ),
                 referencing_texts=[
                     comment_body,
                 ],
+                unique_name_prefix=self._comment_attachment_name_prefix,
             )[0]
         try:
             return cast(
@@ -469,36 +486,35 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
                 f"Unable to add JIRA comment for issue {issue} in project {self.configuration.project}",
             ) from e
 
-    def _upload_attachments_and_substitute_references(
-        self,
-        issue: JIRAIssue,
-        attachments: List[Attachment],
-        referencing_texts: List[str],
-    ) -> List[str]:
-        uploads = self._upload_attachments(
-            issue=issue,
-            attachments=attachments,
-        )
-        for attachment, upload_url in uploads:
-            referencing_texts = [
-                text.replace(
-                    attachment.url,
-                    upload_url,
-                )
-                for text in referencing_texts
-            ]
-        return referencing_texts
-
     def _replace_attachments_references(
         self,
         uploads: List[Tuple[Attachment, str]],
         referencing_texts: List[str],
+        unique_name_prefix: str,
     ) -> List[str]:
         for attachment, upload_url in uploads:
             referencing_texts = [
-                text.replace(
-                    attachment.url,
-                    upload_url,
+                (
+                    text
+                    # use the unique attachment name for thumbnails otherwise jira is much confused
+                    .replace(
+                        f"[{attachment.original_name}|{attachment.url}]",
+                        (
+                            f"[{self._make_attachment_unique_name(prefix=unique_name_prefix, attachment=attachment)}"
+                            f"|{attachment.url}]"
+                        ),
+                    )
+                    .replace(
+                        f"!{attachment.original_name}|{attachment.url}!",
+                        (
+                            f"!{self._make_attachment_unique_name(prefix=unique_name_prefix, attachment=attachment)}"
+                            f"|{attachment.url}!"
+                        ),
+                    )
+                    .replace(
+                        attachment.url,
+                        upload_url,
+                    )
                 )
                 for text in referencing_texts
             ]
@@ -508,13 +524,16 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
         self,
         issue: JIRAIssue,
         attachments: List[Attachment],
+        unique_name_prefix: str,
     ) -> List[Tuple[Attachment, str]]:
         uploads = []
         for attachment in attachments:
+            # give each attachment a unique name so there's no confusion when jira displays a thumbnail
+            filename = self._make_attachment_unique_name(prefix=unique_name_prefix, attachment=attachment)
             try:
                 issue_attachment = self._get_client().add_attachment(
                     issue=issue.key,
-                    filename=attachment.original_name,
+                    filename=filename,
                     attachment=CustomBytesIO(buffer=attachment.data),  # using CustomBytesIO despite jira expectations
                 )
             except JIRAError as e:
@@ -533,11 +552,16 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
             )
         return uploads
 
+    @classmethod
+    def _make_attachment_unique_name(cls, prefix: str, attachment: Attachment) -> str:
+        return f"{prefix}-{attachment.attachment_id}-{attachment.original_name}"
+
     def _get_attachments_list_description(
         self,
         title: str,
         item_template: Template,
         attachments: List[Attachment],
+        unique_name_prefix: str,
     ) -> str:
         attachments_lines = []
         if attachments:
@@ -548,7 +572,10 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
             for attachment in attachments:
                 attachments_lines.append(
                     item_template.substitute(
-                        name=attachment.original_name,
+                        name=self._make_attachment_unique_name(
+                            prefix=unique_name_prefix,
+                            attachment=attachment,
+                        ),
                         url=attachment.url,
                     ),
                 )

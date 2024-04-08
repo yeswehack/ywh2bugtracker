@@ -159,6 +159,8 @@ def cleanup_attachments_and_urls_from_html(
     Returns:
         the cleaned html
     """
+    if not attachments:
+        return html, attachments
     clean_attachments = []
     clean_attachments_urls = []
     attachments_domains: Set[str] = set()

@@ -1,4 +1,5 @@
 import unittest
+from typing import List
 
 from ywh2bt.core.api.models.report import Attachment
 from ywh2bt.core.html import (
@@ -112,6 +113,25 @@ class TestHtml(unittest.TestCase):
 </a>        
 <a href="https://ywh.domain/910?qrst">
     https://ywh.domain/910
+</a>""",
+        )
+
+    def test_cleanup_attachments_and_urls_from_html_evil_domain(self) -> None:
+        attachments: List[Attachment] = []
+        html = """
+<a href="https://[EVIL_DOMAIN]/1234?ijkl">
+    https://ywh.domain/1234
+</a>"""
+        cleaned_html, cleaned_attachments = cleanup_attachments_and_urls_from_html(
+            html=html,
+            attachments=attachments,
+        )
+        self.assertEqual(0, len(cleaned_attachments))
+        self.assertEqual(
+            cleaned_html,
+            """
+<a href="https://[EVIL_DOMAIN]/1234?ijkl">
+    https://ywh.domain/1234
 </a>""",
         )
 

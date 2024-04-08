@@ -420,6 +420,7 @@ the content is put into a Markdown file which is attached to the issue or commen
 - References to a same uploaded attachment in different comments is not supported yet,
   i.e., if an attachment is referenced (either displayed inline or as a link) in several comments,
   only first one will be correctly handled.
+- The GUI is not compatible with python 3.8.0 on Windows 10 (for some reason)
 
 # Resources
 

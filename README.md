@@ -49,6 +49,8 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 
 ## Changelog
 
+- v2.9:
+    - prevented issue synchronization to fail when tracker file upload is unsuccessful
 - v2.8:
     - improved Python versions support (>=3.7 to <=3.12)
     - removed the GUI from the default installation (use `pip install 'ywh2bt[gui]'` to include the GUI)

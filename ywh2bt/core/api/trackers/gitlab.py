@@ -48,6 +48,8 @@ _RE_CONTENT_DISPOSITION_FILENAME = re.compile(pattern='filename="([^"]+)";?')
 _TITLE_MAX_SIZE = 255
 _TEXT_MAX_SIZE = 1000000
 
+AttachmentUploadResult = Tuple[Attachment, Optional[str], Optional[str]]
+
 
 class GitLabTrackerClientError(TrackerClientError):
     """A GitLab tracker client error."""
@@ -423,36 +425,57 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
 
     def _replace_attachments_references(
         self,
-        uploads: List[Tuple[Attachment, str]],
+        uploads: List[AttachmentUploadResult],
         referencing_texts: List[str],
     ) -> List[str]:
-        for attachment, upload_url in uploads:
-            referencing_texts = [
-                text.replace(
-                    attachment.url,
-                    f"{self.configuration.url}/{self.configuration.project}{upload_url}",
-                )
-                for text in referencing_texts
-            ]
+        for attachment, upload_url, error_message in uploads:
+            if upload_url:
+                referencing_texts = [
+                    text.replace(
+                        attachment.url,
+                        f"{self.configuration.url}/{self.configuration.project}{upload_url}",
+                    )
+                    for text in referencing_texts
+                ]
+            elif error_message:
+                referencing_texts = [
+                    text.replace(
+                        attachment.url,
+                        error_message,
+                    )
+                    for text in referencing_texts
+                ]
         return referencing_texts
 
     def _upload_attachments(
         self,
         gitlab_project: Project,
         attachments: List[Attachment],
-    ) -> List[Tuple[Attachment, str]]:
-        try:
-            return [
-                (
-                    attachment,
-                    gitlab_project.upload(attachment.original_name, attachment.data)["url"],
+    ) -> List[AttachmentUploadResult]:
+        uploads: List[AttachmentUploadResult] = []
+        for attachment in attachments:
+            try:
+                upload = gitlab_project.upload(attachment.original_name, attachment.data)
+            except GitlabError as e:
+                uploads.append(
+                    (
+                        attachment,
+                        None,
+                        (
+                            f'(Attachment "{attachment.original_name}" not available due to upload error: '
+                            f'{getattr(e, "error_message", "Unknown error")})'
+                        ),
+                    ),
                 )
-                for attachment in attachments
-            ]
-        except GitlabError as e:
-            raise GitLabTrackerClientError(
-                f"Unable to upload attachments for project {self.configuration.project} to GitLab",
-            ) from e
+            else:
+                uploads.append(
+                    (
+                        attachment,
+                        upload["url"],
+                        None,
+                    ),
+                )
+        return uploads
 
     def _get_attachments_list_description(
         self,

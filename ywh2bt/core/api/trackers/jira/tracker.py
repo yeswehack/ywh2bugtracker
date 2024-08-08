@@ -42,6 +42,8 @@ _RE_IMAGE = re.compile(pattern=r"!([^!|]+)(?:\|[^!]*)?!")
 _TITLE_MAX_SIZE = 255
 _TEXT_MAX_SIZE = 32767
 
+AttachmentUploadResult = Tuple[Attachment, Optional[str], Optional[str]]
+
 
 class JiraTrackerClientError(TrackerClientError):
     """A Jira tracker client error."""
@@ -488,36 +490,38 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
 
     def _replace_attachments_references(
         self,
-        uploads: List[Tuple[Attachment, str]],
+        uploads: List[AttachmentUploadResult],
         referencing_texts: List[str],
         unique_name_prefix: str,
     ) -> List[str]:
-        for attachment, upload_url in uploads:
-            referencing_texts = [
-                (
-                    text
-                    # use the unique attachment name for thumbnails otherwise jira is much confused
-                    .replace(
-                        f"[{attachment.original_name}|{attachment.url}]",
-                        (
-                            f"[{self._make_attachment_unique_name(prefix=unique_name_prefix, attachment=attachment)}"
-                            f"|{attachment.url}]"
-                        ),
-                    )
-                    .replace(
-                        f"!{attachment.original_name}|{attachment.url}!",
-                        (
-                            f"!{self._make_attachment_unique_name(prefix=unique_name_prefix, attachment=attachment)}"
-                            f"|{attachment.url}!"
-                        ),
-                    )
+        for attachment, upload_url, error_message in uploads:
+            # use the unique attachment name for thumbnails otherwise jira is much confused
+            unique_name = self._make_attachment_unique_name(prefix=unique_name_prefix, attachment=attachment)
+            if upload_url:
+                referencing_texts = [
+                    text.replace(f"[{attachment.original_name}|{attachment.url}]", f"[{unique_name}|{attachment.url}]")
+                    .replace(f"[{attachment.original_name}]({attachment.url})", f"[{unique_name}|{attachment.url}]")
+                    .replace(f"!{attachment.original_name}|{attachment.url}!", f"!{unique_name}|{attachment.url}!")
                     .replace(
                         attachment.url,
                         upload_url,
                     )
-                )
-                for text in referencing_texts
-            ]
+                    for text in referencing_texts
+                ]
+            elif error_message:
+                referencing_texts = [
+                    (
+                        text
+                        # replace attachment with the error message
+                        .replace(f"[{unique_name}|{attachment.url}]", error_message)
+                        .replace(f"[{unique_name}]({attachment.url})", error_message)
+                        .replace(f"!{unique_name}|{attachment.url}!", error_message)
+                        .replace(f"[{attachment.original_name}|{attachment.url}]", error_message)
+                        .replace(f"[{attachment.original_name}]({attachment.url})", error_message)
+                        .replace(f"!{attachment.original_name}|{attachment.url}!", error_message)
+                    )
+                    for text in referencing_texts
+                ]
         return referencing_texts
 
     def _upload_attachments(
@@ -525,8 +529,8 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
         issue: JIRAIssue,
         attachments: List[Attachment],
         unique_name_prefix: str,
-    ) -> List[Tuple[Attachment, str]]:
-        uploads = []
+    ) -> List[AttachmentUploadResult]:
+        uploads: List[AttachmentUploadResult] = []
         for attachment in attachments:
             # give each attachment a unique name so there's no confusion when jira displays a thumbnail
             filename = self._make_attachment_unique_name(prefix=unique_name_prefix, attachment=attachment)
@@ -537,19 +541,28 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
                     attachment=CustomBytesIO(buffer=attachment.data),  # using CustomBytesIO despite jira expectations
                 )
             except JIRAError as e:
-                raise JiraTrackerClientError(
-                    f"Unable to upload attachments for project {self.configuration.project} to JIRA",
-                ) from e
-            issue_attachment_url = quote(
-                issue_attachment.content,
-                safe=":/?&=",
-            )
-            uploads.append(
-                (
-                    attachment,
-                    issue_attachment_url,
-                ),
-            )
+                uploads.append(
+                    (
+                        attachment,
+                        None,
+                        (
+                            f'(Attachment "{attachment.original_name}" not available due to upload error: '
+                            f'{getattr(e, "text", "Unknown error")})'
+                        ),
+                    ),
+                )
+            else:
+                url = quote(
+                    issue_attachment.content,
+                    safe=":/?&=",
+                )
+                uploads.append(
+                    (
+                        attachment,
+                        url,
+                        None,
+                    )
+                )
         return uploads
 
     @classmethod

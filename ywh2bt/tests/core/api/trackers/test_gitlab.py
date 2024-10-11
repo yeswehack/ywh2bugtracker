@@ -217,6 +217,7 @@ class TestGitLabTrackerClient(TestCase):
                 title="My program",
                 slug="my-program",
             ),
+            ask_for_fix_verification_status="UNKNOWN",
         )
         issue = client.send_report(
             report=report,
@@ -284,6 +285,7 @@ class TestGitLabTrackerClient(TestCase):
                 title="My program",
                 slug="my-program",
             ),
+            ask_for_fix_verification_status="UNKNOWN",
         )
         with self.assertRaises(GitLabTrackerClientError):
             client.send_report(
@@ -353,6 +355,7 @@ class TestGitLabTrackerClient(TestCase):
                 title="My program",
                 slug="my-program",
             ),
+            ask_for_fix_verification_status="UNKNOWN",
         )
         with self.assertRaises(GitLabTrackerClientError):
             client.send_report(

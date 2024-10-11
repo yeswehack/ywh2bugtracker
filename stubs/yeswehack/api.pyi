@@ -165,6 +165,7 @@ class Report:
     title: Optional[str]
     tracking_status: str
     vulnerable_part: str
+    ask_for_fix_verification_status: str
 
     def __init__(
         self,
@@ -215,6 +216,13 @@ class Report:
     ) -> Attachment: ...
 
     def put_status(
+        self,
+        status: str,
+        message: Optional[str] = None,
+        attachments: Optional[List[str]] = None,
+    ) -> List[Log]: ...
+
+    def put_ask_for_fix_verification_status(
         self,
         status: str,
         message: Optional[str] = None,

@@ -73,6 +73,7 @@ class Report:
     status: str
     tracking_status: str
     program: ReportProgram
+    ask_for_fix_verification_status: str
     priority: Optional[Priority] = None
 
     def get_last_tracking_status_update_log(

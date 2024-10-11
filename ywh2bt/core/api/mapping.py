@@ -129,6 +129,7 @@ def map_raw_report(
             context=context,
             raw_program=raw_report.program or {},
         ),
+        ask_for_fix_verification_status=raw_report.ask_for_fix_verification_status,
     )
 
 

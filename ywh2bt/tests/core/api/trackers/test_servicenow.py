@@ -203,6 +203,7 @@ class TestServiceNowTrackerClient(TestCase):
                 title="My program",
                 slug="my-program",
             ),
+            ask_for_fix_verification_status="UNKNOWN",
         )
         issue = tracker_client.send_report(
             report=report,
@@ -281,6 +282,7 @@ class TestServiceNowTrackerClient(TestCase):
                 title="My program",
                 slug="my-program",
             ),
+            ask_for_fix_verification_status="UNKNOWN",
         )
         with self.assertRaises(ServiceNowTrackerClientError):
             tracker_client.send_report(

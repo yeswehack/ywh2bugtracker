@@ -17,6 +17,7 @@ from yeswehack.api import Priority as YesWeHackRawApiPriority
 from yeswehack.api import Report as YesWeHackRawApiReport
 
 from ywh2bt.core.api.models.report import (
+    AskForFixverificationStatusLog,
     Attachment,
     Author,
     BugType,
@@ -36,6 +37,7 @@ from ywh2bt.core.api.models.report import (
     TrackerMessageLog,
     TrackerUpdateLog,
     TrackingStatusLog,
+    TransferLog,
 )
 from ywh2bt.core.html import (
     cleanup_attachments_and_urls_from_html,
@@ -452,6 +454,30 @@ def map_raw_log(
             message_html=message_html,
             attachments=attachments,
             verified=raw_log.fix_verified,
+        )
+    if raw_log.type == "transfer":
+        return TransferLog(
+            created_at=created_at,
+            log_id=log_id,
+            log_type=log_type,
+            private=private,
+            author=author,
+            message_html=message_html,
+            attachments=attachments,
+            program=raw_log.program,
+            old_program=raw_log.old_program,
+        )
+    if raw_log.type == "ask-for-fix-verification-status":
+        return AskForFixverificationStatusLog(
+            created_at=created_at,
+            log_id=log_id,
+            log_type=log_type,
+            private=private,
+            author=author,
+            message_html=message_html,
+            attachments=attachments,
+            new_ask_for_fix_verification_status=raw_log.new_ask_for_fix_verification_status,
+            old_ask_for_fix_verification_status=raw_log.old_ask_for_fix_verification_status,
         )
     return Log(
         created_at=created_at,

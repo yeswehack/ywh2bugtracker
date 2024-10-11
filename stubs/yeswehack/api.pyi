@@ -127,6 +127,10 @@ class Log:
     tracker_id: Optional[str]
     tracker_token: Optional[str]
     fix_verified: bool
+    old_program: Optional[Dict[str, Any]]
+    program: Optional[Dict[str, Any]]
+    old_ask_for_fix_verification_status: Optional[str]
+    new_ask_for_fix_verification_status: Optional[str]
 
 
 class Report:

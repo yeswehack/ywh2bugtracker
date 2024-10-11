@@ -18,6 +18,7 @@ from typing import (
 
 from ywh2bt.core.api.models.report import (
     REPORT_STATUS_TRANSLATIONS,
+    AskForFixverificationStatusLog,
     Attachment,
     CloseLog,
     CommentLog,
@@ -31,6 +32,7 @@ from ywh2bt.core.api.models.report import (
     StatusUpdateLog,
     TrackerUpdateLog,
     TrackingStatusLog,
+    TransferLog,
 )
 from ywh2bt.core.api.tracker import (
     SendLogsResult,
@@ -569,7 +571,11 @@ class ReportSynchronizer:
                 isinstance(log, DetailsUpdateLog) and synchronize_options.upload_details_updates,
                 isinstance(log, PriorityUpdateLog) and synchronize_options.upload_priority_updates,
                 isinstance(log, RewardLog) and synchronize_options.upload_rewards,
-                isinstance(log, (StatusUpdateLog, FixVerifiedLog)) and synchronize_options.upload_status_updates,
+                (
+                    isinstance(log, (StatusUpdateLog, FixVerifiedLog, AskForFixverificationStatusLog))
+                    and synchronize_options.upload_status_updates
+                ),
+                isinstance(log, TransferLog) and synchronize_options.upload_transfer_updates,
             )
         )
 

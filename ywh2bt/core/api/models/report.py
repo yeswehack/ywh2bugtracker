@@ -48,6 +48,14 @@ REPORT_STATUS_TRANSLATIONS = MappingProxyType(
         "auto_close": "Auto Close",
     }
 )
+REPORT_ASK_FOR_FIX_VERIFICATION_STATUS_TRANSLATIONS = MappingProxyType(
+    {
+        "pending": "Pending fix verification",
+        "confirmed": "Fix confirmed",
+        "rejected": "Fix rejected",
+        "cancelled": "Fix verification cancelled",
+    }
+)
 
 
 @dataclass
@@ -328,6 +336,22 @@ class FixVerifiedLog(Log):
     """A fix-verified log."""
 
     verified: bool
+
+
+@dataclass
+class TransferLog(Log):
+    """A transfer log."""
+
+    old_program: Optional[Dict[str, Any]]
+    program: Optional[Dict[str, Any]]
+
+
+@dataclass
+class AskForFixverificationStatusLog(Log):
+    """A ask-for-fix-verification-status log."""
+
+    new_ask_for_fix_verification_status: Optional[str]
+    old_ask_for_fix_verification_status: Optional[str]
 
 
 class _LogFilterProtocol(Protocol):

@@ -2539,13 +2539,13 @@ typing-extensions = {version = ">=3.7.4", markers = "python_version < \"3.8\""}
 
 [[package]]
 name = "yeswehack"
-version = "0.8.5"
+version = "0.8.7"
 description = "yeswehack - YesWeHack API Wrapper"
 optional = false
 python-versions = "<3.13,>=3.7.0"
 files = [
-    {file = "yeswehack-0.8.5-py3-none-any.whl", hash = "sha256:60a7625c24b866e976b423a54d73be6c905f51b499bcfaa64b82cb612feb790d"},
-    {file = "yeswehack-0.8.5.tar.gz", hash = "sha256:d450da721cc5f6fdf8f48c2e3fccbb93699b312be2b2f9bb1967f00611ebaa33"},
+    {file = "yeswehack-0.8.7-py3-none-any.whl", hash = "sha256:78a72dad9e47346a803e1a58ba828195a3f1ccb053de4494cbe609a87a79649f"},
+    {file = "yeswehack-0.8.7.tar.gz", hash = "sha256:17bafda7e352b99feb33b3c49ee5c59975669f5eb5edc522d2b20da40247d47a"},
 ]
 
 [package.dependencies]
@@ -2574,4 +2574,4 @@ gui = ["pyside6", "pyside6"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.7.0,<3.13"
-content-hash = "e00e82b1e229d2be9f4b1d657ea4510e698989be8906eb44e49f07bc93967245"
+content-hash = "7fb61f56dd2e7e3e5b9e256b2c0d388607be1a300cbd344a3a5877d024094bd2"

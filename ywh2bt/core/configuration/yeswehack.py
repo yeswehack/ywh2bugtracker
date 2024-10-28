@@ -90,6 +90,12 @@ class SynchronizeOptions(AttributesContainer):
         description="Upload the report status updates into the bug tracker",
         default=False,
     )
+    upload_transfer_updates: BoolAttributeType = Attribute.create(
+        value_type=bool,
+        short_description="Upload transfer updates",
+        description="Upload the report transfer updates into the bug tracker",
+        default=False,
+    )
     recreate_missing_issues: BoolAttributeType = Attribute.create(
         value_type=bool,
         short_description="Recreate missing issues",
@@ -110,6 +116,7 @@ class SynchronizeOptions(AttributesContainer):
         upload_priority_updates: Optional[bool] = None,
         upload_rewards: Optional[bool] = None,
         upload_status_updates: Optional[bool] = None,
+        upload_transfer_updates: Optional[bool] = None,
         recreate_missing_issues: Optional[bool] = None,
         **kwargs: Any,
     ):
@@ -125,6 +132,7 @@ class SynchronizeOptions(AttributesContainer):
             upload_priority_updates: a flag indicating whether to upload priority updates into the bug tracker
             upload_rewards: a flag indicating whether to upload rewards to the bug tracker
             upload_status_updates: a flag indicating whether to upload status updates to the bug tracker
+            upload_transfer_updates: a flag indicating whether to upload transfer updates to the bug tracker
             recreate_missing_issues: a flag indicating whether to recreate missing issues
             kwargs: keyword arguments
         """
@@ -137,6 +145,7 @@ class SynchronizeOptions(AttributesContainer):
         self.upload_priority_updates = upload_priority_updates
         self.upload_rewards = upload_rewards
         self.upload_status_updates = upload_status_updates
+        self.upload_transfer_updates = upload_transfer_updates
         self.recreate_missing_issues = recreate_missing_issues
 
 

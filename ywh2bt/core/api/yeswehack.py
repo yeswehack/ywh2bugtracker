@@ -425,3 +425,40 @@ class YesWeHackApiClient(TestableApiClient):
         return self._map_raw_logs(
             raw_logs=raw_logs,
         )
+
+    def put_ask_for_fix_verification_status(
+        self,
+        report: Report,
+        status: str,
+        comment: str,
+        attachments: Optional[List[str]] = None,
+    ) -> List[Log]:
+        """
+        Update a report status.
+
+        Args:
+            report: a report
+            status: a status
+            comment: a comment
+            attachments: a list of attachment identifiers
+
+        Returns:
+            a list of logs
+
+        Raises:
+            YesWeHackApiClientError: if an error occurred when updating the status
+        """
+        self._ensure_login()
+        try:
+            raw_logs = report.raw_report.put_ask_for_fix_verification_status(
+                status=status,
+                message=comment,
+                attachments=attachments,
+            )
+        except (YesWeHackRawAPiError, requests.RequestException) as api_error:
+            raise YesWeHackApiClientError(
+                f"Unable to update report #{report.report_id} ask for fix verification status"
+            ) from api_error
+        return self._map_raw_logs(
+            raw_logs=raw_logs,
+        )

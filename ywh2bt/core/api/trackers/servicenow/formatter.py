@@ -80,6 +80,18 @@ REWARD_LOG_TEMPLATE = """
 Comment from reward:
 ${comment}
 """
+TRANSFER_LOG_TEMPLATE = """
+Report transferred:
+    - ${old_program}
+    - ${program}
+"""
+ASK_FOR_FIX_VERIFICATION_STATUS_LOG_TEMPLATE = """
+Fix verification:
+${new_ask_for_fix_verification_status}
+
+Comment:
+${comment}
+"""
 
 
 class ServiceNowReportMessageFormatter(ReportMessageFormatter):
@@ -100,6 +112,8 @@ class ServiceNowReportMessageFormatter(ReportMessageFormatter):
             details_update_log_line_template=Template(DETAILS_UPDATE_LOG_LINE_TEMPLATE),
             priority_update_log_template=Template(PRIORITY_UPDATE_LOG_TEMPLATE),
             reward_log_template=Template(REWARD_LOG_TEMPLATE),
+            transfer_log_template=Template(TRANSFER_LOG_TEMPLATE),
+            ask_for_fix_verification_status_log_template=Template(ASK_FOR_FIX_VERIFICATION_STATUS_LOG_TEMPLATE),
         )
 
     def transform_report_description_html(

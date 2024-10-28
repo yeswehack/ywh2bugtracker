@@ -334,13 +334,9 @@ class RootConfigurationWidget(QWidget, ErrorDialogMixin):
     def _get_last_opened_dir(
         self,
     ) -> str:
-        return (
-            QFileInfo(
-                cast(str, self._settings.value("last_opened_file")),
-            )
-            .dir()
-            .path()
-        )
+        last_opened_file = cast(str, self._settings.value("last_opened_file"))
+        file_info = QFileInfo(last_opened_file) if last_opened_file else QFileInfo()
+        return file_info.dir().path()
 
     def save(
         self,

@@ -117,6 +117,7 @@ class TestYesWeHackApiClient(TestCase):
                 title="My program",
                 slug="my-program",
             ),
+            ask_for_fix_verification_status="UNKNOWN",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.post_report_tracker_update(
@@ -184,6 +185,7 @@ class TestYesWeHackApiClient(TestCase):
                 title="My program",
                 slug="my-program",
             ),
+            ask_for_fix_verification_status="UNKNOWN",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.post_report_tracker_update(
@@ -247,6 +249,7 @@ class TestYesWeHackApiClient(TestCase):
                 title="My program",
                 slug="my-program",
             ),
+            ask_for_fix_verification_status="UNKNOWN",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.post_report_tracker_update(
@@ -314,6 +317,7 @@ class TestYesWeHackApiClient(TestCase):
                 title="My program",
                 slug="my-program",
             ),
+            ask_for_fix_verification_status="UNKNOWN",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.post_report_tracker_update(
@@ -379,6 +383,7 @@ class TestYesWeHackApiClient(TestCase):
                 title="My program",
                 slug="my-program",
             ),
+            ask_for_fix_verification_status="UNKNOWN",
         )
         client.post_report_tracker_update(
             report=report,
@@ -439,6 +444,7 @@ class TestYesWeHackApiClient(TestCase):
                 title="My program",
                 slug="my-program",
             ),
+            ask_for_fix_verification_status="UNKNOWN",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.put_report_tracking_status(
@@ -506,6 +512,7 @@ class TestYesWeHackApiClient(TestCase):
                 title="My program",
                 slug="my-program",
             ),
+            ask_for_fix_verification_status="UNKNOWN",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.put_report_tracking_status(
@@ -569,6 +576,7 @@ class TestYesWeHackApiClient(TestCase):
                 title="My program",
                 slug="my-program",
             ),
+            ask_for_fix_verification_status="UNKNOWN",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.put_report_tracking_status(
@@ -636,6 +644,7 @@ class TestYesWeHackApiClient(TestCase):
                 title="My program",
                 slug="my-program",
             ),
+            ask_for_fix_verification_status="UNKNOWN",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.put_report_tracking_status(
@@ -701,6 +710,7 @@ class TestYesWeHackApiClient(TestCase):
                 title="My program",
                 slug="my-program",
             ),
+            ask_for_fix_verification_status="UNKNOWN",
         )
         client.put_report_tracking_status(
             report=report,

@@ -156,6 +156,7 @@ class TestJiraTrackerClient(TestCase):
                 title="My program",
                 slug="my-program",
             ),
+            ask_for_fix_verification_status="UNKNOWN",
         )
         issue = client.send_report(
             report=report,

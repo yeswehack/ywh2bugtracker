@@ -18,6 +18,7 @@ from typing import (
 
 from ywh2bt.core.api.models.report import (
     REPORT_STATUS_TRANSLATIONS,
+    AskForFixverificationStatusLog,
     Attachment,
     CloseLog,
     CommentLog,
@@ -31,6 +32,7 @@ from ywh2bt.core.api.models.report import (
     StatusUpdateLog,
     TrackerUpdateLog,
     TrackingStatusLog,
+    TransferLog,
 )
 from ywh2bt.core.api.tracker import (
     SendLogsResult,
@@ -429,7 +431,7 @@ class ReportSynchronizer:
         )
         for downloaded_comment in download_comments_result.downloaded_comments:
             tracker_issue_state.add_downloaded_comment(downloaded_comment)
-        new_report_status = self._update_report_status(
+        new_report_status = self._update_report_ask_for_fix_verification_status(
             tracker_issue=tracker_issue,
             tracker_issue_state=tracker_issue_state,
         )
@@ -569,7 +571,11 @@ class ReportSynchronizer:
                 isinstance(log, DetailsUpdateLog) and synchronize_options.upload_details_updates,
                 isinstance(log, PriorityUpdateLog) and synchronize_options.upload_priority_updates,
                 isinstance(log, RewardLog) and synchronize_options.upload_rewards,
-                isinstance(log, (StatusUpdateLog, FixVerifiedLog)) and synchronize_options.upload_status_updates,
+                (
+                    isinstance(log, (StatusUpdateLog, FixVerifiedLog, AskForFixverificationStatusLog))
+                    and synchronize_options.upload_status_updates
+                ),
+                isinstance(log, TransferLog) and synchronize_options.upload_transfer_updates,
             )
         )
 
@@ -739,6 +745,48 @@ class ReportSynchronizer:
     ) -> bool:
         try:
             self._yeswehack_client.put_status(
+                report=self._report,
+                status=status,
+                comment=self._message_formatter.format_status_update_comment(
+                    comment=comment,
+                ),
+            )
+        except YesWeHackApiClientError:
+            return False
+        return True
+
+    def _update_report_ask_for_fix_verification_status(
+        self,
+        tracker_issue: TrackerIssue,
+        tracker_issue_state: TrackerIssueState,
+    ) -> Optional[Tuple[str, str]]:
+        if not self._feedback_options.issue_closed_to_report_afv:
+            return None
+        condition = tracker_issue.closed and not tracker_issue_state.closed
+        pending_status = "PENDING"
+        if condition and self._report.ask_for_fix_verification_status != pending_status:
+            status_updated = self._put_report_ask_for_fix_verification_status(
+                status=pending_status,
+                comment="\n".join(
+                    (
+                        "Hello,",
+                        "A fix has been deployed for this vulnerability.",
+                        "Could you please verify that you cannot reproduce the bug nor bypass the fix?",
+                        "Thanks for your help,",
+                        "Regards,",
+                    ),
+                ),
+            )
+            return (self._report.ask_for_fix_verification_status, pending_status) if status_updated else None
+        return None
+
+    def _put_report_ask_for_fix_verification_status(
+        self,
+        status: str,
+        comment: str,
+    ) -> bool:
+        try:
+            self._yeswehack_client.put_ask_for_fix_verification_status(
                 report=self._report,
                 status=status,
                 comment=self._message_formatter.format_status_update_comment(

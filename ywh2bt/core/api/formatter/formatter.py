@@ -11,8 +11,10 @@ from singledispatchmethod import singledispatchmethod
 from typing_extensions import Protocol
 
 from ywh2bt.core.api.models.report import (
+    REPORT_ASK_FOR_FIX_VERIFICATION_STATUS_TRANSLATIONS,
     REPORT_PROPERTY_LABELS,
     REPORT_STATUS_TRANSLATIONS,
+    AskForFixverificationStatusLog,
     CloseLog,
     CommentLog,
     CvssUpdateLog,
@@ -23,6 +25,7 @@ from ywh2bt.core.api.models.report import (
     Report,
     RewardLog,
     StatusUpdateLog,
+    TransferLog,
 )
 
 
@@ -54,6 +57,8 @@ class ReportMessageFormatter(ABC):
     _details_update_log_template: Template
     _details_update_log_line_template: Template
     _priority_update_log_template: Template
+    _transfer_log_template: Template
+    _ask_for_fix_verification_status_log_template: Template
     _reward_log_template: Template
     _value_transformer: _ValueTransformer
 
@@ -71,6 +76,8 @@ class ReportMessageFormatter(ABC):
         details_update_log_line_template: Template,
         priority_update_log_template: Template,
         reward_log_template: Template,
+        transfer_log_template: Template,
+        ask_for_fix_verification_status_log_template: Template,
         value_transformer: Optional[_ValueTransformer] = None,
     ):
         """
@@ -89,6 +96,8 @@ class ReportMessageFormatter(ABC):
             details_update_log_line_template: a template for entries of a DetailsUpdateLog
             priority_update_log_template: a template for a PriorityUpdateLog
             reward_log_template: a template for a RewardLog
+            transfer_log_template: a template for a TransferLog
+            ask_for_fix_verification_status_log_template: a template for a AskForFixVerificationStatusLog
             value_transformer: a transformer for values
         """
         self._report_title_template = report_title_template
@@ -104,6 +113,8 @@ class ReportMessageFormatter(ABC):
         self._priority_update_log_template = priority_update_log_template
         self._reward_log_template = reward_log_template
         self._value_transformer = value_transformer or _identity_transformer
+        self._transfer_log_template = transfer_log_template
+        self._ask_for_fix_verification_status_log_template = ask_for_fix_verification_status_log_template
 
     def _transform_value(
         self,
@@ -301,6 +312,36 @@ class ReportMessageFormatter(ABC):
         )
 
     @_transform_log.register
+    def _transform_transfer_log(
+        self,
+        log: TransferLog,
+    ) -> str:
+        return self._transfer_log_template.substitute(
+            old_program=(log.old_program or {}).get("title") or "",
+            program=(log.program or {}).get("title") or "",
+            comment=self.transform_html(
+                html=log.message_html,
+            ),
+        )
+
+    @_transform_log.register
+    def _transform_ask_for_fix_verification_log(
+        self,
+        log: AskForFixverificationStatusLog,
+    ) -> str:
+        return self._ask_for_fix_verification_status_log_template.substitute(
+            old_ask_for_fix_verification_status=self._translate_ask_for_fix_verification_status(
+                status=log.old_ask_for_fix_verification_status or "",
+            ),
+            new_ask_for_fix_verification_status=self._translate_ask_for_fix_verification_status(
+                status=log.new_ask_for_fix_verification_status or "",
+            ),
+            comment=self.transform_html(
+                html=log.message_html,
+            ),
+        )
+
+    @_transform_log.register
     def _transform_close_log(
         self,
         log: CloseLog,
@@ -322,6 +363,12 @@ class ReportMessageFormatter(ABC):
         status: str,
     ) -> str:
         return REPORT_STATUS_TRANSLATIONS.get(status, "")
+
+    def _translate_ask_for_fix_verification_status(
+        self,
+        status: str,
+    ) -> str:
+        return REPORT_ASK_FOR_FIX_VERIFICATION_STATUS_TRANSLATIONS.get(status.lower(), "")
 
     @_transform_log.register
     def _transform_details_update_log(

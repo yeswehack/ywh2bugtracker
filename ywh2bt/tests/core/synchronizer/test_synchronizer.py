@@ -534,6 +534,7 @@ class TestReportSynchronizer(TestCase):
                 title="Program 1",
                 slug="program1",
             ),
+            ask_for_fix_verification_status="PENDING",
         )
 
     def _build_configuration(

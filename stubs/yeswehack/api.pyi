@@ -127,6 +127,10 @@ class Log:
     tracker_id: Optional[str]
     tracker_token: Optional[str]
     fix_verified: bool
+    old_program: Optional[Dict[str, Any]]
+    program: Optional[Dict[str, Any]]
+    old_ask_for_fix_verification_status: Optional[str]
+    new_ask_for_fix_verification_status: Optional[str]
 
 
 class Report:
@@ -165,6 +169,7 @@ class Report:
     title: Optional[str]
     tracking_status: str
     vulnerable_part: str
+    ask_for_fix_verification_status: str
 
     def __init__(
         self,
@@ -215,6 +220,13 @@ class Report:
     ) -> Attachment: ...
 
     def put_status(
+        self,
+        status: str,
+        message: Optional[str] = None,
+        attachments: Optional[List[str]] = None,
+    ) -> List[Log]: ...
+
+    def put_ask_for_fix_verification_status(
         self,
         status: str,
         message: Optional[str] = None,

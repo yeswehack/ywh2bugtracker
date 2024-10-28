@@ -49,6 +49,9 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 
 ## Changelog
 
+- v2.10: 
+    - added support for new ask for fix process
+    - added support for report transfer log 
 - v2.9:
     - prevented issue synchronization to fail when tracker file upload is unsuccessful
 - v2.8:

@@ -17,9 +17,9 @@ _Write technical solution if identified_
 
 ## Security and Privacy
 >  Risk level MUST be systematically assessed before designing a change. Actions to handle risk and approval depend on the risk level:
->- None/low : no or low impact and probability considered. If the risk is considered low, actions to handle the risk may be defined. No approval required.
->- Medium : either significant impact or significant probability considered. Actions must be defined in the sections below and approved/completed by a team lead before implementing the change.
->- High : significant impact AND probability considered. Actions must be defined in the section below and approved/completed by CTO or CISO before implementing the change.
+>- None/low: no or low impact and probability considered. If the risk is considered low, actions to handle the risk may be defined. No approval required.
+>- Medium: either significant impact or significant probability considered. Actions must be defined in the sections below and approved/completed by a team lead before implementing the change.
+>- High: significant impact AND probability considered. Actions must be defined in the section below and approved/completed by CTO or CISO before implementing the change.
 
 | Risk level | None     | Low      | Med.   | High                  |
 |------------|----------|----------|--------|-----------------------|

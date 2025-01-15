@@ -167,6 +167,10 @@ class ReportMessageFormatter(ABC):
             bug_type_name=report.bug_type.name,
             bug_type_link=report.bug_type.link,
             bug_type_remediation_link=report.bug_type.remediation_link or "/",
+            cve_label=self._get_property_label("cve"),
+            cve_name=report.cve.get("id") or "",
+            impact_label=self._get_property_label("impact"),
+            impact_name=report.impact or "",
             scope_label=self._get_property_label("scope"),
             scope=self._transform_value(
                 value=report.scope,

@@ -535,6 +535,10 @@ class TestReportSynchronizer(TestCase):
                 slug="program1",
             ),
             ask_for_fix_verification_status="PENDING",
+            cve={
+                "id": "CVE-2019-0039",
+            },
+            impact="Application Level Denial of Service (DoS)",
         )
 
     def _build_configuration(

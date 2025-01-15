@@ -170,6 +170,8 @@ class Report:
     tracking_status: str
     vulnerable_part: str
     ask_for_fix_verification_status: str
+    cve: Dict[str, Any]
+    impact: str
 
     def __init__(
         self,

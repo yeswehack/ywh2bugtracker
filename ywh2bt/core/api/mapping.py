@@ -47,6 +47,13 @@ from ywh2bt.core.html import (
 
 
 @dataclass
+class Cve:
+    """A CVE model."""
+
+    id: str
+
+
+@dataclass
 class MappingContext:
     """A mapping context."""
 
@@ -82,6 +89,10 @@ def map_raw_report(
     bug_type = _map_raw_bug_type(
         context=context,
         raw_bug_type=raw_report.bug_type,
+    )
+    cve = _map_raw_cve(
+        context=context,
+        raw_cve=raw_report.cve or {},
     )
     cvss = _map_raw_cvss(
         context=context,
@@ -132,6 +143,8 @@ def map_raw_report(
             raw_program=raw_report.program or {},
         ),
         ask_for_fix_verification_status=raw_report.ask_for_fix_verification_status,
+        cve=cve,
+        impact=raw_report.impact,
     )
 
 
@@ -144,6 +157,15 @@ def _map_raw_bug_type(
         link=raw_bug_type.link,
         remediation_link=raw_bug_type.remediation_link,
     )
+
+
+def _map_raw_cve(
+    context: MappingContext,
+    raw_cve: Dict[Any, Any],
+) -> Dict[str, Any]:
+    return {
+        "id": raw_cve.get("id") or "",
+    }
 
 
 def _map_raw_priority(

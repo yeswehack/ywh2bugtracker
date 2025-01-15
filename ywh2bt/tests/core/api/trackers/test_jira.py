@@ -157,6 +157,10 @@ class TestJiraTrackerClient(TestCase):
                 slug="my-program",
             ),
             ask_for_fix_verification_status="UNKNOWN",
+            cve={
+                "id": "CVE-2019-0039",
+            },
+            impact="Application Level Denial of Service (DoS)",
         )
         issue = client.send_report(
             report=report,

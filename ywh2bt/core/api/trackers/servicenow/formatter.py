@@ -12,6 +12,8 @@ REPORT_DESCRIPTION_TEMPLATE = """Title: ${local_id} : ${title}
 Priority: ${priority_name}
 ${bug_type_label}: ${bug_type_name} (${bug_type_link})
 ${bug_type_label} remediation: ${bug_type_remediation_link}
+${cve_label}: ${cve_name}
+${impact_label}: ${impact_name}
 ${scope_label}: ${scope}
 Severity: ${cvss_criticity}
     - Score: ${cvss_score}

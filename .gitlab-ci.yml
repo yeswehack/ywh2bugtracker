@@ -27,7 +27,7 @@ stages:
   tags:
     - docker20
   before_script:
-    - curl -sSL https://install.python-poetry.org | python -
+    - curl -sSL https://install.python-poetry.org | python - --version 1.8.4
     - export PATH="/root/.local/bin:$PATH"
     - poetry install --no-root --with dev
 

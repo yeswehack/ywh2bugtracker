@@ -1,6 +1,6 @@
 FROM python:3.12.1-slim-bookworm AS builder
 RUN apt-get update && apt-get install -yq curl
-RUN curl -sSL https://install.python-poetry.org | python -
+RUN curl -sSL https://install.python-poetry.org | python - --version 1.8.4
 WORKDIR /ywh2bt
 COPY / ./
 RUN /root/.local/bin/poetry build

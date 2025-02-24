@@ -19,6 +19,8 @@ from yeswehack.api import Report as YesWeHackRawApiReport
 REPORT_PROPERTY_LABELS = MappingProxyType(
     {
         "bug_type": "Bug type",
+        "cve": "CVE",
+        "impact": "Impact",
         "scope": "Scope",
         "end_point": "Endpoint",
         "vulnerable_part": "Vulnerable part",
@@ -82,6 +84,8 @@ class Report:
     tracking_status: str
     program: ReportProgram
     ask_for_fix_verification_status: str
+    cve: Dict[str, Any]
+    impact: str
     priority: Optional[Priority] = None
 
     def get_last_tracking_status_update_log(

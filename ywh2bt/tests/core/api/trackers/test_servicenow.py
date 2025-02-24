@@ -204,6 +204,10 @@ class TestServiceNowTrackerClient(TestCase):
                 slug="my-program",
             ),
             ask_for_fix_verification_status="UNKNOWN",
+            cve={
+                "id": "CVE-2019-0039",
+            },
+            impact="Application Level Denial of Service (DoS)",
         )
         issue = tracker_client.send_report(
             report=report,
@@ -283,6 +287,10 @@ class TestServiceNowTrackerClient(TestCase):
                 slug="my-program",
             ),
             ask_for_fix_verification_status="UNKNOWN",
+            cve={
+                "id": "CVE-2019-0039",
+            },
+            impact="Application Level Denial of Service (DoS)",
         )
         with self.assertRaises(ServiceNowTrackerClientError):
             tracker_client.send_report(

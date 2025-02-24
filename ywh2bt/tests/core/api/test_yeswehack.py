@@ -118,6 +118,10 @@ class TestYesWeHackApiClient(TestCase):
                 slug="my-program",
             ),
             ask_for_fix_verification_status="UNKNOWN",
+            cve={
+                "id": "CVE-2019-0039",
+            },
+            impact="Application Level Denial of Service (DoS)",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.post_report_tracker_update(
@@ -186,6 +190,10 @@ class TestYesWeHackApiClient(TestCase):
                 slug="my-program",
             ),
             ask_for_fix_verification_status="UNKNOWN",
+            cve={
+                "id": "CVE-2019-0039",
+            },
+            impact="Application Level Denial of Service (DoS)",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.post_report_tracker_update(
@@ -250,6 +258,10 @@ class TestYesWeHackApiClient(TestCase):
                 slug="my-program",
             ),
             ask_for_fix_verification_status="UNKNOWN",
+            cve={
+                "id": "CVE-2019-0039",
+            },
+            impact="Application Level Denial of Service (DoS)",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.post_report_tracker_update(
@@ -318,6 +330,10 @@ class TestYesWeHackApiClient(TestCase):
                 slug="my-program",
             ),
             ask_for_fix_verification_status="UNKNOWN",
+            cve={
+                "id": "CVE-2019-0039",
+            },
+            impact="Application Level Denial of Service (DoS)",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.post_report_tracker_update(
@@ -384,6 +400,10 @@ class TestYesWeHackApiClient(TestCase):
                 slug="my-program",
             ),
             ask_for_fix_verification_status="UNKNOWN",
+            cve={
+                "id": "CVE-2019-0039",
+            },
+            impact="Application Level Denial of Service (DoS)",
         )
         client.post_report_tracker_update(
             report=report,
@@ -445,6 +465,10 @@ class TestYesWeHackApiClient(TestCase):
                 slug="my-program",
             ),
             ask_for_fix_verification_status="UNKNOWN",
+            cve={
+                "id": "CVE-2019-0039",
+            },
+            impact="Application Level Denial of Service (DoS)",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.put_report_tracking_status(
@@ -513,6 +537,10 @@ class TestYesWeHackApiClient(TestCase):
                 slug="my-program",
             ),
             ask_for_fix_verification_status="UNKNOWN",
+            cve={
+                "id": "CVE-2019-0039",
+            },
+            impact="Application Level Denial of Service (DoS)",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.put_report_tracking_status(
@@ -577,6 +605,10 @@ class TestYesWeHackApiClient(TestCase):
                 slug="my-program",
             ),
             ask_for_fix_verification_status="UNKNOWN",
+            cve={
+                "id": "CVE-2019-0039",
+            },
+            impact="Application Level Denial of Service (DoS)",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.put_report_tracking_status(
@@ -645,6 +677,10 @@ class TestYesWeHackApiClient(TestCase):
                 slug="my-program",
             ),
             ask_for_fix_verification_status="UNKNOWN",
+            cve={
+                "id": "CVE-2019-0039",
+            },
+            impact="Application Level Denial of Service (DoS)",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.put_report_tracking_status(
@@ -711,6 +747,10 @@ class TestYesWeHackApiClient(TestCase):
                 slug="my-program",
             ),
             ask_for_fix_verification_status="UNKNOWN",
+            cve={
+                "id": "CVE-2019-0039",
+            },
+            impact="Application Level Denial of Service (DoS)",
         )
         client.put_report_tracking_status(
             report=report,

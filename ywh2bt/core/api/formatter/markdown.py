@@ -13,6 +13,8 @@ REPORT_DESCRIPTION_TEMPLATE = """
 |-------|---------------------|
 | Priority | ${priority_name} |
 | ${bug_type_label} | [${bug_type_name}](${bug_type_link}) &#8594; [Remediation](${bug_type_remediation_link}) |
+| ${cve_label} | ${cve_name} |
+| ${impact_label} | ${impact_name} |
 | ${scope_label} | ${scope} |
 | Severity | ${cvss_criticity}, score: ${cvss_score}, vector: ${cvss_vector} |
 | ${end_point_label} | ${end_point} |

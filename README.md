@@ -49,6 +49,8 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 
 ## Changelog
 
+- v2.11:
+    - added support for new impact and cve fields
 - v2.10: 
     - added support for new ask for fix process
     - added support for report transfer log 

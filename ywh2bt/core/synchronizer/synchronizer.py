@@ -33,6 +33,7 @@ from ywh2bt.core.api.models.report import (
     TrackerUpdateLog,
     TrackingStatusLog,
     TransferLog,
+    TriageStatusLog,
 )
 from ywh2bt.core.api.tracker import (
     SendLogsResult,
@@ -576,6 +577,7 @@ class ReportSynchronizer:
                     and synchronize_options.upload_status_updates
                 ),
                 isinstance(log, TransferLog) and synchronize_options.upload_transfer_updates,
+                isinstance(log, TriageStatusLog) and synchronize_options.upload_triage_status_updates,
             )
         )
 

@@ -38,6 +38,7 @@ from ywh2bt.core.api.models.report import (
     TrackerUpdateLog,
     TrackingStatusLog,
     TransferLog,
+    TriageStatusLog,
 )
 from ywh2bt.core.html import (
     cleanup_attachments_and_urls_from_html,
@@ -331,6 +332,22 @@ def map_raw_log(
             attachments=attachments,
             old_status=raw_log.old_status,
             new_status=raw_log.status,
+        )
+    if (
+        (raw_log.type == "comment" or raw_log.type == "assign")
+        and raw_log.old_triage_status
+        and raw_log.new_triage_status
+    ):
+        return TriageStatusLog(
+            created_at=created_at,
+            log_id=log_id,
+            log_type=log_type,
+            private=private,
+            author=author,
+            message_html=message_html,
+            attachments=attachments,
+            old_triage_status=raw_log.old_triage_status,
+            new_triage_status=raw_log.new_triage_status,
         )
     if raw_log.type == "comment" or (raw_log.type == "assign" and message_html):
         return CommentLog(

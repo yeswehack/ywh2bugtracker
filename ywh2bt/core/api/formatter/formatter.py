@@ -14,6 +14,7 @@ from ywh2bt.core.api.models.report import (
     REPORT_ASK_FOR_FIX_VERIFICATION_STATUS_TRANSLATIONS,
     REPORT_PROPERTY_LABELS,
     REPORT_STATUS_TRANSLATIONS,
+    REPORT_TRIAGE_STATUS_TRANSLATIONS,
     AskForFixverificationStatusLog,
     CloseLog,
     CommentLog,
@@ -26,6 +27,7 @@ from ywh2bt.core.api.models.report import (
     RewardLog,
     StatusUpdateLog,
     TransferLog,
+    TriageStatusLog,
 )
 
 
@@ -57,9 +59,10 @@ class ReportMessageFormatter(ABC):
     _details_update_log_template: Template
     _details_update_log_line_template: Template
     _priority_update_log_template: Template
+    _reward_log_template: Template
     _transfer_log_template: Template
     _ask_for_fix_verification_status_log_template: Template
-    _reward_log_template: Template
+    _triage_status_log_template: Template
     _value_transformer: _ValueTransformer
 
     def __init__(
@@ -78,6 +81,7 @@ class ReportMessageFormatter(ABC):
         reward_log_template: Template,
         transfer_log_template: Template,
         ask_for_fix_verification_status_log_template: Template,
+        triage_status_log_template: Template,
         value_transformer: Optional[_ValueTransformer] = None,
     ):
         """
@@ -115,6 +119,7 @@ class ReportMessageFormatter(ABC):
         self._value_transformer = value_transformer or _identity_transformer
         self._transfer_log_template = transfer_log_template
         self._ask_for_fix_verification_status_log_template = ask_for_fix_verification_status_log_template
+        self._triage_status_log_template = triage_status_log_template
 
     def _transform_value(
         self,
@@ -362,18 +367,6 @@ class ReportMessageFormatter(ABC):
             ),
         )
 
-    def _translate_status(
-        self,
-        status: str,
-    ) -> str:
-        return REPORT_STATUS_TRANSLATIONS.get(status, "")
-
-    def _translate_ask_for_fix_verification_status(
-        self,
-        status: str,
-    ) -> str:
-        return REPORT_ASK_FOR_FIX_VERIFICATION_STATUS_TRANSLATIONS.get(status.lower(), "")
-
     @_transform_log.register
     def _transform_details_update_log(
         self,
@@ -418,3 +411,38 @@ class ReportMessageFormatter(ABC):
                 html=log.message_html,
             ),
         )
+
+    @_transform_log.register
+    def _transform_triage_status_log(
+        self,
+        log: TriageStatusLog,
+    ) -> str:
+        return self._triage_status_log_template.substitute(
+            new_triage_status=self._translate_triage_status(
+                status=log.new_triage_status or "",
+            ),
+            old_triage_status=self._translate_triage_status(
+                status=log.old_triage_status or "",
+            ),
+            comment=self.transform_html(
+                html=log.message_html,
+            ),
+        )
+
+    def _translate_status(
+        self,
+        status: str,
+    ) -> str:
+        return REPORT_STATUS_TRANSLATIONS.get(status, "")
+
+    def _translate_ask_for_fix_verification_status(
+        self,
+        status: str,
+    ) -> str:
+        return REPORT_ASK_FOR_FIX_VERIFICATION_STATUS_TRANSLATIONS.get(status.lower(), "")
+
+    def _translate_triage_status(
+        self,
+        status: str,
+    ) -> str:
+        return REPORT_TRIAGE_STATUS_TRANSLATIONS.get(status.lower(), "")

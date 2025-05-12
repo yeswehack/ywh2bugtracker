@@ -43,6 +43,15 @@ COMMENT_LOG_TEMPLATE = """
 Comment:
 ${comment}
 """
+TRIAGE_STATUS_LOG_TEMPLATE = """
+**Triage status updated**:
+
+${old_triage_status} -> ${new_triage_status}
+
+**Comment**:
+
+${comment}
+"""
 CVSS_UPDATE_LOG_TEMPLATE = """
 CVSS updated:
 Severity:
@@ -116,6 +125,7 @@ class ServiceNowReportMessageFormatter(ReportMessageFormatter):
             reward_log_template=Template(REWARD_LOG_TEMPLATE),
             transfer_log_template=Template(TRANSFER_LOG_TEMPLATE),
             ask_for_fix_verification_status_log_template=Template(ASK_FOR_FIX_VERIFICATION_STATUS_LOG_TEMPLATE),
+            triage_status_log_template=Template(TRIAGE_STATUS_LOG_TEMPLATE),
         )
 
     def transform_report_description_html(

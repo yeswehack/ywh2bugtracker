@@ -131,6 +131,8 @@ class Log:
     program: Optional[Dict[str, Any]]
     old_ask_for_fix_verification_status: Optional[str]
     new_ask_for_fix_verification_status: Optional[str]
+    old_triage_status: Optional[str]
+    new_triage_status: Optional[str]
 
 
 class Report:

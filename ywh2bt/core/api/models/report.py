@@ -58,6 +58,15 @@ REPORT_ASK_FOR_FIX_VERIFICATION_STATUS_TRANSLATIONS = MappingProxyType(
         "cancelled": "Fix verification cancelled",
     }
 )
+REPORT_TRIAGE_STATUS_TRANSLATIONS = MappingProxyType(
+    {
+        "not_available": "Not available",
+        "in_progress": "In progress",
+        "awaiting_info": "Awaiting info",
+        "assessed": "Assessed",
+        "done": "Done",
+    }
+)
 
 
 @dataclass
@@ -357,6 +366,14 @@ class AskForFixverificationStatusLog(Log):
 
     new_ask_for_fix_verification_status: Optional[str]
     old_ask_for_fix_verification_status: Optional[str]
+
+
+@dataclass
+class TriageStatusLog(Log):
+    """A triage status log."""
+
+    old_triage_status: str
+    new_triage_status: str
 
 
 class _LogFilterProtocol(Protocol):

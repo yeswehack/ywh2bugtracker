@@ -49,6 +49,8 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 
 ## Changelog
 
+- v2.12:
+    - added support for new triage workflow
 - v2.11:
     - added support for new impact and cve fields
 - v2.10: 

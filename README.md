@@ -48,7 +48,8 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 - servicenow
 
 ## Changelog
-
+- v2.13:
+    - fix GET YesWeHack API calls method have a body
 - v2.12:
     - added support for new triage workflow
 - v2.11:

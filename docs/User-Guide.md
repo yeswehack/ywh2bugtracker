@@ -18,7 +18,7 @@ only regular outbound web connections need to be authorized on your server.
 
 # Requirements
 
-- `python` >=3.7,<=3.12
+- `python` >=3.8,<=3.12
 - [`pip`](https://pip.pypa.io/en/stable/installing/)
 
 To use it on your program, while maintaining the maximum security, the tool requires you create a Personal Access Token

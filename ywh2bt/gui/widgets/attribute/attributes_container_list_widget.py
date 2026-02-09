@@ -209,9 +209,8 @@ class AttributesContainerListWidget(QWidget):
         )
         if not title:
             index = self._container_list.index(container)
-            class_name = self._container_list.values_type.__name__
             position = index + 1
-            title = f"{class_name} #{position}"
+            title = f"Criteria #{position}"
         return title
 
     def _on_attributes_container_widget_changed(

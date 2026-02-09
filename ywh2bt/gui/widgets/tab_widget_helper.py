@@ -20,5 +20,5 @@ def object_to_tab_title(
         The title if it could have been extracted; otherwise None
     """
     if isinstance(obj, Program):
-        return obj.slug
+        return obj.criteria_title
     return None

@@ -25,6 +25,7 @@ from ywh2bt.core.synchronizer.listener import (
     SynchronizerStartEvent,
     SynchronizerStartFetchReportsEvent,
     SynchronizerStartSendReportEvent,
+    SynchronizerWarningFetchProgramsEvent,
 )
 from ywh2bt.core.synchronizer.synchronizer import Synchronizer
 from ywh2bt.gui.widgets.logs_widget import (
@@ -240,4 +241,15 @@ class _SynchronizerListener(SynchronizerListener):
         self._log_message(
             log_type=LogType.success,
             message=f'Processed report {report_description} with "{event.tracker_name}": {message}.',
+        )
+
+    @_on_event.register
+    def _on_warning_programs_fetched(
+        self,
+        event: SynchronizerWarningFetchProgramsEvent,
+    ) -> None:
+        self._log_message(
+            message=f"Warning - You are fetching many programs, "
+            f"which may take longer than usual: {event.max_program_reached}.",
+            log_type=LogType.warning,
         )

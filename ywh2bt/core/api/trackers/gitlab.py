@@ -15,7 +15,7 @@ from typing import (
 )
 
 import requests
-from gitlab import (  # type: ignore
+from gitlab import (
     Gitlab,
     GitlabError,
 )
@@ -24,6 +24,7 @@ from gitlab.v4.objects import (
     ProjectIssue,
     ProjectIssueNote,
 )
+from packaging import version
 
 from ywh2bt.core.api.formatter.markdown import ReportMessageMarkdownFormatter
 from ywh2bt.core.api.models.report import (
@@ -267,9 +268,9 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
     ) -> List[TrackerIssueComment]:
         return [
             self._extract_comment(
-                gitlab_note=gitlab_note,
+                gitlab_note=gitlab_note,  # type: ignore
             )
-            for gitlab_note in reversed(gitlab_issue.notes.list())
+            for gitlab_note in reversed(gitlab_issue.notes.list())  # type: ignore
             if exclude_comments is None or str(gitlab_note.id) not in exclude_comments
         ]
 
@@ -433,7 +434,7 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
                 referencing_texts = [
                     text.replace(
                         attachment.url,
-                        f"{self.configuration.url}/{self.configuration.project}{upload_url}",
+                        f"{self.configuration.url}{upload_url}",
                     )
                     for text in referencing_texts
                 ]
@@ -468,10 +469,17 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
                     ),
                 )
             else:
+                gitlab_version = version.parse(self._gitlab.version()[0])
+
+                if gitlab_version >= version.parse("15.10"):
+                    upload_path = upload["full_path"]
+                else:
+                    upload_path = upload["url"]
+
                 uploads.append(
                     (
                         attachment,
-                        upload["url"],
+                        upload_path,
                         None,
                     ),
                 )

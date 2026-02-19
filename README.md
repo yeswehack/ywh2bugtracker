@@ -37,7 +37,7 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 
 ## Requirements
 
-- `python` >=3.7,<=3.12
+- `python` >=3.8,<=3.12
 - [`pip`](https://pip.pypa.io/en/stable/installing/)
 
 ## Supported trackers
@@ -48,6 +48,8 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 - servicenow
 
 ## Changelog
+- v2.14:
+    - fix report and comment images not displayed correctly in tracked issue on git.clacos.ninja
 - v2.13:
     - fix GET YesWeHack API calls method have a body
 - v2.12:
@@ -60,7 +62,7 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 - v2.9:
     - prevented issue synchronization to fail when tracker file upload is unsuccessful
 - v2.8:
-    - improved Python versions support (>=3.7 to <=3.12)
+    - improved Python versions support (>=3.8 to <=3.12)
     - removed the GUI from the default installation (use `pip install 'ywh2bt[gui]'` to include the GUI)
     - fixed an issue with github when the title of an issue is longer than 255 characters
     - fixed an issue with jira image previews when multiple attached images have the same name

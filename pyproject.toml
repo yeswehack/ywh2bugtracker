@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ywh2bt"
-version = "2.13.0"
+version = "2.14.0"
 description = "ywh2bt - YesWeHack to Bug Tracker"
 readme = "README.md"
 authors = ["m.honel <m.honel@yeswehack.com>"]
@@ -11,7 +11,6 @@ classifiers = [
     "Intended Audience :: Customer Service",
     "Intended Audience :: End Users/Desktop",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -29,7 +28,7 @@ exclude = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.7.0,<3.13"
+python = ">=3.8.0,<3.13"
 aiohttp = [
     { version="^3.8.0", python = "<3.8" },
     { version="^3.9.0", python = ">=3.8" },
@@ -47,9 +46,9 @@ markdown = [
     { version="^3.0.0", python = ">=3.8" },
 ]
 PyGithub = "^1.53"
-python-gitlab = "^2.5.0"
+python-gitlab = "4.13"
 requests = "^2.24.0"
-requests-toolbelt = "^0.9.1"
+requests-toolbelt = "1.0.0"
 "ruamel.yaml" = "~0.16.12"
 singledispatchmethod = "^1.0"
 typing-extensions = "*"
@@ -59,7 +58,7 @@ types-requests = "*"
 types-setuptools = "*"
 tomlkit = "^0.7.0"
 urllib3 = "<=1.26.15"
-setuptools = { version="^69.0.2", python = ">=3.12" }
+setuptools = { version="<81", python=">=3.8,<3.12" }
 pyside6 = [
     { version="^6.5.0", python = "<3.12", optional = true },
     { version="^6.6.0", python = ">=3.12", optional = true },
@@ -74,7 +73,7 @@ multidict = ">6.0.4"
 [tool.poetry.extras]
 gui = ["pyside6"]
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 mypy =[
     { version="^1.0", extras = ["dmypy"], python = "<3.12" },
     { version="^1.8", extras = ["dmypy"], python = ">=3.12" },

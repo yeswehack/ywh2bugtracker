@@ -48,6 +48,8 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 - servicenow
 
 ## Changelog
+- v2.14:
+    - fix report and comment images not displayed correctly in tracked issue on git.clacos.ninja
 - v2.13:
     - fix GET YesWeHack API calls method have a body
 - v2.12:

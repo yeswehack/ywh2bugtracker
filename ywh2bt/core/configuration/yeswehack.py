@@ -101,6 +101,16 @@ class ProgramTypeOptions(AttributesContainer):
         self.vdp = vdp
         self.featured_vdp = featured_vdp
 
+    def __deepcopy__(self, memo: Dict[int, Any]) -> ProgramTypeOptions:
+        return ProgramTypeOptions(
+            bug_bounty=self.bug_bounty,
+            pentest=self.pentest,
+            asm=self.asm,
+            cpt=self.cpt,
+            vdp=self.vdp,
+            featured_vdp=self.featured_vdp,
+        )
+
 
 ProgramTypeOptionsAttributeType = Union[
     Dict[str, bool],
@@ -230,6 +240,21 @@ class SynchronizeOptions(AttributesContainer):
         self.upload_triage_status_updates = upload_triage_status_updates
         self.recreate_missing_issues = recreate_missing_issues
 
+    def __deepcopy__(self, memo: Dict[int, Any]) -> SynchronizeOptions:
+        return SynchronizeOptions(
+            upload_private_comments=self.upload_private_comments,
+            upload_assign_comments=self.upload_assign_comments,
+            upload_public_comments=self.upload_public_comments,
+            upload_cvss_updates=self.upload_cvss_updates,
+            upload_details_updates=self.upload_details_updates,
+            upload_priority_updates=self.upload_priority_updates,
+            upload_rewards=self.upload_rewards,
+            upload_status_updates=self.upload_status_updates,
+            upload_transfer_updates=self.upload_transfer_updates,
+            upload_triage_status_updates=self.upload_triage_status_updates,
+            recreate_missing_issues=self.recreate_missing_issues,
+        )
+
 
 SynchronizeOptionsAttributeType = Union[
     Dict[str, bool],
@@ -277,6 +302,12 @@ class FeedbackOptions(AttributesContainer):
         super().__init__(**kwargs)
         self.download_tracker_comments = download_tracker_comments
         self.issue_closed_to_report_afv = issue_closed_to_report_afv
+
+    def __deepcopy__(self, memo: Dict[int, Any]) -> FeedbackOptions:
+        return FeedbackOptions(
+            download_tracker_comments=self.download_tracker_comments,
+            issue_closed_to_report_afv=self.issue_closed_to_report_afv,
+        )
 
 
 FeedbackOptionsAttributeType = Union[
@@ -388,7 +419,7 @@ class Program(AttributesContainer):
             copy.deepcopy(self.program_type_options),
             copy.deepcopy(self.synchronize_options),
             copy.deepcopy(self.feedback_options),
-            copy.deepcopy(self.bugtrackers_name),
+            self.bugtrackers_name,
         )
 
         return configuration

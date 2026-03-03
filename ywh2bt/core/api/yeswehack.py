@@ -133,7 +133,13 @@ class YesWeHackApiClient(TestableApiClient):
         }
 
         programs_slugs = set()
-        business_units = self._raw_client.get_business_units()  # type: ignore[attr-defined]
+        try:
+            business_units = self._raw_client.get_business_units()  # type: ignore[attr-defined]
+        except (YesWeHackRawAPiError, requests.RequestException) as e:
+            raise YesWeHackApiClientError(
+                "Unable to fetch programs from business unit, check your business unit PAT."
+            ) from e
+
         business_units = [
             BusinessUnit(business_unit["programs"], business_unit["name"], business_unit["slug"])
             for business_unit in business_units

@@ -50,6 +50,7 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 ## Changelog
 - v2.15:
     - automatic management of program slugs 
+    - link to reports from the same program
 - v2.14:
     - fix report and comment images not displayed correctly in tracked issue on git.clacos.ninja
 - v2.13:

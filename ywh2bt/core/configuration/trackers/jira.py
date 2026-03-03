@@ -58,15 +58,27 @@ class JiraConfiguration(TrackerConfiguration):
     )
     issuetype: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description="Issue type",
-        description="Issue type (sensitive to account language)",
+        short_description="Vulnerability issue type",
+        description="Vulnerability issue type (sensitive to account language)",
         default="Task",
     )
     issue_closed_status: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description="Issue closed status",
-        description="Issue closed status (sensitive to account language)",
+        short_description="Vulnerability issue closed status",
+        description="Vulnerability issue closed status (sensitive to account language)",
         default="Closed",
+    )
+    epic_creation_enabled: BoolAttributeType = Attribute.create(
+        value_type=bool,
+        short_description="Group by program",
+        description="Group by program",
+        default=False,
+    )
+    epic_creation_type: StrAttributeType = Attribute.create(
+        value_type=str,
+        short_description="Program work item type",
+        description="Program work item type (sensitive to account language)",
+        default="Epic",
     )
 
     def __init__(
@@ -78,6 +90,8 @@ class JiraConfiguration(TrackerConfiguration):
         verify: Optional[bool] = None,
         issuetype: Optional[Text] = None,
         issue_closed_status: Optional[Text] = None,
+        epic_creation_enabled: Optional[bool] = None,
+        epic_creation_type: Optional[Text] = None,
         **kwargs: Any,
     ):
         """
@@ -91,6 +105,8 @@ class JiraConfiguration(TrackerConfiguration):
             verify: a flag indicating whether to check SSL/TLS connection
             issuetype: a Jira issue type
             issue_closed_status: a Jira name when the issue is closed
+            epic_creation_enabled: a flag indicating whether to create epic
+            epic_creation_type: a Jira issue type
             kwargs: keyword arguments
         """
         super().__init__(**kwargs)
@@ -101,6 +117,8 @@ class JiraConfiguration(TrackerConfiguration):
         self.verify = verify
         self.issuetype = issuetype
         self.issue_closed_status = issue_closed_status
+        self.epic_creation_enabled = epic_creation_enabled
+        self.epic_creation_type = epic_creation_type
 
 
 TrackerConfiguration.register_subtype(

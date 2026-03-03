@@ -508,6 +508,7 @@ description = "XML bomb protection for Python stdlib modules"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 groups = ["main"]
+markers = "python_version >= \"3.10\""
 files = [
     {file = "defusedxml-0.7.1-py2.py3-none-any.whl", hash = "sha256:a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61"},
     {file = "defusedxml-0.7.1.tar.gz", hash = "sha256:1bb3032db185915b62d7c6209c5a8792be6a32ab2fedacc84e01b52c51aa3e69"},
@@ -774,14 +775,15 @@ colors = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "jira"
-version = "3.5.2"
+version = "3.10.5"
 description = "Python library for interacting with JIRA via REST APIs."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.10"
 groups = ["main"]
+markers = "python_version >= \"3.10\""
 files = [
-    {file = "jira-3.5.2-py3-none-any.whl", hash = "sha256:f97716cd1e35523d04cb75b742143f1f3aaf098eb0ab61ad33e91812beb9edcc"},
-    {file = "jira-3.5.2.tar.gz", hash = "sha256:d23a0e0c62c0d6926ac37c68bc0b362065ae19106fe5c79d4ba964fad80d6cf2"},
+    {file = "jira-3.10.5-py3-none-any.whl", hash = "sha256:d4da1385c924ee693d6cc9838e56a34e31d74f0d6899934ef35bbd0d2d33997f"},
+    {file = "jira-3.10.5.tar.gz", hash = "sha256:2d09ae3bf4741a2787dd889dfea5926a5d509aac3b28ab3b98c098709e6ee72d"},
 ]
 
 [package.dependencies]
@@ -789,15 +791,15 @@ defusedxml = "*"
 packaging = "*"
 requests = ">=2.10.0"
 requests-oauthlib = ">=1.1.0"
-requests-toolbelt = "*"
-typing-extensions = ">=3.7.4.2"
+requests_toolbelt = "*"
+typing_extensions = ">=3.7.4.2"
 
 [package.extras]
 async = ["requests-futures (>=0.9.7)"]
 cli = ["ipython (>=4.0.0)", "keyring"]
 docs = ["furo", "sphinx (>=5.0.0)", "sphinx-copybutton"]
-opt = ["PyJWT", "filemagic (>=1.6)", "requests-jwt", "requests-kerberos"]
-test = ["MarkupSafe (>=0.23)", "PyYAML (>=5.1)", "docutils (>=0.12)", "flaky", "oauthlib", "parameterized (>=0.8.1)", "pytest (>=6.0.0)", "pytest-cache", "pytest-cov", "pytest-instafail", "pytest-sugar", "pytest-timeout (>=1.3.1)", "pytest-xdist (>=2.2)", "requests-mock", "requires.io", "tenacity", "wheel (>=0.24.0)", "xmlrunner (>=1.7.7)", "yanc (>=0.3.3)"]
+opt = ["PyJWT", "filemagic (>=1.6)", "requests_jwt", "requests_kerberos"]
+test = ["MarkupSafe (>=0.23)", "PyYAML (>=5.1)", "docutils (>=0.21.2)", "flaky", "oauthlib", "parameterized (>=0.8.1)", "parameterized (>=0.8.1)", "pip", "pytest (>=6.0.0)", "pytest-cache", "pytest-cov", "pytest-instafail", "pytest-sugar", "pytest-timeout (>=1.3.1)", "pytest-xdist (>=2.2)", "requests_mock", "requires.io", "tenacity", "wheel (>=0.24.0)", "yanc (>=0.3.3)"]
 
 [[package]]
 name = "lxml"
@@ -1255,6 +1257,7 @@ description = "A generic, spec-compliant, thorough implementation of the OAuth r
 optional = false
 python-versions = ">=3.6"
 groups = ["main"]
+markers = "python_version >= \"3.10\""
 files = [
     {file = "oauthlib-3.2.2-py3-none-any.whl", hash = "sha256:8139f29aac13e25d502680e9e19963e83f16838d48a0d71c287fe40e7067fbca"},
     {file = "oauthlib-3.2.2.tar.gz", hash = "sha256:9859c40929662bec5d64f34d01c99e093149682a3f38915dc0655d5a633dd918"},
@@ -1631,6 +1634,7 @@ description = "OAuthlib authentication support for Requests."
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 groups = ["main"]
+markers = "python_version >= \"3.10\""
 files = [
     {file = "requests-oauthlib-1.3.1.tar.gz", hash = "sha256:75beac4a47881eeb94d5ea5d6ad31ef88856affe2332b9aafb52c6452ccf0d7a"},
     {file = "requests_oauthlib-1.3.1-py2.py3-none-any.whl", hash = "sha256:2577c501a2fb8d05a304c09d090d6e47c306fef15809d102b327cf8364bddab5"},
@@ -2199,4 +2203,4 @@ gui = ["pyside6", "pyside6"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.8.0,<3.13"
-content-hash = "cad6fe1befff7435c8c11797c754cf7b1c5a1da943f83c4997679460d538a20f"
+content-hash = "d900cf03665adbdac9bb8c4cd1b33431cf1147976d524fda5253e89c61f83f3c"

@@ -469,7 +469,13 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
                     ),
                 )
             else:
-                gitlab_version = version.parse(self._gitlab.version()[0])
+                raw_version = self._gitlab.version()[0]
+
+                match = re.search(r"\d+\.\d+\.\d+", raw_version)
+                if not match:
+                    raise ValueError(f"Invalid GitLab version: {raw_version}")
+
+                gitlab_version = version.parse(match.group(0))
 
                 if gitlab_version >= version.parse("15.10"):
                     upload_path = upload["full_path"]

@@ -8,6 +8,7 @@ from importlib import import_module
 from typing import (
     Any,
     Dict,
+    Optional,
 )
 
 from ywh2bt.core.configuration.attribute import (
@@ -24,8 +25,11 @@ from ywh2bt.core.configuration.subtypable import (
 class TrackerConfiguration(AttributesContainer, Subtypable, metaclass=SubtypableMetaclass):
     """Base class for tracker."""
 
+    _warning_message: str
+
     def __init__(
         self,
+        warning_message: Optional[str] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -47,6 +51,15 @@ class TrackerConfiguration(AttributesContainer, Subtypable, metaclass=Subtypable
                 message=message,
                 context=self,
             )
+        self._warning_message = (
+            warning_message
+            if warning_message is not None
+            else (
+                "Please note that if you have several configurations for the same bug tracker projects, "
+                "they must all use the same KEY. <b>Modifying the KEY value is not recommended</b>, "
+                "as this will result in all your reports being duplicated within the bug tracker."
+            )
+        )
         super().__init__(**kwargs)
 
     def export(self) -> Dict[str, Any]:
@@ -62,6 +75,9 @@ class TrackerConfiguration(AttributesContainer, Subtypable, metaclass=Subtypable
             exported["type"] = tracker_type
         exported.update(super().export())
         return exported
+
+    def get_warning_message(self) -> Optional[str]:
+        return self._warning_message
 
 
 # import all defined trackers

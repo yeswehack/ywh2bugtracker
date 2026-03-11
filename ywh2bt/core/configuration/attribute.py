@@ -509,6 +509,9 @@ class AttributesContainer(
         """
         return self.__str__()
 
+    def get_warning_message(self) -> Optional[str]:
+        return None
+
 
 T_AC = TypeVar("T_AC", bound=AttributesContainer)
 

@@ -1,9 +1,13 @@
 """Models used for the configuration of YesWeHack."""
+from __future__ import annotations
+
+import copy
 from typing import (
     Any,
     Dict,
     List,
     Optional,
+    Set,
     Union,
     cast,
 )
@@ -36,6 +40,86 @@ BugtrackersNameAttributeType = Union[
 BugtrackersNameInitType = Union[
     Optional[Bugtrackers],
     Optional[List[str]],
+]
+
+
+class ProgramTypeOptions(AttributesContainer):
+    """Program type option."""
+
+    bug_bounty: BoolAttributeType = Attribute.create(
+        value_type=bool,
+        short_description="Bug bounty",
+        description="Bug bounty",
+        default=False,
+    )
+    pentest: BoolAttributeType = Attribute.create(
+        value_type=bool,
+        short_description="Pentest",
+        description="Pentest",
+        default=False,
+    )
+    asm: BoolAttributeType = Attribute.create(
+        value_type=bool,
+        short_description="Attack surface",
+        description="Attack Surface",
+        default=False,
+    )
+    cpt: BoolAttributeType = Attribute.create(
+        value_type=bool,
+        short_description="Continuous pentesting",
+        description="Continuous Pentesting",
+        default=False,
+    )
+    vdp: BoolAttributeType = Attribute.create(
+        value_type=bool,
+        short_description="VDP",
+        description="Vulnerability Disclosure Program",
+        default=False,
+    )
+    featured_vdp: BoolAttributeType = Attribute.create(
+        value_type=bool,
+        short_description="Featured VDP",
+        description="Vulnerability Disclosure Program",
+        default=False,
+    )
+
+    def __init__(
+        self,
+        bug_bounty: Optional[bool] = None,
+        pentest: Optional[bool] = None,
+        asm: Optional[bool] = None,
+        cpt: Optional[bool] = None,
+        vdp: Optional[bool] = None,
+        featured_vdp: Optional[bool] = None,
+        **kwargs: Any,
+    ):
+        super().__init__(**kwargs)
+        self.bug_bounty = bug_bounty
+        self.pentest = pentest
+        self.asm = asm
+        self.cpt = cpt
+        self.vdp = vdp
+        self.featured_vdp = featured_vdp
+
+    def __deepcopy__(self, memo: Dict[int, Any]) -> ProgramTypeOptions:
+        return ProgramTypeOptions(
+            bug_bounty=self.bug_bounty,
+            pentest=self.pentest,
+            asm=self.asm,
+            cpt=self.cpt,
+            vdp=self.vdp,
+            featured_vdp=self.featured_vdp,
+        )
+
+
+ProgramTypeOptionsAttributeType = Union[
+    Dict[str, bool],
+    ProgramTypeOptions,
+    Attribute[ProgramTypeOptions],
+]
+ProgramTypeOptionsInitType = Union[
+    Optional[ProgramTypeOptions],
+    Optional[Dict[str, bool]],
 ]
 
 
@@ -156,6 +240,21 @@ class SynchronizeOptions(AttributesContainer):
         self.upload_triage_status_updates = upload_triage_status_updates
         self.recreate_missing_issues = recreate_missing_issues
 
+    def __deepcopy__(self, memo: Dict[int, Any]) -> SynchronizeOptions:
+        return SynchronizeOptions(
+            upload_private_comments=self.upload_private_comments,
+            upload_assign_comments=self.upload_assign_comments,
+            upload_public_comments=self.upload_public_comments,
+            upload_cvss_updates=self.upload_cvss_updates,
+            upload_details_updates=self.upload_details_updates,
+            upload_priority_updates=self.upload_priority_updates,
+            upload_rewards=self.upload_rewards,
+            upload_status_updates=self.upload_status_updates,
+            upload_transfer_updates=self.upload_transfer_updates,
+            upload_triage_status_updates=self.upload_triage_status_updates,
+            recreate_missing_issues=self.recreate_missing_issues,
+        )
+
 
 SynchronizeOptionsAttributeType = Union[
     Dict[str, bool],
@@ -204,6 +303,12 @@ class FeedbackOptions(AttributesContainer):
         self.download_tracker_comments = download_tracker_comments
         self.issue_closed_to_report_afv = issue_closed_to_report_afv
 
+    def __deepcopy__(self, memo: Dict[int, Any]) -> FeedbackOptions:
+        return FeedbackOptions(
+            download_tracker_comments=self.download_tracker_comments,
+            issue_closed_to_report_afv=self.issue_closed_to_report_afv,
+        )
+
 
 FeedbackOptionsAttributeType = Union[
     Dict[str, bool],
@@ -219,12 +324,24 @@ FeedbackOptionsInitType = Union[
 class Program(AttributesContainer):
     """A program and its associated bugtrackers."""
 
+    criteria_title: StrAttributeType = Attribute.create(
+        value_type=str,
+        short_description="Criteria title",
+        description="Criteria title",
+        required=False,
+    )
     slug: StrAttributeType = Attribute.create(
         value_type=str,
-        short_description="Program slug",
-        description="Program slug",
+        short_description="Program slugs",
+        description="Program slugs",
         required=True,
+        default="*",
         validator=not_blank_validator,
+    )
+    program_type_options: ProgramTypeOptionsAttributeType = Attribute.create(
+        value_type=ProgramTypeOptions,
+        short_description="Program type options",
+        required=True,
     )
     synchronize_options: SynchronizeOptionsAttributeType = Attribute.create(
         value_type=SynchronizeOptions,
@@ -246,7 +363,9 @@ class Program(AttributesContainer):
 
     def __init__(
         self,
+        criteria_title: Optional[str] = None,
         slug: Optional[str] = None,
+        program_type_options: ProgramTypeOptionsInitType = None,
         synchronize_options: SynchronizeOptionsInitType = None,
         feedback_options: FeedbackOptionsInitType = None,
         bugtrackers_name: BugtrackersNameInitType = None,
@@ -256,7 +375,9 @@ class Program(AttributesContainer):
         Initialize the program.
 
         Args:
+            criteria_title: a criteria title
             slug: a program slug
+            program_type_options: program type options
             synchronize_options: synchronization options
             feedback_options: feedback options
             bugtrackers_name: a list of bugtrackers
@@ -264,17 +385,44 @@ class Program(AttributesContainer):
         """
         super().__init__(**kwargs)
         self.slug = slug
+        self.criteria_title = criteria_title
+
         if not synchronize_options:
             synchronize_options = SynchronizeOptions()
         self.synchronize_options = synchronize_options
+
+        if not program_type_options:
+            program_type_options = ProgramTypeOptions()
+        self.program_type_options = program_type_options
+
         if not feedback_options:
             feedback_options = FeedbackOptions()
         self.feedback_options = feedback_options
+
         if bugtrackers_name:
             if isinstance(bugtrackers_name, List):
                 self.bugtrackers_name = Bugtrackers(bugtrackers_name)
             else:
                 self.bugtrackers_name = cast(Bugtrackers, bugtrackers_name)
+
+    def get_normalize_slugs(self) -> Set[str]:
+        if self.slug is not None:
+            # unique non-empty/None values (for slug value like "slug1,,slug2")
+            return set(filter(None, self.slug.split(",")))
+        return set()
+
+    def clone(self, new_slug: str) -> Program:
+
+        configuration = Program(
+            self.criteria_title,
+            new_slug,
+            copy.deepcopy(self.program_type_options),
+            copy.deepcopy(self.synchronize_options),
+            copy.deepcopy(self.feedback_options),
+            self.bugtrackers_name,
+        )
+
+        return configuration
 
 
 class Programs(AttributesContainerList[Program]):

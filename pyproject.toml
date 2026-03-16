@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ywh2bt"
-version = "2.14.0"
+version = "2.15.0"
 description = "ywh2bt - YesWeHack to Bug Tracker"
 readme = "README.md"
 authors = ["m.honel <m.honel@yeswehack.com>"]
@@ -11,8 +11,6 @@ classifiers = [
     "Intended Audience :: Customer Service",
     "Intended Audience :: End Users/Desktop",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -30,19 +28,16 @@ exclude = [
 [tool.poetry.dependencies]
 python = ">=3.8.0,<3.13"
 aiohttp = [
-    { version="^3.8.0", python = "<3.8" },
     { version="^3.9.0", python = ">=3.8" },
 ]
 aiosnow = "^0.6.0"
 beautifulsoup4 = "^4.9.3"
 html2text = "^2020.1.16"
 jira = [
-    { version="~3.2.0", python = "<3.8" },
-    { version="^3.5.0", python = ">=3.8" },
+    { version="^3.10.5", python = ">=3.10" },
 ]
 lxml = "^4.5.2"
 markdown = [
-    { version="^3.3.3", python = "<3.8" },
     { version="^3.0.0", python = ">=3.8" },
 ]
 PyGithub = "^1.53"
@@ -79,7 +74,6 @@ mypy =[
     { version="^1.8", extras = ["dmypy"], python = ">=3.12" },
 ]
 tox =[
-    { version="^3.20.1", python = "<3.8" },
     { version="^4.0.0", python = ">=3.8" },
 ]
 flake8 = [
@@ -90,11 +84,9 @@ black = "^22.10.0"
 flake8-logging-format = "^0.9.0"
 unittest-xml-reporting = "^3.2.0"
 isort = [
-    { version="^5.11.0", python = "<3.8" },
     { version="^5.12.0", python = ">=3.8" },
 ]
 flake8-tidy-imports = [
-    { version="^4.9.0", python = "<3.8" },
     { version="^4.10.0", python = ">=3.8" },
 ]
 

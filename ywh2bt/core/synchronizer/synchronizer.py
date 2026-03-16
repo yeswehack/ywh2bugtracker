@@ -10,6 +10,7 @@ from string import Template
 from typing import (
     Any,
     Dict,
+    Generator,
     List,
     Optional,
     Tuple,
@@ -55,6 +56,7 @@ from ywh2bt.core.configuration.yeswehack import (
     FeedbackOptions,
     Program,
     Programs,
+    ProgramTypeOptions,
     SynchronizeOptions,
     YesWeHackConfiguration,
     YesWeHackConfigurations,
@@ -75,6 +77,7 @@ from ywh2bt.core.synchronizer.listener import (
     SynchronizerStartEvent,
     SynchronizerStartFetchReportsEvent,
     SynchronizerStartSendReportEvent,
+    SynchronizerWarningFetchProgramsEvent,
 )
 from ywh2bt.size import sizeof_fmt_si
 
@@ -87,6 +90,7 @@ class Synchronizer:
     _tracker_clients_factory: TrackerClientsAbstractFactory
     _listener: SynchronizerListener
     _message_formatter: AbstractSynchronizerMessageFormatter
+    _warning_on_fetch_program: int = 50
 
     def __init__(
         self,
@@ -151,8 +155,10 @@ class Synchronizer:
         yeswehack_client = self._yes_we_hack_api_clients_factory.get_yeswehack_api_client(
             configuration=yeswehack_configuration,
         )
+
         programs = cast(Programs, yeswehack_configuration.programs)
-        for program in programs:
+
+        for program in self._generate_program_from_slug(yeswehack_client, programs):
             if program.slug is None:
                 continue
             self._send_event(
@@ -185,6 +191,29 @@ class Synchronizer:
                 reports=reports,
             )
 
+    def _generate_program_from_slug(
+        self,
+        yeswehack_client: YesWeHackApiClient,
+        programs: Programs,
+    ) -> Generator[Program, None, None]:
+        for program in programs:
+            slugs = program.get_normalize_slugs()
+
+            if "*" in slugs:
+                program_type_options = cast(ProgramTypeOptions, program.program_type_options)
+                slugs = yeswehack_client.get_programs_slugs_from_business_unit(program_type_options)
+
+            if len(slugs) >= self._warning_on_fetch_program:
+                self._send_event(
+                    event=SynchronizerWarningFetchProgramsEvent(len(slugs)),
+                )
+
+            for slug in slugs:
+                # Clone object to avoid mutate original config
+                program_copy = program.clone(slug)
+
+                yield program_copy
+
     def _get_afi_reports(
         self,
         yeswehack_client: YesWeHackApiClient,
@@ -194,6 +223,7 @@ class Synchronizer:
         filters = {
             "filter[trackingStatus][0]": "AFI",
         }
+
         synchronize_options = cast(SynchronizeOptions, program.synchronize_options)
         feedback_options = cast(FeedbackOptions, program.feedback_options)
         include_tracked = any(

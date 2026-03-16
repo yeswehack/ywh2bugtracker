@@ -88,6 +88,13 @@ class SynchronizerEndSendReportEvent(SynchronizerEvent):
     report_added_comments: List[str]
 
 
+@dataclass
+class SynchronizerWarningFetchProgramsEvent(SynchronizerEvent):
+    """An event warning sent when a lot of programs is fetched."""
+
+    max_program_reached: int
+
+
 class SynchronizerListener(Listener[SynchronizerEvent], ABC):
     """A listener receiving events from a Synchronizer."""
 

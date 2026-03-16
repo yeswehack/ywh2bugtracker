@@ -15,6 +15,7 @@ from ywh2bt.core.synchronizer.listener import (
     SynchronizerStartEvent,
     SynchronizerStartFetchReportsEvent,
     SynchronizerStartSendReportEvent,
+    SynchronizerWarningFetchProgramsEvent,
 )
 from ywh2bt.core.tester.listener import (
     TesterEndEvent,
@@ -177,6 +178,16 @@ class CliSynchronizerListener(SynchronizerListener):
                     f'report => {" ; ".join(report_details)}',
                 ),
             ),
+        )
+
+    @_on_event.register
+    def _on_warning_programs_fetched(
+        self,
+        event: SynchronizerWarningFetchProgramsEvent,
+    ) -> None:
+        _print_timestamped(
+            message=f"Warning - You are fetching many programs, "
+            f"which may take longer than usual: {event.max_program_reached}.",
         )
 
 

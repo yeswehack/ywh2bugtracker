@@ -37,7 +37,7 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 
 ## Requirements
 
-- `python` >=3.8,<=3.12
+- `python` >=3.8,<=3.13
 - [`pip`](https://pip.pypa.io/en/stable/installing/)
 
 ## Supported trackers
@@ -48,6 +48,11 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 - servicenow
 
 ## Changelog
+- v2.15:
+    - automatic management of program slugs 
+    - link to reports from the same program
+    - display warning message for KEY trackers
+    - fix Gitlab version parsing error
 - v2.14:
     - fix report and comment images not displayed correctly in tracked issue on git.clacos.ninja
 - v2.13:

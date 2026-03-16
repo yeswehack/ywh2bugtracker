@@ -260,9 +260,19 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
                 ],
                 unique_name_prefix=self._report_attachment_name_prefix,
             )
+
+        parent_issue = None
+        if self.configuration.epic_creation_enabled:
+            program_id = report.local_id.rsplit("-", 1)[0]
+            parent_issue = self._create_or_find_parent_issue(
+                program_id=program_id,
+                program_title=report.program.title,
+            )
+
         jira_issue = self._create_issue(
             title=title,
             description="This issue is being synchronized. Please check back in a moment.",
+            parent_id=parent_issue.key if parent_issue else None,
         )
         description, markdown_description = self._replace_attachments_references(
             uploads=self._upload_attachments(
@@ -388,6 +398,7 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
         self,
         title: str,
         description: str,
+        parent_id: Optional[str] = None,
     ) -> JIRAIssue:
         fields = {
             "project": {
@@ -399,6 +410,10 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
                 "name": self.configuration.issuetype,
             },
         }
+
+        if parent_id:
+            fields["parent"] = {"key": parent_id}
+
         try:
             return self._get_client().create_issue(
                 fields=fields,
@@ -594,6 +609,35 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
                 )
             attachments_lines.append("")
         return "\n".join(attachments_lines)
+
+    def _find_parent_issue(self, program_id: str) -> JIRAIssue | None:
+        jql = f'summary ~ "{program_id}" ORDER BY created DESC'
+        issues = self._get_client().search_issues(jql)
+        return issues[0] if issues else None
+
+    def _create_or_find_parent_issue(self, program_id: str, program_title: str) -> JIRAIssue:
+        parent = self._find_parent_issue(program_id)
+        if parent:
+            return parent
+
+        fields = {
+            "project": {
+                "key": self.configuration.project,
+            },
+            "summary": f"{program_id} - {program_title}",
+            "issuetype": {
+                "name": self.configuration.epic_creation_type,
+            },
+        }
+
+        try:
+            return self._get_client().create_issue(
+                fields=fields,
+            )
+        except JIRAError as e:
+            raise JiraTrackerClientError(
+                f"Unable to create JIRA issue for project {self.configuration.project}",
+            ) from e
 
     def _get_client(
         self,

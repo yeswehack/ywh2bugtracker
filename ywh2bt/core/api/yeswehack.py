@@ -5,6 +5,7 @@ from typing import (
     Dict,
     List,
     Optional,
+    Set,
     cast,
 )
 from urllib.parse import urlsplit
@@ -23,12 +24,17 @@ from ywh2bt.core.api.mapping import (
     map_raw_logs,
     map_raw_report,
 )
+from ywh2bt.core.api.models.business_unit import BusinessUnit
+from ywh2bt.core.api.models.program import ProgramEmbedded
 from ywh2bt.core.api.models.report import (
     Attachment,
     Log,
     Report,
 )
-from ywh2bt.core.configuration.yeswehack import YesWeHackConfiguration
+from ywh2bt.core.configuration.yeswehack import (
+    ProgramTypeOptions,
+    YesWeHackConfiguration,
+)
 from ywh2bt.core.exceptions import CoreException
 from ywh2bt.version import __VERSION__
 
@@ -112,6 +118,42 @@ class YesWeHackApiClient(TestableApiClient):
             except (YesWeHackRawAPiError, requests.RequestException) as e:
                 raise YesWeHackApiClientError("Unable to log in with YesWeHack API client") from e
             self._logged_in = success
+
+    def get_programs_slugs_from_business_unit(
+        self,
+        program_type_options: ProgramTypeOptions,
+    ) -> Set[str]:
+        types_checked = {
+            "bug-bounty": program_type_options.bug_bounty,
+            "asm": program_type_options.asm,
+            "pentest": program_type_options.pentest,
+            "vdp-in-app": program_type_options.featured_vdp,
+            "vdp": program_type_options.vdp,
+            "cpt": program_type_options.cpt,
+        }
+
+        programs_slugs = set()
+        try:
+            business_units = self._raw_client.get_business_units()  # type: ignore[attr-defined]
+        except (YesWeHackRawAPiError, requests.RequestException) as e:
+            raise YesWeHackApiClientError(
+                "Unable to fetch programs from business unit, check your business unit PAT."
+            ) from e
+
+        business_units = [
+            BusinessUnit(business_unit["programs"], business_unit["name"], business_unit["slug"])
+            for business_unit in business_units
+        ]
+
+        for business_unit in business_units:
+            for program in business_unit.programs:
+                program_embedded = ProgramEmbedded(program["type"], program["demo"], program["slug"])
+                program_type_checked = types_checked.get(program_embedded.program_type)
+
+                if program_type_checked is True and program_embedded.demo is False:
+                    programs_slugs.add(program_embedded.slug)
+
+        return programs_slugs
 
     def get_program_reports(
         self,

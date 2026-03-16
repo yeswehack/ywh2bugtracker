@@ -70,6 +70,19 @@ class AttributesContainerDictEntryWidget(QWidget):
         self._value_widget = self._create_value_widget()
 
         form_layout.addRow(key_label, self._key_line_edit)
+
+        warning_message = self._entry.value.get_warning_message()
+        if warning_message:
+            key_label_message = QLabel(
+                warning_message,
+                self,
+            )
+            key_label_message.setStyleSheet(
+                "background-color : #fdf6f0; color: #262626; padding: 5px; border-radius: 2px;"
+            )
+            key_label_message.setWordWrap(True)
+            form_layout.addRow(key_label_message)
+
         form_layout.addRow(self._value_widget)
 
         layout.addLayout(form_layout, 1)

@@ -48,6 +48,8 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 - servicenow
 
 ## Changelog
+- v2.16:
+    - report pdf attachment for Jira issue
 - v2.15:
     - automatic management of program slugs 
     - link to reports from the same program

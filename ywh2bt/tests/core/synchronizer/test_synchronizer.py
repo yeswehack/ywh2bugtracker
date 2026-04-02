@@ -539,6 +539,7 @@ class TestReportSynchronizer(TestCase):
                 "id": "CVE-2019-0039",
             },
             impact="Application Level Denial of Service (DoS)",
+            report_url=f"https://yeswehack.local/reports/{report_id}",
         )
 
     def _build_configuration(

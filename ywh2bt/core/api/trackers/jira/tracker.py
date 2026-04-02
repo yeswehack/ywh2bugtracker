@@ -4,6 +4,7 @@ from copy import deepcopy
 from datetime import datetime
 from string import Template
 from typing import (
+    Any,
     Dict,
     List,
     Optional,
@@ -219,6 +220,13 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
         title = self._message_formatter.format_report_title(
             report=report,
         )
+
+        if self.configuration.report_in_pdf:
+            return self._send_report_in_pdf(
+                report=report,
+                title=title,
+            )
+
         if len(title) > _TITLE_MAX_SIZE:
             title = f"{title[:_TITLE_MAX_SIZE - 3]}..."
         description = self._message_formatter.format_report_description(
@@ -309,6 +317,49 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
             issue_url=jira_issue.permalink(),  # type: ignore
             closed=False,
         )
+
+    def _send_report_in_pdf(
+        self,
+        report: Report,
+        title: str,
+    ) -> TrackerIssue:
+        description = f"View report on YesWeHack: {report.report_url}"
+        jira_issue = self._create_issue(
+            title=title,
+            description=description,
+        )
+        self._attach_report_pdf(
+            jira_issue=jira_issue,
+            report=report,
+        )
+        return self._build_tracker_issue(
+            issue_id=jira_issue.key,
+            issue_url=jira_issue.permalink(),  # type: ignore
+            closed=False,
+        )
+
+    def _attach_report_pdf(
+        self,
+        jira_issue: JIRAIssue,
+        report: Report,
+    ) -> None:
+        try:
+            export = cast(dict[str, Any], report.raw_report.export("pdf"))
+        except Exception as e:
+            raise JiraTrackerClientError(
+                f"Unable to export report #{report.report_id} as PDF from YesWeHack",
+            ) from e
+        filename = f'report-{report.local_id.replace("#", "")}.{export["extension"]}'
+        try:
+            self._get_client().add_attachment(
+                issue=jira_issue.key,
+                filename=filename,
+                attachment=CustomBytesIO(buffer=export["content"]),
+            )
+        except JIRAError as e:
+            raise JiraTrackerClientError(
+                f"Unable to attach PDF for report #{report.report_id} to JIRA issue {jira_issue.key}",
+            ) from e
 
     def _build_external_description_attachment(
         self,

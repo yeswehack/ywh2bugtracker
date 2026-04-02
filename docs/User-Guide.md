@@ -19,7 +19,7 @@ only regular outbound web connections need to be authorized on your server.
 # Requirements
 
 - `python` >=3.8,<=3.12
-- [`pip`](https://pip.pypa.io/en/stable/installing/)
+- [`pip`](https://pip.pypa.io/en/stable/installation/)
 
 To use it on your program, while maintaining the maximum security, the tool requires you create a Personal Access Token
 on the [Yes We Hack platform][YesWeHack-Platform] with the role "Program Bug Tracker" for the desired program.
@@ -69,6 +69,8 @@ See `docker run yeswehack/ywh2bugtracker -h` or `docker run yeswehack/ywh2bugtra
     since the report is from this point considered valid.
   * Subsequent returns to "Ask for integration" status won’t create another issue.
 2. The types of comments synchronized depends on [configuration](#yes-we-hack-integration):
+  * Program type filter for synchronization:  
+    ![Program type options](img/ui-yeswehack-program-type-options.png)
   * Updates pushed from reports to issues:  
     ![Synchronization options](img/ui-yeswehack-synchronization-options.png)
   * Updates pushed from issues to reports:  
@@ -209,10 +211,16 @@ cannot have the two-factor authentication enabled.
 - **Password**: Jira API token previously created.
 - **Project slug**: project key as defined in Jira (see _Project settings > Details > Key_).
 - **Verify TLS**: whether to verify if the API server's TLS certificate is valid.
-- **Issue type**: type of issue to be created (in Jira, see _Project settings > Issue types_
+- **Vulnerability issue type**: type of issue to be created (in Jira, see _Project settings > Issue types_
   for a list of valid types). **This value is sensitive to the Jira account language.**
-- **Issue closed status**: name of the workflow status for which the issue is considered closed/done. **This value is
+- **Vulnerability issue closed status**: name of the workflow status for which the issue is considered closed/done. **This value is
   sensitive to the Jira account language.**
+- **Group by program**: whether to add a parent issue corresponding to the program
+- **Program work item type**: type of issue to be created (in Jira, see _Project settings > Issue types_
+  for a list of valid types). **This value is sensitive to the Jira account language.**
+- **Report in PDF**: when enabled, the Jira issue will only contain the report title and a link to YesWeHack.
+  The full report is exported as PDF from YesWeHack and attached to the Jira issue.
+  This avoids copying sensitive report content (e.g., payloads) directly into the issue description.
 
 #### ServiceNow integration
 
@@ -283,7 +291,8 @@ that can be downloaded from the [Yes We Hack platform][YesWeHack-Platform].
   See [Requirements](#requirements-5).
 - **Verify TLS**: whether to verify if the API server's TLS certificate is valid.
 - **Programs**: a list of programs to be synchronized.
-  - **Program slug**: a program slug.
+  - **Criteria title**: name your configuration.
+  - **Program slugs**: one or more program slug (separated by a coma).
   - **Synchronization options**: options for synchronizing a Yes We Hack report with the bug tracker.
     - **Upload private comments**: whether to upload the reports private comments into the bug tracker.
     - **Upload assignments comments**: whether to upload the reports assignments comments into the bug tracker.
@@ -293,6 +302,8 @@ that can be downloaded from the [Yes We Hack platform][YesWeHack-Platform].
     - **Upload priority updates**: whether to upload the reports priority updates into the bug tracker.
     - **Upload rewards**: whether to upload the reports rewards into the bug tracker.
     - **Upload status updates**: whether to upload the reports status updates into the bug tracker.
+    - **Upload transfer updates**: whether to upload the reports transfer updates into the bug tracker.
+    - **Upload triage status updates**: whether to upload the reports triage status updates into the bug tracker.
     - **Recreate missing issues**: whether to recreate issues that were created by a previous synchronization but are not found into the bug tracker anymore.
   - **Feedback options**: options for synchronizing bug trackers issues with Yes We Hack reports.
     - **Download bug trackers comments**: whether to download comments from the bug tracker

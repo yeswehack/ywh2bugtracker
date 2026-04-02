@@ -237,6 +237,11 @@ class Report:
         attachments: Optional[List[str]] = None,
     ) -> List[Log]: ...
 
+    def export(
+        self,
+        export_format: str,
+    ) -> bytes: ...
+
 
 class Program:
     ywh_api: YesWeHack

@@ -122,6 +122,7 @@ class TestYesWeHackApiClient(TestCase):
                 "id": "CVE-2019-0039",
             },
             impact="Application Level Denial of Service (DoS)",
+            report_url="https://yeswehack.local/reports/123",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.post_report_tracker_update(
@@ -194,6 +195,7 @@ class TestYesWeHackApiClient(TestCase):
                 "id": "CVE-2019-0039",
             },
             impact="Application Level Denial of Service (DoS)",
+            report_url="https://yeswehack.local/reports/123",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.post_report_tracker_update(
@@ -262,6 +264,7 @@ class TestYesWeHackApiClient(TestCase):
                 "id": "CVE-2019-0039",
             },
             impact="Application Level Denial of Service (DoS)",
+            report_url="https://yeswehack.local/reports/123",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.post_report_tracker_update(
@@ -334,6 +337,7 @@ class TestYesWeHackApiClient(TestCase):
                 "id": "CVE-2019-0039",
             },
             impact="Application Level Denial of Service (DoS)",
+            report_url="https://yeswehack.local/reports/123",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.post_report_tracker_update(
@@ -404,6 +408,7 @@ class TestYesWeHackApiClient(TestCase):
                 "id": "CVE-2019-0039",
             },
             impact="Application Level Denial of Service (DoS)",
+            report_url="https://yeswehack.local/reports/123",
         )
         client.post_report_tracker_update(
             report=report,
@@ -469,6 +474,7 @@ class TestYesWeHackApiClient(TestCase):
                 "id": "CVE-2019-0039",
             },
             impact="Application Level Denial of Service (DoS)",
+            report_url="https://yeswehack.local/reports/123",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.put_report_tracking_status(
@@ -541,6 +547,7 @@ class TestYesWeHackApiClient(TestCase):
                 "id": "CVE-2019-0039",
             },
             impact="Application Level Denial of Service (DoS)",
+            report_url="https://yeswehack.local/reports/123",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.put_report_tracking_status(
@@ -609,6 +616,7 @@ class TestYesWeHackApiClient(TestCase):
                 "id": "CVE-2019-0039",
             },
             impact="Application Level Denial of Service (DoS)",
+            report_url="https://yeswehack.local/reports/123",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.put_report_tracking_status(
@@ -681,6 +689,7 @@ class TestYesWeHackApiClient(TestCase):
                 "id": "CVE-2019-0039",
             },
             impact="Application Level Denial of Service (DoS)",
+            report_url="https://yeswehack.local/reports/123",
         )
         with self.assertRaises(YesWeHackApiClientError):
             client.put_report_tracking_status(
@@ -751,6 +760,7 @@ class TestYesWeHackApiClient(TestCase):
                 "id": "CVE-2019-0039",
             },
             impact="Application Level Denial of Service (DoS)",
+            report_url="https://yeswehack.local/reports/123",
         )
         client.put_report_tracking_status(
             report=report,

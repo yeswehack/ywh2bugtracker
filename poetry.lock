@@ -2165,14 +2165,14 @@ multidict = ">=4.0"
 
 [[package]]
 name = "yeswehack"
-version = "0.8.11"
+version = "0.8.12"
 description = "yeswehack - YesWeHack API Wrapper"
 optional = false
 python-versions = "<3.13,>=3.7.0"
 groups = ["main"]
 files = [
-    {file = "yeswehack-0.8.11-py3-none-any.whl", hash = "sha256:14ba9487fd80357da2f0241f55866d98032285dae8bd3923199f0df6ec086295"},
-    {file = "yeswehack-0.8.11.tar.gz", hash = "sha256:210ed512d57312380d4f026f17ddf3a145310c68937e17beaf64bcca4d2a5eee"},
+    {file = "yeswehack-0.8.12-py3-none-any.whl", hash = "sha256:51bf5eba4baf620949b0238d2322557434d74aa1215798fad94615f9563afa00"},
+    {file = "yeswehack-0.8.12.tar.gz", hash = "sha256:7b09ad7776ae3fc6ac9075761605e11f2ce0b63d108e0ff67af5298f8f80fca8"},
 ]
 
 [package.dependencies]
@@ -2203,4 +2203,4 @@ gui = ["pyside6", "pyside6"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.8.0,<3.13"
-content-hash = "d900cf03665adbdac9bb8c4cd1b33431cf1147976d524fda5253e89c61f83f3c"
+content-hash = "ef7663fe23c7cf418605888122cb36005d50b3a1f51bcd98e89eccf89840b822"

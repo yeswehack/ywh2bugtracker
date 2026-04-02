@@ -5,13 +5,16 @@ bugtrackers:
     login: bender@my-company.com
     password: wFs2wr0&i38#gLNI@6BBuIKIDiY4h6gJ
     project: my-project
+    verify: true
 yeswehack:
   my-project-bug-bounty:
     pat: 83eb3105-43a6-4c61-bf22-5f4b1a89cd6f
+    verify: false
     programs:
     - slug: my-company-my-project
       synchronize_options:
         upload_private_comments: true
         upload_public_comments: true
+      feedback_options: {}
       bugtrackers_name:
       - tracker-jira-my-project

@@ -92,6 +92,7 @@ class Report:
     status: str
     tracking_status: str
     program: ReportProgram
+    report_url: str
     ask_for_fix_verification_status: str
     cve: Dict[str, Any]
     impact: str

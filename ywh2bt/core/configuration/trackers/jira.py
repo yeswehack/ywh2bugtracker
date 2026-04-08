@@ -80,6 +80,13 @@ class JiraConfiguration(TrackerConfiguration):
         description="Program work item type (sensitive to account language)",
         default="Epic",
     )
+    report_in_pdf: BoolAttributeType = Attribute.create(
+        value_type=bool,
+        short_description="Report in PDF",
+        description="Create Jira issues without content, only a title and a link to the YesWeHack report. "
+        "Full in report in PDF attached to the ticket.",
+        default=False,
+    )
 
     def __init__(
         self,
@@ -92,6 +99,7 @@ class JiraConfiguration(TrackerConfiguration):
         issue_closed_status: Optional[Text] = None,
         epic_creation_enabled: Optional[bool] = None,
         epic_creation_type: Optional[Text] = None,
+        report_in_pdf: Optional[bool] = None,
         **kwargs: Any,
     ):
         """
@@ -107,6 +115,7 @@ class JiraConfiguration(TrackerConfiguration):
             issue_closed_status: a Jira name when the issue is closed
             epic_creation_enabled: a flag indicating whether to create epic
             epic_creation_type: a Jira issue type
+            report_in_pdf: a flag indicating whether to report in PDF
             kwargs: keyword arguments
         """
         super().__init__(**kwargs)
@@ -119,6 +128,7 @@ class JiraConfiguration(TrackerConfiguration):
         self.issue_closed_status = issue_closed_status
         self.epic_creation_enabled = epic_creation_enabled
         self.epic_creation_type = epic_creation_type
+        self.report_in_pdf = report_in_pdf
 
 
 TrackerConfiguration.register_subtype(

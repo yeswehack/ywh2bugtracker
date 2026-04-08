@@ -222,6 +222,7 @@ class TestGitLabTrackerClient(TestCase):
                 "id": "CVE-2019-0039",
             },
             impact="Application Level Denial of Service (DoS)",
+            report_url="https://yeswehack.local/reports/123",
         )
         issue = client.send_report(
             report=report,
@@ -294,6 +295,7 @@ class TestGitLabTrackerClient(TestCase):
                 "id": "CVE-2019-0039",
             },
             impact="Application Level Denial of Service (DoS)",
+            report_url="https://yeswehack.local/reports/123",
         )
         with self.assertRaises(GitLabTrackerClientError):
             client.send_report(
@@ -368,6 +370,7 @@ class TestGitLabTrackerClient(TestCase):
                 "id": "CVE-2019-0039",
             },
             impact="Application Level Denial of Service (DoS)",
+            report_url="https://yeswehack.local/reports/123",
         )
         with self.assertRaises(GitLabTrackerClientError):
             client.send_report(

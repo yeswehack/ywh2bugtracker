@@ -119,6 +119,7 @@ def map_raw_report(
         context=context,
         raw_logs=raw_report.logs or [],
     )
+    report_url = f"https://{context.yeswehack_domain}/reports/{raw_report.id}"
     return Report(
         raw_report=raw_report,
         report_id=str(raw_report.id),
@@ -143,6 +144,7 @@ def map_raw_report(
             context=context,
             raw_program=raw_report.program or {},
         ),
+        report_url=report_url,
         ask_for_fix_verification_status=raw_report.ask_for_fix_verification_status,
         cve=cve,
         impact=raw_report.impact,

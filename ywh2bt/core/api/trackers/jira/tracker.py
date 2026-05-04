@@ -220,54 +220,8 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
         title = self._message_formatter.format_report_title(
             report=report,
         )
-
-        if self.configuration.report_in_pdf:
-            return self._send_report_in_pdf(
-                report=report,
-                title=title,
-            )
-
         if len(title) > _TITLE_MAX_SIZE:
             title = f"{title[:_TITLE_MAX_SIZE - 3]}..."
-        description = self._message_formatter.format_report_description(
-            report=report,
-        ) + self._get_attachments_list_description(
-            title="*Attachments*:",
-            item_template=self._attachments_list_description_item_jira_template,
-            attachments=report.attachments,
-            unique_name_prefix=self._report_attachment_name_prefix,
-        )
-        markdown_description = ""
-        description_attachment = None
-        if len(description) > _TEXT_MAX_SIZE:
-            description_attachment = self._build_external_description_attachment(
-                name=f'report-{report.local_id.replace("#", "")}-description.md',
-            )
-            markdown_description = ReportMessageMarkdownFormatter().format_report_description(
-                report=report,
-            ) + self._get_attachments_list_description(
-                title="**Attachments**:",
-                item_template=self._attachments_list_description_item_markdown_template,
-                attachments=report.attachments,
-                unique_name_prefix=self._report_attachment_name_prefix,
-            )
-            report_copy = deepcopy(report)
-            report_copy.description_html = (
-                "<p>This report description is too large to fit into a JIRA issue. "
-                + f'See attachment <a href="{description_attachment.url}">{description_attachment.original_name}</a> '
-                + "for more details.</p>"
-            )
-            description = self._message_formatter.format_report_description(
-                report=report_copy,
-            ) + self._get_attachments_list_description(
-                title="*Attachments*:",
-                item_template=self._attachments_list_description_item_jira_template,
-                attachments=[
-                    description_attachment,
-                    *report.attachments,
-                ],
-                unique_name_prefix=self._report_attachment_name_prefix,
-            )
 
         parent_issue = None
         if self.configuration.epic_creation_enabled:
@@ -282,56 +236,86 @@ class JiraTrackerClient(TrackerClient[JiraConfiguration]):
             description="This issue is being synchronized. Please check back in a moment.",
             parent_id=parent_issue.key if parent_issue else None,
         )
-        description, markdown_description = self._replace_attachments_references(
-            uploads=self._upload_attachments(
-                issue=jira_issue,
+
+        if self.configuration.report_in_pdf:
+            description = f"View report on YesWeHack: {report.report_url}"
+            self._attach_report_pdf(
+                jira_issue=jira_issue,
+                report=report,
+            )
+        else:
+            description = self._message_formatter.format_report_description(
+                report=report,
+            ) + self._get_attachments_list_description(
+                title="*Attachments*:",
+                item_template=self._attachments_list_description_item_jira_template,
                 attachments=report.attachments,
                 unique_name_prefix=self._report_attachment_name_prefix,
-            ),
-            referencing_texts=[
-                description,
-                markdown_description,
-            ],
-            unique_name_prefix=self._report_attachment_name_prefix,
-        )
-        if description_attachment:
-            description_attachment.data_loader = lambda: bytes(markdown_description, "utf-8")
-            description = self._replace_attachments_references(
-                uploads=self._upload_attachments(
-                    issue=jira_issue,
+            )
+            markdown_description = ""
+            description_attachment = None
+            if len(description) > _TEXT_MAX_SIZE:
+                description_attachment = self._build_external_description_attachment(
+                    name=f'report-{report.local_id.replace("#", "")}-description.md',
+                )
+                markdown_description = ReportMessageMarkdownFormatter().format_report_description(
+                    report=report,
+                ) + self._get_attachments_list_description(
+                    title="**Attachments**:",
+                    item_template=self._attachments_list_description_item_markdown_template,
+                    attachments=report.attachments,
+                    unique_name_prefix=self._report_attachment_name_prefix,
+                )
+                report_copy = deepcopy(report)
+                report_copy.description_html = (
+                    "<p>This report description is too large to fit into a JIRA issue. "
+                    + f'See attachment <a href="{description_attachment.url}">{description_attachment.original_name}'
+                    + "</a> for more details.</p>"
+                )
+                description = self._message_formatter.format_report_description(
+                    report=report_copy,
+                ) + self._get_attachments_list_description(
+                    title="*Attachments*:",
+                    item_template=self._attachments_list_description_item_jira_template,
                     attachments=[
                         description_attachment,
+                        *report.attachments,
                     ],
+                    unique_name_prefix=self._report_attachment_name_prefix,
+                )
+
+            description, markdown_description = self._replace_attachments_references(
+                uploads=self._upload_attachments(
+                    issue=jira_issue,
+                    attachments=report.attachments,
                     unique_name_prefix=self._report_attachment_name_prefix,
                 ),
                 referencing_texts=[
                     description,
+                    markdown_description,
                 ],
                 unique_name_prefix=self._report_attachment_name_prefix,
-            )[0]
+            )
+            if description_attachment:
+                description_attachment.data_loader = lambda: bytes(markdown_description, "utf-8")
+                description = self._replace_attachments_references(
+                    uploads=self._upload_attachments(
+                        issue=jira_issue,
+                        attachments=[
+                            description_attachment,
+                        ],
+                        unique_name_prefix=self._report_attachment_name_prefix,
+                    ),
+                    referencing_texts=[
+                        description,
+                    ],
+                    unique_name_prefix=self._report_attachment_name_prefix,
+                )[0]
+
         jira_issue.update(
             description=description,
         )
-        return self._build_tracker_issue(
-            issue_id=jira_issue.key,
-            issue_url=jira_issue.permalink(),  # type: ignore
-            closed=False,
-        )
 
-    def _send_report_in_pdf(
-        self,
-        report: Report,
-        title: str,
-    ) -> TrackerIssue:
-        description = f"View report on YesWeHack: {report.report_url}"
-        jira_issue = self._create_issue(
-            title=title,
-            description=description,
-        )
-        self._attach_report_pdf(
-            jira_issue=jira_issue,
-            report=report,
-        )
         return self._build_tracker_issue(
             issue_id=jira_issue.key,
             issue_url=jira_issue.permalink(),  # type: ignore

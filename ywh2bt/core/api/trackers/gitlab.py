@@ -412,16 +412,19 @@ class GitLabTrackerClient(TrackerClient[GitLabConfiguration]):
         issue_id: str,
     ) -> Optional[ProjectIssue]:
         gitlab_project = self._get_gitlab_project()
+        issue_id_int = int(issue_id)
         try:
-            gitlab_issues = gitlab_project.issues.list(all=False, as_list=False)
+            gitlab_issues = gitlab_project.issues.list(
+                iterator=True,
+                per_page=100,
+            )
+            for gitlab_issue in gitlab_issues:
+                if gitlab_issue.id == issue_id_int:
+                    return cast(ProjectIssue, gitlab_issue)
         except GitlabError as e:
             raise GitLabTrackerClientError(
                 f"Unable to get GitLab issues for project {self.configuration.project}",
             ) from e
-        issue_id_int = int(issue_id)
-        for gitlab_issue in gitlab_issues:
-            if gitlab_issue.id == issue_id_int:
-                return cast(ProjectIssue, gitlab_issue)
         return None
 
     def _replace_attachments_references(

@@ -1,3 +1,11 @@
+include:
+  - component: $CI_SERVER_FQDN/security/deptrack_sbom_ci_component/export-sbom@v1.0
+    inputs:
+      project_type_python: true
+      stage: verify
+    rules:
+      - if: $CI_COMMIT_BRANCH == "develop"
+
 image: python:3.11
 
 variables:

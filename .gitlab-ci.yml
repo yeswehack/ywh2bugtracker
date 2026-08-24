@@ -3,6 +3,7 @@ include:
     inputs:
       project_type_python: true
       stage: verify
+      enrich: false
     rules:
       - if: $CI_COMMIT_BRANCH == "develop"
 

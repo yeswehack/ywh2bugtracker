@@ -48,6 +48,8 @@ Since data is pulled from YWH platform to your server, only regular outbound web
 - servicenow
 
 ## Changelog
+- v2.18:
+    - fix pagination when ywh2bt fetch issue on gitlab
 - v2.17:
     - fix Jira options with pdf attachment
 - v2.16:
